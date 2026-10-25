@@ -10,10 +10,7 @@ export default function Index() {
       <Button title="Add 1" onPress={() => setCount(count + 1)} />
       <Button
         title="Subtract 1"
-        onPress={() => {
-          if (count < 0) setCount(0);
-          if (count > 0) setCount(count - 1);
-        }}
+        onPress={() => setCount(Math.max(0, count - 1))}
       />
       <Button title="Reset" onPress={() => setCount(0)} />
     </View>
