@@ -1,0 +1,100 @@
+BULSA PROJECT SUMMARY
+Updated 2026-11-02
+
+Name: Bulsa. The lowercase bulsa wordmark is intentional.
+Meaning: Filipino for pocket.
+Tagline: A little room for what matters.
+Purpose: A personal budget tracker for portfolio practice. Users manually record income, expenses and savings, set spending limits and review their records. It does not connect to banks or move real money.
+Users: One person using their own device, including the developer. No admin/customer roles or cloud login in this milestone.
+
+Platforms and delivery
+Intended for iOS and Android through shared mobile code. Android is the required test and delivery platform. End goal: an installed APK that runs offline without Expo Go or Metro and keeps records across restarts. iOS support must be described as intended until tested. Website work comes later.
+
+Tech stack
+Keep the current Expo SDK 58, React Native, React, TypeScript, Expo Router and npm workflow. EAS builds the Android APK. Local SQLite is the planned storage module, to be verified against SDK 58 and installed by the learner. No backend or new framework is required.
+
+Learning rules
+I am a beginner and write all application code, configuration and tests myself. Give exact file locations, ordered tasks, learning keywords and tests. Start with hints in words. Review my pasted code by explaining the issue and pointing to it; do not rewrite it. Only give a tiny unrelated example when I explicitly ask. No full project files/functions. n means next; c means check. Review in batches. Each session is 90 minutes. Preserve my completed work and the removal of the practice-budget UI disclaimer.
+
+Final retained feature list
+- Monthly Overview with limit, expenses, remaining amount, separate income summary and savings preview.
+- Manual expense and income entry with amount, category, date, payment-method label and optional note.
+- Validation, save-in-progress, save failure/retry and success behavior.
+- Activity grouped by date; search; month/type/category/payment filters; clear/reset; no-match and empty states.
+- Transaction edit, delete and Undo.
+- Monthly and category budget editing, near-limit and overspending messages, and automatic Everything else allocation.
+- Monthly budget history and copying prior limits into a new month once.
+- Savings goal creation/editing, separate contribution entries, empty goal and goal-reached states.
+- First-use monthly setup, local display-name editing, local-storage/privacy information, and saved System/Light/Dark appearance.
+- Local persistence, offline operation, readable mobile layouts and a tested Android APK with portfolio evidence.
+
+Rules for calculations
+Monthly remaining equals the selected month's limit minus expenses. Income does not automatically increase the limit. Named category limits plus automatic Everything else equal the monthly limit. Reject over-allocation, but allow actual overspending with a warning. Savings entries update the goal only; do not create duplicate expenses or change monthly remaining. New months copy limits once, without copying transactions or unused funds. Preserve historical month settings. Store money as integer centavos and group records by local transaction date.
+
+Final screen list
+Overview; expense entry; income entry; Budgets; monthly budget editor; category budget editor; Activity; filters; search/no matches; transaction edit/delete; Activity Undo; savings goal; goal editor; Record savings; first-use Overview; profile/settings; local-name editor; Appearance; data/privacy.
+Shared states: invalid amount, overspent budget, storage loading/read failure, empty Activity, saving/save failure, category over-allocation, monthly limit below allocations, copied-month limits, goal reached, no savings goal and expense saved.
+
+Visual direction
+Warm light mode is the main design. Warm dark mode is the alternative. Preserve the supplied layout, round cards, modest Filipino identity, peso formatting and clear labels. Do not add decorative cultural imagery or new features.
+
+Light palette
+Background #F8F5EF
+Cards #FFFFFF
+Soft panels #F2E4D4
+Text #382D29
+Secondary text #685A53
+Primary action #8A533A with white labels
+Monthly summary #624435 with white amounts and #F8EDE4 supporting text
+Selected items #E9CDB1
+Tracks/dividers #EADFD5
+Income #426B50
+Expense/error #984F40
+Near-limit warning #85550F
+
+Dark palette
+Background #211B18
+Surface #332A25
+Raised surface #49382E
+Text #F8F1E9
+Secondary text #D6C6B9
+Primary action #D8AD8D with #382D29 labels
+Income #A9D2AD
+Expense/error #F0B2A3
+Warning #F2CE8C
+
+Fonts
+Manrope is the main font, unchanged from the previous design. Weights: 400, 500, 600, 700 and 800. Existing avatar/component text includes Inter Regular. Main titles are typically 28, body 14-16, money amounts 32-42 and small labels 12-13 in the design reference. Support system text scaling. Do not claim a newly introduced font family.
+
+Seven-day plan
+Day 1: DONE. Keep practice Overview, state/props work, spend/reset, warning, shared UI and tab foundation.
+Day 2: Review the existing SummaryCard, update visible Bulsa branding/shared light colors, and prove the early APK build/install path. Preserve existing EAS identity and Android package.
+Day 3: Define transaction/money rules and local save/read storage, with loading/error handling.
+Day 4: Complete the expense form, save it once, retain inputs on failure and update shared Overview totals.
+Day 5: Build real Activity and income entry, with correct signs, dates and separate income totals.
+Day 6: Add monthly/category budgets, allocation validation and preserved monthly history.
+Day 7: Test the installed core APK offline and after restart; prepare accurate README, screenshots and walkthrough.
+Every day: two 30-minute tasks, then 30 minutes for checks, understanding and checkpoint. Run lint and typecheck. Record actual build/device results. Repeat unfinished tasks before dependants.
+
+Schedule reality
+The complete feature list does not fit reliably into the nine remaining beginner hours. Seven days is the core milestone. Keep all retained features and extend sessions for edit/delete/Undo, search/filter, savings, full appearance/branding, first use/settings, design/mobile QA and final delivery. Do not silently remove features or call placeholders complete.
+
+Previously deferred scope
+Export and biometric lock are deferred by my decision. Website, cloud sync/accounts, bank connections, actual money transfers and store publication are outside this milestone.
+
+Current evidence
+Both design files retain matching screen structure and prototype actions. The Bulsa file contains all old reference-sized screens and all 60 preview frames. No old-brand text/node names were found on the two checked Bulsa pages. One inherited purple Undo text style was corrected to the warm palette in reference and preview. These are editable designs and a static navigation preview, not functional app evidence.
+SummaryCard already exists and is used twice in the current code. The app still has old visible branding and the launcher name BudgetTracker. These are learner tasks; do not claim the runtime rebrand is complete. Android package com.marvinmanasan.bulsa and an EAS project ID already exist. Do not assume a build was installed.
+
+Open questions and checks
+- Should first launch always use Light, or follow System? Light is the primary design reference; the initial preference still needs a decision.
+- Confirm the target Android phone and current EAS build/install result.
+- Confirm access to an iOS device later before claiming tested iOS support.
+- The full feature list needs sessions beyond the core seven-day milestone; retain it unless I explicitly approve a cut.
+
+Current design
+https://www.figma.com/design/vhoEdT2Md0wGTqXppartYX/Bulsa?node-id=0-1
+Old design is historical only.
+Current detailed plan: docs/bulsa-learning-plan.md
+Current screen IDs and evidence: docs/figma-handoff.md
+Comparison and fixes: docs/bulsa-design-review.md

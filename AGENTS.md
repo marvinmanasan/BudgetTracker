@@ -1,5 +1,13 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+## Pocket project continuity and learning
+
+- Read `docs/day-2-to-day-7-plan.md` and the latest day checkpoint before new project work. The roadmap's revised design contract takes precedence over its older timebox tables.
+- This is a guided beginner portfolio project: explain simply, completely and concisely; give exact edit locations. `n` means next; `c` means check the current exercise.
+- Work in batches. Leave one meaningful exercise per session for the user; implement supporting code when authorized. Review at batch checkpoints or when asked, not after every small step.
+- Android APK is the current delivery priority. Never claim device testing, Figma fidelity, persistence, or APK delivery without evidence.
+- Preserve the user's removal of the practice-budget UI disclaimer; document limitations in docs instead.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
