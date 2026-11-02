@@ -1,9 +1,17 @@
-// Shared Pocket colors. Change a value here to update every Pocket screen.
+// Bulsa light colors from docs/bulsa-design-review.md.
+// Keep the existing internal name while migrating the visible brand.
 export const PocketColors = {
-  background: "#071F22",
-  surface: "#12383B",
-  text: "#FFFFFF",
-  muted: "#A7BFBD",
-  accent: "#2CBFB2",
-  warning: "#FFB4AB",
+  background: "#F8F5EF",
+  surface: "#FFFFFF",
+  text: "#382D29",
+  muted: "#685A53",
+  accent: "#8A533A",
+  warning: "#984F40",
+  summary: "#624435",
+  onSummary: "#FFFFFF",
+  summaryMuted: "#F8EDE4",
+  onAccent: "#FFFFFF",
+  selected: "#E9CDB1",
+  track: "#EADFD5",
+  income: "#426B50",
 };
