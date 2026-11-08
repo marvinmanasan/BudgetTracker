@@ -13,6 +13,7 @@
     "expo-linking": "~58.0.15",
     "expo-router": "~58.0.29",
     "expo-splash-screen": "~58.0.12",
+    "expo-sqlite": "~58.0.15",
     "expo-status-bar": "~58.0.4",
     "expo-symbols": "~58.0.4",
     "expo-system-ui": "~58.0.7",
@@ -34,6 +35,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "test": "node checks/money.cjs && node checks/ledger.cjs && node checks/storage.cjs && node checks/wallet-storage.cjs",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",

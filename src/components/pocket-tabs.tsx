@@ -15,7 +15,6 @@ export default function PocketTabs() {
       <Tabs.Screen name="index" options={{ title: "Overview", tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>⌂</Text> }} />
       <Tabs.Screen name="budgets" options={{ title: "Budgets", tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>≡</Text> }} />
       <Tabs.Screen name="activity" options={{ title: "Activity", tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 24 }}>↔</Text> }} />
-      <Tabs.Screen name="explore" options={{ href: null }} />
     </Tabs>
   );
 }

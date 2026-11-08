@@ -5,21 +5,26 @@ type PocketButtonProps = {
   title: string;
   onPress: () => void;
   secondary?: boolean;
+  disabled?: boolean;
 };
 
 export function PocketButton({
   title,
   onPress,
   secondary = false,
+  disabled = false,
 }: PocketButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
         secondary && styles.secondary,
         pressed && styles.pressed,
+        disabled && styles.pressed,
       ]}
     >
       <Text style={[styles.label, secondary && styles.secondaryLabel]}>

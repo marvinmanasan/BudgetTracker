@@ -1,12 +1,14 @@
 import type { PropsWithChildren } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PocketColors } from "@/constants/pocket";
 
-export function PocketScreen({ children }: PropsWithChildren) {
+export function PocketScreen({ children, scrollable = true }: PropsWithChildren<{ scrollable?: boolean }>) {
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
-      <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
+    <SafeAreaView style={styles.screen} edges={["top", "bottom", "left", "right"]}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        {scrollable ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>{children}</ScrollView> : <View style={[styles.content, { flex: 1 }]}>{children}</View>}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

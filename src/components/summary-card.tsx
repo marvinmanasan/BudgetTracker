@@ -1,16 +1,16 @@
 import { PocketColors } from "@/constants/pocket";
 import { StyleSheet, Text, View } from "react-native";
+import { formatCentavos } from '../lib/money';
 
-type SummaryCardProps = {
-  label: string;
-  amount: number;
-};
+type SummaryCardProps = { label: string } & (
+  { amount: number; amountCentavos?: never } | { amountCentavos: number; amount?: never }
+);
 
-export function SummaryCard({ label, amount }: SummaryCardProps) {
+export function SummaryCard({ label, amount, amountCentavos }: SummaryCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.amount}>₱{amount.toLocaleString("en-PH")}</Text>
+      <Text style={styles.amount}>{amountCentavos !== undefined ? formatCentavos(amountCentavos) : `₱${amount.toLocaleString("en-PH")}`}</Text>
     </View>
   );
 }
