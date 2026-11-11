@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { PocketColors } from "../constants/pocket";
 import { formatCentavos } from "../lib/money";
+import { displayDate } from "../lib/display-date";
 import { getTransactions, saveTransaction } from "../storage/transactions";
 import type { Transaction } from "../types/transaction";
 import { PocketButton } from "./pocket-button";
@@ -42,15 +43,15 @@ export function StorageCheck() {
   if (!__DEV__ || Platform.OS === "web") return null;
   return (
     <View style={styles.panel}>
-      <Text style={styles.heading}>Day 3 · Storage check</Text>
+      <Text style={styles.heading}>Day 3 · Storage Check</Text>
       <Text style={styles.body}>Fictional data in a separate check database. Your production entries are unchanged.</Text>
       <Text accessibilityLiveRegion="polite" style={styles.body}>
         {busy ? "Checking storage…" : records === null ? "Not checked yet." : `${records.length} saved check record(s).`}
       </Text>
-      {records?.map((record) => <Text key={record.id} style={styles.body}>{record.id} · {formatCentavos(record.amountCentavos)} · {record.date}</Text>)}
+      {records?.map((record) => <Text key={record.id} style={styles.body}>{record.id} · {formatCentavos(record.amountCentavos)} · {displayDate(record.date)}</Text>)}
       {error && <Text accessibilityLiveRegion="polite" style={styles.error}>Check failed: {error}. Previous results, if shown, may be stale. Use Read / Retry.</Text>}
       {!busy && <>
-        <PocketButton title="Save example once" onPress={() => void run(true)} />
+        <PocketButton title="Save Example Once" onPress={() => void run(true)} />
         <PocketButton title="Read / Retry" secondary onPress={() => void run(false)} />
       </>}
     </View>

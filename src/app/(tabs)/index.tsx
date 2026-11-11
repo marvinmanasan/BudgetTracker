@@ -10,28 +10,27 @@ import { useLedger } from '@/hooks/use-ledger';
 import { monthlyTotals } from '@/lib/ledger';
 import { formatCentavos } from '@/lib/money';
 import { localDate } from '@/lib/validation';
+import { displayMonth } from '@/lib/display-date';
 
 export default function Index() {
   const { data, balances, loading, error, reload } = useLedger();
   const totals = data ? monthlyTotals(data, localDate().slice(0, 7)) : null;
-  const hidden = balances?.wallets.filter(w => w.hidden && w.included).length ?? 0;
   return <PocketScreen>
     <Text style={styles.brand}>bulsa</Text>
     <Text style={ui.title}>Welcome to Bulsa</Text>
     <Text style={ui.caption}>A little room for what matters.</Text>
     {loading || error || !balances || !totals ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : <>
       <View style={styles.hero}>
-        <Text style={styles.label}>Total balance</Text>
+        <Text style={styles.label}>Total Budget</Text>
         <Text style={styles.total}>{formatCentavos(balances.totalCentavos)}</Text>
-        <Text style={styles.spent}>Spent this month  {formatCentavos(totals.expenseCentavos)}</Text>
-        <Text style={styles.label}>Included wallets + General</Text>
-        <PocketButton title="View wallets  ›" onPress={() => router.push('/wallets')} />
-        {hidden > 0 && <PocketButton secondary title={`Includes ${hidden} hidden wallet${hidden === 1 ? '' : 's'}`} onPress={() => router.push({ pathname: '/wallets', params: { view: 'hidden' } })} />}
+        <Text style={styles.spent}>Spent This Month  {formatCentavos(totals.expenseCentavos)}</Text>
+        <Text style={styles.label}>Included Wallets + General</Text>
+        <PocketButton title="View Wallets  ›" onPress={() => router.push('/wallets')} />
       </View>
-      {!balances.wallets.some(w => w.configured) && <View style={ui.soft}><Text style={ui.heading}>Start with your wallets</Text><Text style={ui.body}>Add the money you have before recording its transactions. Not specified entries go to General.</Text><PocketButton title="Set up wallets" onPress={() => router.push('/wallets')} /></View>}
-      <View style={ui.card}><Text style={ui.body}>No monthly limit set</Text><Text style={ui.caption}>Your spending is tracked separately from your available money.</Text></View>
-      <PocketButton title="+ Add expense" onPress={() => router.push('/entry')} />
-      <Text style={ui.heading}>This month · {localDate().slice(0, 7)}</Text>
+      {!balances.wallets.some(w => w.configured) && <View style={ui.soft}><Text style={ui.heading}>Start With Your Wallets</Text><Text style={ui.body}>Add the money you have before recording its transactions. Not specified entries go to General.</Text><PocketButton title="Set Up Wallets" onPress={() => router.push('/wallets')} /></View>}
+      <View style={ui.card}><Text style={ui.body}>No Monthly Limit Set</Text><Text style={ui.caption}>Total Budget is your recorded money. Your monthly spending limit is separate.</Text></View>
+      <PocketButton title="+ Add Expense" onPress={() => router.push('/entry')} />
+      <Text style={ui.heading}>This Month · {displayMonth(localDate().slice(0, 7))}</Text>
       <View style={styles.summary}><SummaryCard label="Income" amountCentavos={totals.incomeCentavos} /><SummaryCard label="Expenses" amountCentavos={totals.expenseCentavos} /></View>
     </>}
     {__DEV__ && <StorageCheck />}

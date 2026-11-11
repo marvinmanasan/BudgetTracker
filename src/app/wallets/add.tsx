@@ -22,13 +22,13 @@ export default function AddWallet() {
     });
     if (saved) router.back();
   }
-  return <PocketScreen>
-    <BackButton disabled={busy} /><Text style={ui.title}>Add wallet</Text><Text style={ui.caption}>A money source you track yourself.</Text>
-    <Field label="Wallet name" value={name} onChangeText={setName} maxLength={60} editable={!busy} placeholder="My bank" />
-    <Field label="Starting balance (PHP)" value={amount} onChangeText={setAmount} editable={!busy} keyboardType="numbers-and-punctuation" placeholder="0.00" />
-    <View style={[ui.card, ui.row]}><Text style={[ui.body, { flex: 1 }]}>Include in total balance</Text><Switch hitSlop={12} trackColor={{ false: '#EADFD5', true: '#8A533A' }} thumbColor="#FFFFFF" accessibilityLabel="Include in total balance" value={included} onValueChange={setIncluded} disabled={busy} /></View>
+  return <PocketScreen header={<BackButton disabled={busy} />}>
+    <Text style={ui.title}>Add Wallet</Text><Text style={ui.caption}>A money source you track yourself.</Text>
+    <Field label="Wallet Name" value={name} onChangeText={setName} maxLength={60} editable={!busy} placeholder="My Bank" />
+    <Field label="Starting Balance (PHP)" value={amount} onChangeText={setAmount} editable={!busy} keyboardType="numbers-and-punctuation" placeholder="0.00" />
+    <View style={[ui.card, ui.row]}><Text style={[ui.body, { flex: 1 }]}>Include in Total Budget</Text><Switch hitSlop={12} trackColor={{ false: '#EADFD5', true: '#8A533A' }} thumbColor="#FFFFFF" accessibilityLabel="Include in Total Budget" value={included} onValueChange={setIncluded} disabled={busy} /></View>
     <View style={ui.soft}><Text style={ui.body}>Enter the balance before the transactions you will record.</Text><Text style={ui.caption}>Start at ₱1,000, then record a ₱100 expense, and ₱900 remains. Starting balance is not income.</Text></View>
     {!!error && <Text style={ui.error} accessibilityLiveRegion="polite">{error}</Text>}
-    <PocketButton title={busy ? 'Saving…' : 'Add wallet'} disabled={busy} onPress={() => void save()} />
+    <PocketButton title={busy ? 'Saving…' : 'Add Wallet'} disabled={busy} onPress={() => void save()} />
   </PocketScreen>;
 }

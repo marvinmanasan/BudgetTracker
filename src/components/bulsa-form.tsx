@@ -1,18 +1,20 @@
 import { router } from 'expo-router';
-import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { PocketColors as C } from '../constants/pocket';
 import { PocketButton } from './pocket-button';
 
 export function Field({ label, ...props }: TextInputProps & { label: string }) {
   return <View style={ui.card}><Text style={ui.caption}>{label}</Text><TextInput accessibilityLabel={label} placeholderTextColor={C.muted} {...props} style={[ui.input, props.style]} /></View>;
 }
-export function BackButton({ disabled = false }: { disabled?: boolean }) {
-  return <PocketButton title="‹ Back" secondary disabled={disabled} onPress={() => router.canGoBack() ? router.back() : router.replace('/')} />;
+export function BackButton({ disabled = false, onPress, title = '‹ Back' }: { disabled?: boolean; onPress?: () => void; title?: string }) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress ?? (() => router.canGoBack() ? router.back() : router.replace('/'))} style={({ pressed }) => [ui.back, (pressed || disabled) && { opacity: 0.65 }]}><Text style={ui.backLabel}>{title}</Text></Pressable>;
 }
 export function ReadState({ loading, error, retry }: { loading: boolean; error: string; retry: () => void }) {
-  return <View style={ui.card}><Text accessibilityLiveRegion="polite" style={error ? ui.error : ui.body}>{loading ? 'Reading your records…' : error}</Text>{!loading && error ? <PocketButton title="Try again" onPress={retry} /> : null}</View>;
+  return <View style={ui.card}><Text accessibilityLiveRegion="polite" style={error ? ui.error : ui.body}>{loading ? 'Reading your records…' : error}</Text>{!loading && error ? <PocketButton title="Try Again" onPress={retry} /> : null}</View>;
 }
 export const ui = StyleSheet.create({
+  back: { minHeight: 48, minWidth: 48, alignSelf: 'flex-start', justifyContent: 'center', paddingHorizontal: 12, marginLeft: -12, borderRadius: 12 },
+  backLabel: { color: C.accent, fontSize: 16, fontWeight: '600', flexShrink: 1 },
   title: { color: C.text, fontSize: 28, fontWeight: '700' },
   heading: { color: C.text, fontSize: 20, fontWeight: '600' },
   body: { color: C.text, fontSize: 16, lineHeight: 24 },

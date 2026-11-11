@@ -7,7 +7,7 @@ export default function Budgets() {
     <PocketScreen>
       <Text style={styles.title}>Budgets</Text>
       <View style={styles.card}>
-        <Text style={styles.heading}>Give your money a plan</Text>
+        <Text style={styles.heading}>Give Your Money a Plan</Text>
         <Text style={styles.body}>Your category budgets will appear here once you set them up.</Text>
       </View>
     </PocketScreen>

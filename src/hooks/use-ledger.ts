@@ -9,9 +9,10 @@ export function useLedger() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const request = useRef(0);
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (quiet = false) => {
     const current = ++request.current;
-    setLoading(true); setError('');
+    if (!quiet) setLoading(true);
+    setError('');
     try {
       const next = await getLedger();
       if (current === request.current) setData(next);
