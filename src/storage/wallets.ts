@@ -1,5 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { deriveBalances, monthlyTotals } from '../lib/ledger';
+import { deriveBalances, monthlyTotalsByMonth } from '../lib/ledger';
 import { localDate, validateCentavos, validateDate, validateTransaction } from '../lib/validation';
 import type { Ledger, Wallet, BalanceChange, Transfer } from '../types/wallet';
 import type { Transaction } from '../types/transaction';
@@ -15,7 +15,7 @@ export async function readLedger(db: SQLiteDatabase): Promise<Ledger> {
   const transfers = await db.getAllAsync<Transfer>('SELECT id,fromWalletId,toWalletId,amountCentavos,date,note FROM transfers ORDER BY rowid');
   const data: Ledger = { wallets: rows.map(w => ({ ...w, included: w.included === 1, hidden: w.hidden === 1 })), transactions, changes, transfers };
   deriveBalances(data);
-  for (const month of new Set(transactions.map(r => r.date.slice(0, 7)))) monthlyTotals(data, month);
+  monthlyTotalsByMonth(data);
   return data;
 }
 
@@ -104,20 +104,24 @@ export function recordTransfer(record: Transfer, name = 'bulsa.db') {
     validId(record.id); validateDate(record.date); validateCentavos(record.amountCentavos, true);
     if (typeof record.note !== 'string') throw new Error('Note must be text.');
     if (record.fromWalletId === record.toWalletId) throw new Error('Choose two different wallets.');
-    const source = await requireWallet(db, record.fromWalletId);
-    await requireWallet(db, record.toWalletId);
+    const wallets = deriveBalances(await readLedger(db)).wallets;
+    const source = wallets.find(w => w.id === record.fromWalletId);
+    const destination = wallets.find(w => w.id === record.toWalletId);
+    if (!source?.configured || !destination?.configured) throw new Error('Set this wallet’s starting balance first.');
+    if (source.hidden || destination.hidden) throw new Error('Restore this wallet before using it for a new entry.');
     if (source.balanceCentavos < record.amountCentavos) throw new Error('Not enough money in the source wallet.');
     await db.runAsync('INSERT INTO transfers(id,fromWalletId,toWalletId,amountCentavos,date,note) VALUES(?,?,?,?,?,?)', record.id, record.fromWalletId, record.toWalletId, record.amountCentavos, record.date, record.note);
     await readLedger(db);
   }, true);
 }
 
-export function adjustWallet(input: { id: string; walletId: string; targetCentavos: number; reason: string; date: string }, name = 'bulsa.db') {
+export function adjustWallet(input: { id: string; walletId: string; targetCentavos: number; reason: string; date: string; expectedBalanceCentavos?: number }, name = 'bulsa.db') {
   input = { ...input };
   return withDatabase(name, async db => {
     validId(input.id); validateDate(input.date); validateCentavos(input.targetCentavos);
     if (typeof input.reason !== 'string' || !input.reason.trim()) throw new Error('Enter a reason for this adjustment.');
     const wallet = await requireWallet(db, input.walletId, true);
+    if (input.expectedBalanceCentavos !== undefined && input.expectedBalanceCentavos !== wallet.balanceCentavos) throw new Error('The balance changed. Review the latest balance before saving.');
     const delta = input.targetCentavos - wallet.balanceCentavos;
     validateCentavos(delta);
     if (!delta) return;

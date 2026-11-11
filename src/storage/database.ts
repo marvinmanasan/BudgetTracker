@@ -24,16 +24,17 @@ async function initializeDatabase(name: string) {
       "PRAGMA user_version",
     );
     const version = versionRow?.user_version ?? 0;
-    if (version > 2) {
+    if (version > 3) {
       throw new Error(
         "This database uses a newer version. Update Bulsa before opening it.",
       );
     }
     await db.execAsync('PRAGMA foreign_keys = ON');
-    if (version < 2) {
+    if (version < 3) {
       await db.withTransactionAsync(async () => {
-        if (version === 0) {
-        await db.execAsync(`
+        if (version < 2) {
+          if (version === 0) {
+            await db.execAsync(`
     CREATE TABLE IF NOT EXISTS transactions(
     id TEXT PRIMARY KEY NOT NULL,
     type TEXT NOT NULL CHECK (type IN ('expense', 'income')),
@@ -43,8 +44,8 @@ async function initializeDatabase(name: string) {
     paymentMethod TEXT NOT NULL,
     note TEXT);
     `);
-        }
-        await db.execAsync(`
+          }
+          await db.execAsync(`
           CREATE TABLE IF NOT EXISTS wallets (
             id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL,
             nameKey TEXT NOT NULL UNIQUE,
@@ -76,10 +77,20 @@ async function initializeDatabase(name: string) {
           CREATE INDEX IF NOT EXISTS transfer_source ON transfers(fromWalletId);
           CREATE INDEX IF NOT EXISTS transfer_destination ON transfers(toWalletId);
         `);
-        for (const [id, name] of [['gcash','GCash'],['gotyme','GoTyme'],['maribank','MariBank'],['maya','Maya'],['cash','Cash']]) {
-          await db.runAsync('INSERT INTO wallets(id,name,nameKey,included,hidden) VALUES(?,?,?,1,0)', 'wallet-' + id, name, name.toLowerCase());
+          for (const [id, name] of [['gcash','GCash'],['gotyme','GoTyme'],['maribank','MariBank'],['maya','Maya'],['cash','Cash']]) {
+            await db.runAsync('INSERT INTO wallets(id,name,nameKey,included,hidden) VALUES(?,?,?,1,0)', 'wallet-' + id, name, name.toLowerCase());
+          }
         }
-        await db.execAsync('PRAGMA user_version = 2');
+        await db.execAsync(`
+          CREATE TABLE IF NOT EXISTS monthly_limits (
+            month TEXT PRIMARY KEY NOT NULL,
+            limitCentavos INTEGER NOT NULL CHECK (
+              typeof(limitCentavos) = 'integer' AND
+              limitCentavos >= 0 AND limitCentavos <= 9007199254740991
+            )
+          );
+          PRAGMA user_version = 3;
+        `);
       });
     }
     return db;

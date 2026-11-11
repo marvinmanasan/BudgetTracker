@@ -7,9 +7,9 @@ import { addChoice, getChoices, removeChoice, renameChoice } from '../storage/ch
 import { Field, ui } from './bulsa-form';
 import { PocketButton } from './pocket-button';
 
-type Props = { kind: ChoiceKind; value: string; onChange: (value: string) => void; disabled: boolean; onBusyChange: (busy: boolean) => void };
+type Props = { kind: ChoiceKind; value: string; onChange: (value: string) => void; disabled: boolean; onBusyChange: (busy: boolean) => void; retainedValue?: string };
 
-export function CategoryPicker({ kind, value, onChange, disabled, onBusyChange }: Props) {
+export function CategoryPicker({ kind, value, onChange, disabled, onBusyChange, retainedValue }: Props) {
   const [custom, setCustom] = useState<CustomChoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -73,6 +73,7 @@ export function CategoryPicker({ kind, value, onChange, disabled, onBusyChange }
   }
   const blocked = disabled || busy || loading;
   const options = [...PRESET_CHOICES[kind].map(name => ({ id: 'preset-' + name, name })), ...custom];
+  if (retainedValue && !options.some(choice => choice.name === retainedValue)) options.push({ id: 'retained-original', name: retainedValue });
   return <View style={ui.card}>
     <Text style={ui.heading}>{kind === 'expense' ? 'Category' : 'Income Source'}</Text>
     <View style={styles.chips}>

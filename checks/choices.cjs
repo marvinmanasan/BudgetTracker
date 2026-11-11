@@ -28,6 +28,12 @@ async function main() {
     const before = fs.readFileSync(moneyPath);
     let store = fresh();
     assert.deepEqual(await store.getChoices('expense'),[]);
+    const draft = {id:'snapshot',kind:'expense',name:'Safe choice'};
+    const saving = store.addChoice(draft);
+    draft.kind='income'; draft.name='Other'; draft.id='changed';
+    await saving;
+    assert.equal((await store.getChoices('expense')).find(c=>c.id==='snapshot')?.name,'Safe choice','save validated snapshot, not mutated caller object');
+    await store.removeChoice('snapshot','expense');
     await store.addChoice({id:'lunch',kind:'expense',name:'my lunch'});
     await store.addChoice({id:'income-lunch',kind:'income',name:'my lunch'});
     await assert.rejects(store.addChoice({id:'dupe',kind:'expense',name:' MY LUNCH '}), /already/i);

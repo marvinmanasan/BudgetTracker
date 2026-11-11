@@ -27,14 +27,24 @@ export function useLedger() {
 
 export function useSaveAction() {
   const pending = useRef(false);
+  const focusVersion = useRef(0);
+  const focused = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  useFocusEffect(useCallback(() => {
+    focused.current = true;
+    focusVersion.current++;
+    setBusy(pending.current);
+    setError('');
+    return () => { focused.current = false; focusVersion.current++; };
+  }, []));
   async function run(work: () => Promise<void | boolean>) {
-    if (pending.current) return false;
+    if (pending.current || !focused.current) return false;
+    const version = focusVersion.current;
     pending.current = true; setBusy(true); setError('');
-    try { return await work() !== false; }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not save. Your fields are still here.'); return false; }
-    finally { pending.current = false; setBusy(false); }
+    try { return await work() !== false && focused.current && version === focusVersion.current; }
+    catch (cause) { if (focused.current && version === focusVersion.current) setError(cause instanceof Error ? cause.message : 'Could not save. Your fields are still here.'); return false; }
+    finally { pending.current = false; if (focused.current) setBusy(false); }
   }
   return { busy, error, run };
 }

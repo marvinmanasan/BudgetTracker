@@ -4,6 +4,7 @@ import { PocketScreen } from '@/components/pocket-screen';
 import { PocketButton } from '@/components/pocket-button';
 import { SummaryCard } from '@/components/summary-card';
 import { StorageCheck } from '@/components/storage-check';
+import { MonthlyLimitNotice } from '@/components/monthly-limit-notice';
 import { ReadState, ui } from '@/components/bulsa-form';
 import { PocketColors as C } from '@/constants/pocket';
 import { useLedger } from '@/hooks/use-ledger';
@@ -25,10 +26,11 @@ export default function Index() {
         <Text style={styles.total}>{formatCentavos(balances.totalCentavos)}</Text>
         <Text style={styles.spent}>Spent This Month  {formatCentavos(totals.expenseCentavos)}</Text>
         <Text style={styles.label}>Included Wallets + General</Text>
+        <PocketButton secondary title="Edit Total Budget" onPress={() => router.push('/edit-total-budget')} />
         <PocketButton title="View Wallets  ›" onPress={() => router.push('/wallets')} />
       </View>
       {!balances.wallets.some(w => w.configured) && <View style={ui.soft}><Text style={ui.heading}>Start With Your Wallets</Text><Text style={ui.body}>Add the money you have before recording its transactions. Not specified entries go to General.</Text><PocketButton title="Set Up Wallets" onPress={() => router.push('/wallets')} /></View>}
-      <View style={ui.card}><Text style={ui.body}>No Monthly Limit Set</Text><Text style={ui.caption}>Total Budget is your recorded money. Your monthly spending limit is separate.</Text></View>
+      <MonthlyLimitNotice month={localDate().slice(0, 7)} spent={totals.expenseCentavos} />
       <PocketButton title="+ Add Expense" onPress={() => router.push('/entry')} />
       <Text style={ui.heading}>This Month · {displayMonth(localDate().slice(0, 7))}</Text>
       <View style={styles.summary}><SummaryCard label="Income" amountCentavos={totals.incomeCentavos} /><SummaryCard label="Expenses" amountCentavos={totals.expenseCentavos} /></View>

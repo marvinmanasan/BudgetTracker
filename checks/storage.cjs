@@ -92,12 +92,12 @@ async function main() {
     const storedDraft = (await storeAgain.getTransactions()).find((row) => row.id === "snapshot-check");
     assert.equal(storedDraft.amountCentavos, 2500);
     assert.equal(storedDraft.note, record.note);
-    await reopened.execAsync("PRAGMA user_version = 3");
+    await reopened.execAsync("PRAGMA user_version = 4");
     await reopened.closeAsync();
     await assert.rejects(fresh()("src/storage/database.ts").openDatabase(), /newer|version/i);
     if (native) { native.close(); native = undefined; }
     native = new DatabaseSync(filename);
-    assert.equal(native.prepare("PRAGMA user_version").get().user_version, 3);
+    assert.equal(native.prepare("PRAGMA user_version").get().user_version, 4);
     native.exec("PRAGMA user_version = 0; DROP TABLE transfers; DROP TABLE balance_changes; DROP TABLE transactions; DROP TABLE wallets;");
     native.close(); native = undefined;
     failSetup = true;
@@ -110,7 +110,7 @@ async function main() {
     native.close(); native = undefined;
     failSetup = false;
     const retried = await database.openDatabase();
-    assert.equal((await retried.getFirstAsync("PRAGMA user_version")).user_version, 2);
+    assert.equal((await retried.getFirstAsync("PRAGMA user_version")).user_version, 3);
     console.log("Storage checks passed: real SQLite persistence, parameter binding, validation, duplicate protection, read failure, initialization retry, concurrency, schema rollback/newer-version protection.");
   } finally {
     if (native) native.close();

@@ -13,6 +13,10 @@ const snapshot = () => ({ wallets, transactions: [], transfers: [], changes: [
 let data = snapshot();
 assert.equal(deriveBalances(data).totalCentavos, 150000);
 const monthData = { ...data, transactions: [{walletId:'Maya',type:'expense',amountCentavos:10000,date:'2026-11-08'},{walletId:null,type:'income',amountCentavos:20000,date:'2026-10-08'}] };
+const { monthlyTotalsByMonth } = load('src/lib/ledger.ts');
+assert.equal(monthlyTotalsByMonth(monthData).get('2026-11').expenseCentavos,10000);
+assert.equal(monthlyTotalsByMonth(monthData).get('2026-10').incomeCentavos,20000);
+assert.throws(() => monthlyTotalsByMonth({...monthData,transactions:[{type:'income',amountCentavos:Number.MAX_SAFE_INTEGER,date:'2026-11-01'},{type:'income',amountCentavos:1,date:'2026-11-02'}]}),/range|large|safe/i);
 assert.equal(monthlyTotals(monthData,'2026-11').expenseCentavos,10000,'excluded wallet spending still counts');
 assert.equal(monthlyTotals(monthData,'2026-11').incomeCentavos,0);
 data.transactions.push({ walletId: null, type: 'expense', amountCentavos: 10000 });

@@ -14,6 +14,7 @@ function safe(value: bigint): number {
 // Work from history rather than keeping a second mutable balance/total.
 export function deriveBalances(data: Ledger) {
   const amounts = new Map(data.wallets.map(wallet => [wallet.id, 0n]));
+  const configured = new Set(data.changes.filter(c => c.kind === 'opening').map(c => c.walletId));
   let general = 0n;
   const add = (id: string, value: bigint) => {
     if (!amounts.has(id)) throw new Error('A money record refers to a missing wallet.');
@@ -33,7 +34,7 @@ export function deriveBalances(data: Ledger) {
   const wallets = data.wallets.map(wallet => {
     const balance = amounts.get(wallet.id)!;
     if (wallet.included) total += balance;
-    return { ...wallet, balanceCentavos: safe(balance), configured: data.changes.some(c => c.walletId === wallet.id && c.kind === 'opening') };
+    return { ...wallet, balanceCentavos: safe(balance), configured: configured.has(wallet.id) };
   });
   return { wallets, generalCentavos: safe(general), totalCentavos: safe(total) };
 }
@@ -45,4 +46,19 @@ export function monthlyTotals(data: Ledger, month: string) {
     else expenses += exact(record.amountCentavos);
   }
   return { incomeCentavos: safe(income), expenseCentavos: safe(expenses) };
+}
+
+// Validate every month in one transaction-list pass, including historical months.
+export function monthlyTotalsByMonth(data: Ledger) {
+  const groups = new Map<string, { income: bigint; expenses: bigint }>();
+  for (const record of data.transactions) {
+    const month = record.date.slice(0, 7);
+    const group = groups.get(month) ?? { income: 0n, expenses: 0n };
+    if (record.type === 'income') group.income += exact(record.amountCentavos);
+    else group.expenses += exact(record.amountCentavos);
+    groups.set(month, group);
+  }
+  return new Map([...groups].map(([month, group]) => [month, {
+    incomeCentavos: safe(group.income), expenseCentavos: safe(group.expenses),
+  }]));
 }

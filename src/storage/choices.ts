@@ -33,6 +33,7 @@ function choiceError(error: unknown): never {
 }
 
 export async function addChoice(choice: CustomChoice): Promise<void> {
+  choice = { ...choice };
   const key = validateChoice(choice.kind, choice.name);
   if (typeof choice.id !== 'string' || !choice.id.trim()) throw new Error('A choice ID is required.');
   const db = await openChoices();

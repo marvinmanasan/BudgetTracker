@@ -175,6 +175,7 @@ export default function WalletDetails() {
           <Text style={ui.caption}>
             Inclusion changes the total shown. Your records stay unchanged.
           </Text>
+          {wallet.configured && <PocketButton secondary disabled={busy} title="Adjust Balance" onPress={() => router.push({ pathname: "/adjust-balance", params: { wallet: id } })} />}
           <PocketButton
             secondary
             title="View Wallet Activity"
