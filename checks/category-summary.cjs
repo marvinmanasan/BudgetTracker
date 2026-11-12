@@ -1,0 +1,6 @@
+const assert=require('node:assert/strict');const {createLoader}=require('./load-typescript.cjs');const {categoryBudgetSummary}=createLoader()('src/lib/category-budgets.ts');
+const data={wallets:[],changes:[],transfers:[],transactions:[{id:'a',type:'expense',amountCentavos:100,category:'Food',date:'2026-11-01',paymentMethod:'Cash'},{id:'b',type:'expense',amountCentavos:250,category:'Old Custom',date:'2026-11-01',paymentMethod:'Cash'},{id:'i',type:'income',amountCentavos:999,category:'Salary',date:'2026-11-01',paymentMethod:'Cash'}]};
+const original=JSON.stringify(data);const p=categoryBudgetSummary(data,'2026-11',1000,[{category:'Food',limitCentavos:200}]);assert.equal(p.totalSpentCentavos,350);assert.equal(p.buckets[0].spentCentavos,100);assert.equal(p.buckets[1].limitCentavos,800);assert.equal(p.buckets[1].spentCentavos,250);assert.equal(p.buckets[1].remainingCentavos,550);
+const over=categoryBudgetSummary(data,'2026-11',100,[{category:'Food',limitCentavos:0}]);assert.equal(over.buckets[0].status,'over');assert.equal(over.buckets[0].progress,1);assert.equal(over.buckets[1].remainingCentavos,-150);
+assert.throws(()=>categoryBudgetSummary(data,'2026-11',50,[{category:'Food',limitCentavos:51}]));
+assert.equal(JSON.stringify(data),original);console.log('Category summary checks passed: remainder, historical labels, overspending and unchanged money.');

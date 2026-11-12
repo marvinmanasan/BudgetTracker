@@ -4,6 +4,9 @@ import { Text, View } from 'react-native';
 import { PocketScreen } from '@/components/pocket-screen';
 import { PocketButton } from '@/components/pocket-button';
 import { Field, ReadState, ui } from '@/components/bulsa-form';
+import { CategoryBudgetPanel } from '@/components/category-budget-panel';
+import { SavingsPreview } from '@/components/savings-preview';
+import { MonthlyLimitHistory } from '@/components/monthly-limit-history';
 import { MonthlyLimitNotice } from '@/components/monthly-limit-notice';
 import { useLedger } from '@/hooks/use-ledger';
 import { monthlyTotals } from '@/lib/ledger';
@@ -12,6 +15,7 @@ import { displayMonth } from '@/lib/display-date';
 import { parseActivityMonth } from '@/lib/activity';
 
 export default function Budgets() {
+  const [history, setHistory] = useState(false);
   const [input, setInput] = useState(() => displayMonth(localDate().slice(0, 7)));
   const { data, loading, error, reload } = useLedger();
   let month: string | undefined, validation = '';
@@ -23,6 +27,9 @@ export default function Budgets() {
     {!!validation && <Text style={ui.error}>{validation}</Text>}
     {loading || error || !data ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : month && <MonthlyLimitNotice month={month} spent={monthlyTotals(data, month).expenseCentavos} />}
     <View style={ui.card}><Text style={ui.heading}>Wallet Money</Text><Text style={ui.body}>Correct recorded money without changing income or spending.</Text><PocketButton secondary title="Edit Total Budget" onPress={() => router.push('/edit-total-budget')} /><PocketButton secondary title="Manage Wallet Balances" onPress={() => router.push('/wallets')} /></View>
-    <Text style={ui.caption}>Category limits and savings are still planned.</Text>
+    <PocketButton secondary title={history ? "Hide Monthly History" : "Monthly Limit History"} onPress={() => setHistory(value => !value)} />
+    {history && <MonthlyLimitHistory />}
+    {data && month && <CategoryBudgetPanel data={data} month={month} />}
+    <SavingsPreview />
   </PocketScreen>;
 }

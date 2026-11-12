@@ -24,13 +24,13 @@ async function initializeDatabase(name: string) {
       "PRAGMA user_version",
     );
     const version = versionRow?.user_version ?? 0;
-    if (version > 3) {
+    if (version > 4) {
       throw new Error(
         "This database uses a newer version. Update Bulsa before opening it.",
       );
     }
     await db.execAsync('PRAGMA foreign_keys = ON');
-    if (version < 3) {
+    if (version < 4) {
       await db.withTransactionAsync(async () => {
         if (version < 2) {
           if (version === 0) {
@@ -89,7 +89,26 @@ async function initializeDatabase(name: string) {
               limitCentavos >= 0 AND limitCentavos <= 9007199254740991
             )
           );
-          PRAGMA user_version = 3;
+          CREATE TABLE IF NOT EXISTS category_allocations (
+            month TEXT NOT NULL REFERENCES monthly_limits(month) ON DELETE RESTRICT,
+            category TEXT NOT NULL CHECK(length(trim(category)) > 0),
+            limitCentavos INTEGER NOT NULL CHECK(typeof(limitCentavos) = 'integer' AND limitCentavos >= 0 AND limitCentavos <= 9007199254740991),
+            PRIMARY KEY(month, category)
+          );
+          CREATE TABLE IF NOT EXISTS savings_goals (
+            id TEXT PRIMARY KEY NOT NULL,
+            title TEXT NOT NULL CHECK(length(trim(title)) > 0),
+            targetCentavos INTEGER NOT NULL CHECK(typeof(targetCentavos) = 'integer' AND targetCentavos > 0 AND targetCentavos <= 9007199254740991)
+          );
+          CREATE TABLE IF NOT EXISTS savings_contributions (
+            id TEXT PRIMARY KEY NOT NULL,
+            goalId TEXT NOT NULL REFERENCES savings_goals(id) ON DELETE RESTRICT,
+            amountCentavos INTEGER NOT NULL CHECK(typeof(amountCentavos) = 'integer' AND amountCentavos > 0 AND amountCentavos <= 9007199254740991),
+            date TEXT NOT NULL,
+            note TEXT NOT NULL
+          );
+          CREATE INDEX IF NOT EXISTS savings_goal_history ON savings_contributions(goalId,date);
+          PRAGMA user_version = 4;
         `);
       });
     }

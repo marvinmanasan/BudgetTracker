@@ -37,6 +37,7 @@ export default function Wallets() {
         <View style={styles.switchRow}><Text style={[ui.body, styles.switchLabel]}>Include in Total Budget</Text><View style={styles.switchTarget}><Switch accessibilityLabel={`Include ${wallet.name} in Total Budget`} value={wallet.included} disabled={busy} onValueChange={value => void include(wallet.id, value)} hitSlop={8} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.surface} /></View></View>
       </View>)}
       {!balances.wallets.some(w => w.hidden === showHidden) && <Text style={ui.body}>{showHidden ? 'No hidden wallets.' : 'No visible wallets. Add one or restore a hidden wallet.'}</Text>}
+      {!showHidden && <PocketButton secondary title="Transfer Between Wallets" disabled={busy} onPress={() => router.push('/transfer')} />}
       {!showHidden && <PocketButton title="Add Wallet" disabled={busy} onPress={() => router.push('/wallets/add')} />}
       <View style={styles.hiddenControls}>
         {hiddenCount > 0 && <Text style={ui.caption}>{hiddenCount} hidden wallet{hiddenCount === 1 ? '' : 's'} still count{hiddenCount === 1 ? 's' : ''} in Total Budget.</Text>}

@@ -95,6 +95,7 @@ async function main() {
     const adjustmentSnapshot = JSON.stringify(await store.getLedger(dbName));
     await assert.rejects(store.adjustWallet({id:'stale-adjust',walletId:'wallet-cash',targetCentavos:40000,expectedBalanceCentavos:12345,reason:'Stale preview',date:'2026-11-08'},dbName), /balance changed/i);
     assert.equal(JSON.stringify(await store.getLedger(dbName)),adjustmentSnapshot);
+    await assert.rejects(store.recordTransfer({...transfer,id:'stale-preview'},dbName,'outdated'), /changed/i);
     const h='history.db';
     for(const id of ['wallet-gcash','wallet-cash']) await store.setOpening(id,0,h);
     const income={...record,id:'funding',type:'income',walletId:'wallet-gcash',amountCentavos:100000};

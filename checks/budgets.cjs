@@ -67,7 +67,7 @@ async function main() {
     let load = fresh();
     let database = load('src/storage/database.ts');
     const migrated = await database.openDatabase('legacy.db');
-    assert.equal((await migrated.getFirstAsync('PRAGMA user_version')).user_version, 3, 'v2 financial database upgrades to month-limit schema');
+    assert.equal((await migrated.getFirstAsync('PRAGMA user_version')).user_version, 4, 'v2 financial database upgrades to month-limit schema');
     assert.deepEqual(await migrated.getAllAsync('SELECT * FROM monthly_limits'), [], 'migration never invents a budget');
     let inspect = new DatabaseSync(filename);
     assert.equal(legacySnapshot(inspect), before, 'v2 money, renamed/hidden/excluded wallets, choices and deleted defaults remain exact');
@@ -136,6 +136,11 @@ async function main() {
     load = fresh(); budgets = load('src/storage/budgets.ts');
     assert.equal(JSON.stringify(await budgets.getMonthlyLimits('legacy.db')), JSON.stringify(expected), 'settings persist after real disk reopen');
     console.log('Monthly limit SQLite checks passed: v2 preservation, migration rollback/retry, zero vs absent, month validation, safe-centavo limits, upsert/order, save rollback, read errors, isolation and reopen.');
+    await budgets.setMonthlyLimit('2026-12',0,'copy.db');
+    assert.equal(await budgets.ensureMonthlyLimit('2027-01','copy.db'),0);
+    await budgets.setMonthlyLimit('2027-01',5000,'copy.db');
+    assert.equal(await budgets.ensureMonthlyLimit('2027-01','copy.db'),5000);
+    assert.equal(await budgets.ensureMonthlyLimit('2027-03','copy.db'),null);
   } finally {
     for (const db of connections) db.close();
     fs.rmSync(folder, { recursive: true, force: true });

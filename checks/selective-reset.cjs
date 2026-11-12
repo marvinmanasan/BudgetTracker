@@ -136,14 +136,17 @@ async function main() {
       for (const t of data.transfers) await db.runAsync('INSERT INTO transfers(id,fromWalletId,toWalletId,amountCentavos,date,note) VALUES(?,?,?,?,?,?)', t.id, t.fromWalletId, t.toWalletId, t.amountCentavos, t.date, t.note);
       await db.execAsync(`CREATE TABLE IF NOT EXISTS monthly_limits(month TEXT PRIMARY KEY,limitCentavos INTEGER NOT NULL);
         INSERT INTO monthly_limits(month,limitCentavos) VALUES('2026-11',45000);
+        INSERT INTO category_allocations(month,category,limitCentavos) VALUES('2026-11','Food',5000);
+        INSERT INTO savings_goals(id,title,targetCentavos) VALUES('main','Keep Goal',10000);
+        INSERT INTO savings_contributions(id,goalId,amountCentavos,date,note) VALUES('saved','main',800,'2026-11-01','Keep contribution');
         CREATE TABLE custom_choices(id TEXT PRIMARY KEY, name TEXT); INSERT INTO custom_choices VALUES('food','My food');
         CREATE TABLE savings(id TEXT PRIMARY KEY,amountCentavos INTEGER); INSERT INTO savings VALUES('kept',800);
         CREATE TABLE settings(id TEXT PRIMARY KEY,value TEXT); INSERT INTO settings VALUES('theme','dark');`);
       return db;
     }
     const ledger = name => load('src/storage/wallets.ts').getLedger(name);
-    const dump = db => JSON.stringify(['wallets','transactions','transfers','balance_changes','monthly_limits','custom_choices','savings','settings'].map(table => db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()));
-    const preserved = db => JSON.stringify(['wallets','monthly_limits','custom_choices','savings','settings'].map(table => db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()));
+    const dump = db => JSON.stringify(['wallets','transactions','transfers','balance_changes','monthly_limits','category_allocations','savings_goals','savings_contributions','custom_choices','savings','settings'].map(table => db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()));
+    const preserved = db => JSON.stringify(['wallets','monthly_limits','category_allocations','savings_goals','savings_contributions','custom_choices','savings','settings'].map(table => db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()));
     for (const [name, pick, remaining] of [
       ['wallet.db', selection(), { transactions: ['eb','ib','eg','ig'], transfers: [], changes: ['oa','ob','oc','ab'] }],
       ['expense.db', selection('wallet', { kinds: { expenses: true, income: false, transfers: false, adjustments: false } }), { transactions: ['ia','eb','ib','eg','ig'], transfers: ['atob','btoa'], changes: ['oa','ob','oc','aa','ab'] }],

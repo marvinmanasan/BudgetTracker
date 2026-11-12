@@ -5,6 +5,7 @@ import { PocketButton } from '@/components/pocket-button';
 import { SummaryCard } from '@/components/summary-card';
 import { StorageCheck } from '@/components/storage-check';
 import { MonthlyLimitNotice } from '@/components/monthly-limit-notice';
+import { SavingsPreview } from '@/components/savings-preview';
 import { ReadState, ui } from '@/components/bulsa-form';
 import { PocketColors as C } from '@/constants/pocket';
 import { useLedger } from '@/hooks/use-ledger';
@@ -34,6 +35,7 @@ export default function Index() {
       <PocketButton title="+ Add Expense" onPress={() => router.push('/entry')} />
       <Text style={ui.heading}>This Month · {displayMonth(localDate().slice(0, 7))}</Text>
       <View style={styles.summary}><SummaryCard label="Income" amountCentavos={totals.incomeCentavos} /><SummaryCard label="Expenses" amountCentavos={totals.expenseCentavos} /></View>
+      <SavingsPreview />
     </>}
     {__DEV__ && <StorageCheck />}
   </PocketScreen>;

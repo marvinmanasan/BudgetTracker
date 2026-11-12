@@ -98,13 +98,15 @@ export function removeWallet(id: string, name = 'bulsa.db') {
   }, true);
 }
 
-export function recordTransfer(record: Transfer, name = 'bulsa.db') {
+export function recordTransfer(record: Transfer, name = 'bulsa.db', expectedSignature?: string) {
   record = { ...record };
   return withDatabase(name, async db => {
     validId(record.id); validateDate(record.date); validateCentavos(record.amountCentavos, true);
     if (typeof record.note !== 'string') throw new Error('Note must be text.');
     if (record.fromWalletId === record.toWalletId) throw new Error('Choose two different wallets.');
-    const wallets = deriveBalances(await readLedger(db)).wallets;
+    const data = await readLedger(db);
+    if (expectedSignature !== undefined && JSON.stringify(data) !== expectedSignature) throw new Error('Your records changed. Refresh and review this transfer again.');
+    const wallets = deriveBalances(data).wallets;
     const source = wallets.find(w => w.id === record.fromWalletId);
     const destination = wallets.find(w => w.id === record.toWalletId);
     if (!source?.configured || !destination?.configured) throw new Error('Set this wallet’s starting balance first.');
