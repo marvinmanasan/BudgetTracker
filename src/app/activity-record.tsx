@@ -1,3 +1,4 @@
+import { CenteredPopup } from '../components/centered-popup';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState, useCallback } from 'react';
 import { BackHandler, Text, View } from 'react-native';
@@ -16,7 +17,7 @@ import { displayDate } from '../lib/display-date';
 
 export default function ActivityRecord() {
   const ui = useUI();
-  const { record } = useLocalSearchParams<{ record?: string | string[] }>();
+  const { record, action } = useLocalSearchParams<{ record?: string | string[]; action?: string }>();
   const { data, loading, error, reload } = useLedger();
   const item = useMemo(() => {
     if (!data || typeof record !== 'string') return undefined;
@@ -25,7 +26,10 @@ export default function ActivityRecord() {
   const transaction = typeof record === 'string' ? data?.transactions.find(t => 'transaction-' + t.id === record) : undefined;
   const undo = useTransactionUndo();
   const { run } = useSaveAction();
-  const [deleting, setDeleting] = useState<Transaction | null>(null);
+  const [deleteDraft, setDeleteDraft] = useState<Transaction | null>(null);
+  const [autoDelete, setAutoDelete] = useState(action === 'delete' && !undo.record);
+  const deleting = deleteDraft ?? (autoDelete ? transaction ?? null : null);
+  function setDeleting(value: Transaction | null) { setDeleteDraft(value); setAutoDelete(false); }
   const preview = useMemo(() => {
     if (!data || !deleting) return null;
     try { return { before: deriveBalances(data), after: deriveBalances({ ...data, transactions: data.transactions.filter(t => t.id !== deleting.id) }) }; }
@@ -45,15 +49,7 @@ export default function ActivityRecord() {
       if (router.canGoBack()) router.back(); else router.replace('/activity');
     }
   }
-  if (deleting) return <PocketScreen header={<BackButton disabled={undo.busy} onPress={() => setDeleting(null)} />}>
-    <Text style={ui.title}>Delete {deleting.type === 'expense' ? 'Expense' : 'Income'}?</Text>
-    <Text style={ui.body}>{deleting.category} · {displayDate(deleting.date)}</Text>
-    {preview ? <MoneyReview {...preview} walletIds={[deleting.walletId]} /> : <Text style={ui.error}>Could not preview this deletion. Return to Activity and try again.</Text>}
-    <Text style={ui.caption}>The original record will be removed. Undo is available in Activity until dismissed or the app closes. Existing transfers and adjustments stay unchanged.</Text>
-    {!!undo.error && <Text style={ui.error}>{undo.error}</Text>}
-    <PocketButton title={undo.busy ? 'Deleting…' : 'Confirm Delete'} disabled={undo.busy || !preview || !!undo.record} onPress={() => void confirmDelete()} />
-    <PocketButton secondary title="Keep Record" disabled={undo.busy} onPress={() => setDeleting(null)} />
-  </PocketScreen>;
+
   return <PocketScreen header={<BackButton />}>
     <Text style={ui.title}>Record Details</Text>
     <UndoNotice onRestored={() => void reload(true)} />
@@ -75,5 +71,13 @@ export default function ActivityRecord() {
         </View>)}
       </>
     }
+    {deleting && <CenteredPopup onClose={() => setDeleting(null)} busy={undo.busy}><Text style={ui.title}>Delete {deleting.type === 'expense' ? 'Expense' : 'Income'}?</Text>
+    <Text style={ui.body}>{deleting.category} · {displayDate(deleting.date)}</Text>
+    {preview ? <MoneyReview {...preview} walletIds={[deleting.walletId]} /> : <Text style={ui.error}>Could not preview this deletion. Return to Activity and try again.</Text>}
+    <Text style={ui.caption}>The original record will be removed. Undo is available in Activity until dismissed or the app closes. Existing transfers and adjustments stay unchanged.</Text>
+    {!!undo.error && <Text style={ui.error}>{undo.error}</Text>}
+    <PocketButton title={undo.busy ? 'Deleting…' : 'Confirm Delete'} disabled={undo.busy || !preview || !!undo.record} onPress={() => void confirmDelete()} />
+    <PocketButton secondary title="Keep Record" disabled={undo.busy} onPress={() => setDeleting(null)} />
+  </CenteredPopup>}
   </PocketScreen>;
 }

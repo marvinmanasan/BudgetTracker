@@ -1,3 +1,4 @@
+import { CenteredPopup } from '../components/centered-popup';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
@@ -42,15 +43,18 @@ export default function EditTotalBudget() {
     const saved = await run(() => setTotalBudget({ id, walletId, targetCentavos: review.after.totalCentavos, reason, date: localDate() }, review.signature));
     if (saved) router.back();
   }
-  return <PocketScreen header={<BackButton disabled={busy} onPress={review ? () => setReview(null) : undefined} />}>
-    <Text style={ui.title}>{review ? 'Review Total Budget' : 'Edit Total Budget'}</Text>
-    {(!data && loading) || readError ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : !balances ? null : review ? <>
+  return <PocketScreen header={<BackButton disabled={busy} />}>
+    <Text style={ui.title}>{'Edit Total Budget'}</Text>
+    {(!data && loading) || readError ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : !balances ? null : <>
+    {review && <CenteredPopup onClose={() => setReview(null)} busy={busy}><Text style={ui.title}>Review Total Budget</Text>
       <MoneyReview before={review.before} after={review.after} walletIds={[walletId]} />
       <Text style={ui.body}>Adjustment: {formatCentavos(review.deltaCentavos)}</Text><Text style={ui.body}>Reason: {reason}</Text>
       <Text style={ui.caption}>Only the chosen wallet changes. This is not income or spending.</Text>
       {review.deltaCentavos === 0 ? <Text style={ui.body}>Total Budget already matches. No adjustment will be recorded.</Text> : <PocketButton title={busy ? 'Saving…' : 'Confirm Adjustment'} disabled={busy} onPress={() => void save()} />}
+      {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       <PocketButton secondary title="Keep Editing" disabled={busy} onPress={() => setReview(null)} />
-    </> : <>
+    </CenteredPopup>}
+    <>
       <Text style={ui.body}>Current Total Budget: {formatCentavos(balances.totalCentavos)}</Text>
       {!eligible.length ? <><Text style={ui.body}>Set a starting balance and include a wallet before correcting Total Budget.</Text><PocketButton title="Manage Wallets" onPress={() => router.push('/wallets')} /></> : <>
         <Field label="New Total Budget (PHP)" value={target} onChangeText={setTarget} placeholder="0.00" keyboardType="numbers-and-punctuation" editable={!busy} />
@@ -60,6 +64,7 @@ export default function EditTotalBudget() {
         <Text style={ui.caption}>General, other wallets and your monthly spending limit stay unchanged.</Text>
         <PocketButton title="Review Change" disabled={busy} onPress={prepare} />
       </>}
+    </>
     </>}
     {!!validation && <Text style={ui.error}>{validation}</Text>}
     {!!error && <><Text style={ui.error}>{error}</Text><PocketButton secondary title="Refresh and Review Again" disabled={busy} onPress={() => { setReview(null); void reload(); }} /></>}

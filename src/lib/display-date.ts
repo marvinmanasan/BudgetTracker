@@ -16,3 +16,12 @@ export function parseDisplayDate(input: string): string {
 export function displayMonth(isoMonth: string): string {
   return `${isoMonth.slice(5, 7)}-${isoMonth.slice(0, 4)}`;
 }
+
+export function monthName(month: string): string {
+  const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return `${names[Number(month.slice(5,7))-1]} ${month.slice(0,4)}`;
+}
+export function shiftMonth(month: string, delta: number): string {
+  const index = Math.max(12, Math.min(9999 * 12 + 11, Number(month.slice(0,4)) * 12 + Number(month.slice(5,7)) - 1 + delta));
+  return `${String(Math.floor(index/12)).padStart(4,'0')}-${String(index%12+1).padStart(2,'0')}`;
+}

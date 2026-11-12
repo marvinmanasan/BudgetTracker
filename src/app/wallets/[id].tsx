@@ -22,6 +22,7 @@ export default function WalletDetails() {
   const { balances, data, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
   const [amount, setAmount] = useState("");
+  const [pendingIncluded, setPendingIncluded] = useState<boolean | null>(null);
   const [secondary, setSecondary] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState("");
@@ -59,10 +60,13 @@ export default function WalletDetails() {
     });
   }
   async function flags(value: { included?: boolean; hidden?: boolean }) {
+    if (busy) return;
+    if (value.included !== undefined) setPendingIncluded(value.included);
     await run(async () => {
       await setWalletFlags(id, value);
       await reload();
     });
+    setPendingIncluded(null);
   }
   function confirmDelete() {
     Alert.alert(
@@ -171,7 +175,7 @@ export default function WalletDetails() {
               thumbColor={C.switchThumb}
               accessibilityLabel="Include in Total Budget"
               disabled={busy}
-              value={wallet.included}
+              value={pendingIncluded ?? wallet.included}
               onValueChange={(included) => void flags({ included })}
             />
           </View>

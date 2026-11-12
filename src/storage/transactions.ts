@@ -8,7 +8,10 @@ export async function saveTransaction(record: Transaction, databaseName = "bulsa
   record = { ...record };
   validateTransaction(record);
   await withDatabase(databaseName, async db => {
-    if (record.walletId != null) await requireWallet(db, record.walletId);
+    if (record.walletId != null) {
+      const wallet = await requireWallet(db, record.walletId);
+      if (record.type === 'expense' && wallet.balanceCentavos < record.amountCentavos) throw new Error('Not enough money in this wallet. Choose another wallet or lower the expense.');
+    }
     await db.runAsync(
       "INSERT INTO transactions(id,type,amountCentavos,category,date,paymentMethod,note,walletId) VALUES(?,?,?,?,?,?,?,?)",
       record.id, record.type, record.amountCentavos, record.category,
@@ -31,7 +34,13 @@ export async function updateTransaction(record: Transaction, databaseName = "bul
     const old = data.transactions.find(r => r.id === record.id);
     if (!old) throw new Error("Transaction not found.");
     if (expected && (['id', 'type', 'amountCentavos', 'category', 'date', 'paymentMethod', 'note', 'walletId'] as const).some(key => (old[key] ?? null) !== (expected![key] ?? null))) throw new Error('This record changed. Reopen it before saving your edits.');
-    if (record.walletId != null) requireWalletInLedger(data, record.walletId, record.walletId === old.walletId);
+    if (record.walletId != null) {
+      const wallet = requireWalletInLedger(data, record.walletId, record.walletId === old.walletId);
+      if (record.type === 'expense' && (old.type !== 'expense' || record.walletId !== old.walletId || record.amountCentavos > old.amountCentavos)) {
+        const available = BigInt(wallet.balanceCentavos) + (old.walletId === record.walletId ? BigInt(old.amountCentavos) * (old.type === 'expense' ? 1n : -1n) : 0n);
+        if (BigInt(record.amountCentavos) > available) throw new Error('Not enough money in this wallet. Choose another wallet or lower the expense.');
+      }
+    }
     await db.runAsync("UPDATE transactions SET type=?,amountCentavos=?,category=?,date=?,paymentMethod=?,note=?,walletId=? WHERE id=?",
       record.type, record.amountCentavos, record.category, record.date,
       record.paymentMethod, record.note ?? null, record.walletId ?? null, record.id);

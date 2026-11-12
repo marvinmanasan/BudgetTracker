@@ -1,3 +1,4 @@
+import { CenteredPopup } from '../components/centered-popup';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
@@ -52,16 +53,19 @@ export default function TransferScreen() {
     {eligible.filter(w => w.id !== (picker === 'from' ? to : from)).map(w => <View key={w.id} style={ui.card}><PocketButton secondary title={w.name} onPress={() => { if (picker === 'from') setFrom(w.id); else setTo(w.id); setPicker(null); }} /><Text style={ui.body}>{formatCentavos(w.balanceCentavos)} · {w.included ? 'Included' : 'Excluded'}</Text></View>)}
     <Text style={ui.caption}>Only visible wallets with starting balances are eligible. General cannot be transferred.</Text>
   </PocketScreen>;
-  return <PocketScreen header={<BackButton disabled={busy} onPress={review ? () => setReview(null) : undefined} />}>
-    <Text style={ui.title}>{review ? 'Review Transfer' : 'Transfer Between Wallets'}</Text>
-    {(!data && loading) || readError ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : review ? <>
+  return <PocketScreen header={<BackButton disabled={busy} />}>
+    <Text style={ui.title}>{'Transfer Between Wallets'}</Text>
+    {(!data && loading) || readError ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
+    {review && <CenteredPopup onClose={() => setReview(null)} busy={busy}><Text style={ui.title}>Review Transfer</Text>
       <Text style={ui.heading}>{names.get(from)} → {names.get(to)}</Text><Text style={ui.body}>{formatCentavos(review.record.amountCentavos)} · {displayDate(review.record.date)}</Text>
       {!!review.record.note && <Text style={ui.body}>{review.record.note}</Text>}
       <MoneyReview {...review.effects} walletIds={[from, to]} />
       <Text style={ui.caption}>This records a transfer, not income or spending. Crossing included/excluded wallets can change Total Budget. Bulsa does not move real money.</Text>
       <PocketButton title={busy ? 'Saving…' : 'Confirm Transfer'} disabled={busy} onPress={() => void save()} />
+      {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       <PocketButton secondary title="Keep Editing" disabled={busy} onPress={() => setReview(null)} />
-    </> : eligible.length < 2 ? <>
+    </CenteredPopup>}
+    {eligible.length < 2 ? <>
       <Text style={ui.body}>Set starting balances for at least two visible wallets first.</Text><PocketButton title="Manage Wallets" onPress={() => router.push('/wallets')} />
     </> : <>
       <PocketButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} onPress={() => setPicker('from')} />
@@ -70,6 +74,7 @@ export default function TransferScreen() {
       <Field label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} />
       <Field label="Note · Optional" value={note} onChangeText={setNote} multiline />
       <PocketButton title="Review Transfer" onPress={prepare} />
+    </>}
     </>}
     {!!validation && <Text style={ui.error}>{validation}</Text>}
     {!!error && <><Text style={ui.error}>{error}</Text><PocketButton secondary title="Refresh and Review Again" disabled={busy} onPress={() => { setReview(null); void reload(); }} /></>}

@@ -1,24 +1,28 @@
 import { useBulsaTheme } from '@/hooks/use-bulsa-theme';
 import { Tabs } from "expo-router";
-import { SymbolView } from 'expo-symbols';
+import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function PocketTabs() {
-  const { colors: PocketColors } = useBulsaTheme();
+  const { colors: PocketColors, dark } = useBulsaTheme();
+  const insets = useSafeAreaInsets();
   return (
     <Tabs screenOptions={{
       headerShown: false,
-      tabBarActiveTintColor: PocketColors.accent,
+      tabBarActiveTintColor: dark ? PocketColors.onAccent : PocketColors.text,
       tabBarInactiveTintColor: PocketColors.muted,
-      tabBarStyle: { backgroundColor: PocketColors.surface, borderTopWidth: 0 },
-      tabBarLabelStyle: { fontSize: 12 },
-      tabBarActiveBackgroundColor: PocketColors.selected,
-      tabBarItemStyle: { borderRadius: 16, marginHorizontal: 4 },
+      tabBarHideOnKeyboard: true,
+      tabBarStyle: { backgroundColor: PocketColors.surface, borderTopWidth: 0, elevation: 0, shadowOpacity: 0, height: 76 + insets.bottom, paddingTop: 8, paddingBottom: insets.bottom + 8, paddingHorizontal: 16 },
+      tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 4 },
+      tabBarIconStyle: { marginTop: 4 },
+      tabBarActiveBackgroundColor: dark ? PocketColors.accent : PocketColors.selected,
+      tabBarItemStyle: { borderRadius: 16, overflow: 'hidden', marginHorizontal: 4 },
       sceneStyle: { backgroundColor: PocketColors.background },
     }}>
-      <Tabs.Screen name="index" options={{ title: "Overview", tabBarIcon: ({ color }) => <SymbolView name={{ ios: 'house', android: 'home', web: 'home' }} tintColor={color} size={24} /> }} />
-      <Tabs.Screen name="budgets" options={{ title: "Budgets", tabBarIcon: ({ color }) => <SymbolView name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} tintColor={color} size={24} /> }} />
-      <Tabs.Screen name="activity" options={{ title: "Activity", tabBarIcon: ({ color }) => <SymbolView name={{ ios: 'list.bullet', android: 'receipt_long', web: 'receipt_long' }} tintColor={color} size={24} /> }} />
+      <Tabs.Screen name="index" options={{ title: "Overview", tabBarIcon: ({ focused }) => <Image source={require('../../assets/icons/overview.svg')} tintColor={focused ? (dark ? PocketColors.onAccent : PocketColors.text) : PocketColors.muted} contentFit="contain" style={{ width: 24, height: 24 }} accessible={false} /> }} />
+      <Tabs.Screen name="budgets" options={{ title: "Budgets", tabBarIcon: ({ focused }) => <Image source={require('../../assets/icons/budgets.svg')} tintColor={focused ? (dark ? PocketColors.onAccent : PocketColors.text) : PocketColors.muted} contentFit="contain" style={{ width: 24, height: 24 }} accessible={false} /> }} />
+      <Tabs.Screen name="activity" options={{ title: "Activity", tabBarIcon: ({ focused }) => <Image source={require('../../assets/icons/activity.svg')} tintColor={focused ? (dark ? PocketColors.onAccent : PocketColors.text) : PocketColors.muted} contentFit="contain" style={{ width: 24, height: 24 }} accessible={false} /> }} />
     </Tabs>
   );
 }

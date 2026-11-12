@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
+let reduced=false,closed=0;
+const jsx={jsx:(type,props,key)=>({type,props,key}),jsxs:(type,props,key)=>({type,props,key})};
+const mocks={'react/jsx-runtime':jsx,'react-native':{Modal:'Modal',View:'View',ScrollView:'Scroll',KeyboardAvoidingView:'Keyboard',Platform:{OS:'android'}},'react-native-safe-area-context':{SafeAreaView:'Safe'},'react-native-reanimated':{useReducedMotion:()=>reduced},'../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{background:'#fff',track:'#888'}})},'./bulsa-form':{BackButton:'Back'}};
+const mod={exports:{}};const code=ts.transpileModule(fs.readFileSync('src/components/centered-popup.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+vm.runInThisContext('(function(require,module,exports){'+code+'})')(n=>mocks[n]??require(n),mod,mod.exports);
+const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children)]:[];
+const render=(busy=false)=>mod.exports.CenteredPopup({busy,onClose:()=>closed++,stepKey:'confirmation',children:'review'});
+let tree=render(true);tree.props.onRequestClose();nodes(tree).find(n=>n.type==='Back').props.onPress();assert.equal(closed,0,'Saving blocks Android Back and explicit dismiss');
+tree=render();tree.props.onRequestClose();assert.equal(closed,1);nodes(tree).find(n=>n.type==='Back').props.onPress();assert.equal(closed,2);
+assert.equal(tree.props.transparent,true);assert.equal(nodes(tree).find(n=>n.type==='Scroll').key,'confirmation');
+reduced=true;assert.equal(render().props.animationType,'none','Reduced motion skips fade');
+console.log('Centered popup checks passed: Android/explicit Back, save lock, reduced motion and separate step scroll.');

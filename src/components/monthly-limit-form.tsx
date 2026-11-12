@@ -9,7 +9,7 @@ import { setMonthlyLimit } from '../storage/budgets';
 import { centavosInput } from '../lib/editing';
 import { parseBalance } from '../lib/form-money';
 import { monthlyTotals } from '../lib/ledger';
-import { displayMonth } from '../lib/display-date';
+import { monthName } from '../lib/display-date';
 import { formatCentavos } from '../lib/money';
 
 export function MonthlyLimitForm({ month, initial, sourceError, sourceLoading, retry }: { month: string; initial: number | null; sourceError: string; sourceLoading: boolean; retry: () => void }) {
@@ -32,7 +32,7 @@ export function MonthlyLimitForm({ month, initial, sourceError, sourceLoading, r
     <Text style={ui.title}>Monthly Spending Limit</Text>
     {!!sourceError && <><Text style={ui.error}>{sourceError}</Text><PocketButton secondary disabled={busy} title="Try Again" onPress={retry} /></>}
     {sourceLoading && <Text style={ui.caption}>Refreshing monthly limit…</Text>}
-    <Text style={ui.body}>Month: {displayMonth(month)}</Text>
+    <Text style={ui.body}>Month: {monthName(month)}</Text>
     <Field label="Spending Limit (PHP)" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" editable={!busy} />
     {readError ? <><Text style={ui.error}>{readError}</Text><PocketButton secondary disabled={busy} title="Refresh Spending" onPress={() => void reload()} /></> : spent !== null && <View style={ui.card}><Text style={ui.body}>Spent: {formatCentavos(spent)}</Text>{draftLimit !== null && draftLimit >= 0 && <Text style={ui.body}>Remaining With This Limit: {formatCentavos(draftLimit - spent)}</Text>}</View>}
     <Text style={ui.caption}>Zero is a valid spending limit. This does not change any wallet balance or Total Budget. Choose a different month from Budgets.</Text>

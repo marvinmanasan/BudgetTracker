@@ -7,7 +7,7 @@ import { PRESET_CHOICES } from '../lib/choices';
 import { centavosInput } from '../lib/editing';
 import { parseBalance } from '../lib/form-money';
 import { formatCentavos } from '../lib/money';
-import { displayMonth } from '../lib/display-date';
+import { monthName } from '../lib/display-date';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { PocketScreen } from './pocket-screen';
 import { PocketButton } from './pocket-button';
@@ -43,7 +43,7 @@ export function CategoryLimitForm({ month, initial, sourceError, sourceLoading, 
     if (saved) router.back();
   }
   return <PocketScreen header={<BackButton disabled={busy} />}>
-    <Text style={ui.title}>Category Limits</Text><Text style={ui.body}>{displayMonth(month)}</Text>
+    <Text style={ui.title}>Category Limits</Text><Text style={ui.body}>{monthName(month)}</Text>
     {!!sourceError && <><Text style={ui.error}>{sourceError}</Text><PocketButton secondary title="Try Again" disabled={busy} onPress={retry} /></>}
     {cap === null ? <><Text style={ui.body}>Set a monthly limit first.</Text><PocketButton title="Set Monthly Limit" onPress={() => router.push({ pathname: '/monthly-limit', params: { month } })} /></> : <>
       <Text style={ui.body}>Monthly Limit: {formatCentavos(cap)}</Text>

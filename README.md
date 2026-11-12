@@ -29,7 +29,7 @@ Open the APK on your Android phone and follow the installation prompts. If Bulsa
 4. Open **Activity** to search, filter or correct saved transactions.
 5. Open **Budgets** to set spending limits. Use **Set Savings Goal** to start tracking savings separately.
 
-Dates use **MM-DD-YYYY**. Month fields use **MM-YYYY**.
+Dates use **MM-DD-YYYY**. Months use full names, such as **November 2026**.
 
 **Total Budget** is General plus included wallet balances. A transaction saved with **Not Specified** affects General. A monthly spending limit is a plan and does not add money. Savings records track progress separately from wallet money.
 

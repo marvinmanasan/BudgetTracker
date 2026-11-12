@@ -16,7 +16,7 @@ import { useLedger } from '@/hooks/use-ledger';
 import { monthlyTotals } from '@/lib/ledger';
 import { formatCentavos } from '@/lib/money';
 import { localDate } from '@/lib/validation';
-import { displayMonth } from '@/lib/display-date';
+import { monthName } from '@/lib/display-date';
 
 export default function Index() {
   const ui = useUI();
@@ -40,7 +40,7 @@ export default function Index() {
       {!balances.wallets.some(w => w.configured) && <View style={ui.soft}><Text style={ui.heading}>Start With Your Wallets</Text><Text style={ui.body}>Add the money you have before recording its transactions. Not specified entries go to General.</Text><PocketButton title="Set Up Wallets" onPress={() => router.push('/wallets')} /></View>}
       <MonthlyLimitNotice compact month={localDate().slice(0, 7)} spent={totals.expenseCentavos} />
       <PocketButton title="+ Add Expense" onPress={() => router.push('/entry')} />
-      <Text style={ui.heading}>This Month · {displayMonth(localDate().slice(0, 7))}</Text>
+      <Text style={ui.heading}>This Month · {monthName(localDate().slice(0, 7))}</Text>
       <View style={styles.summary}><SummaryCard label="Income" tone="income" amountCentavos={totals.incomeCentavos} /><SummaryCard label="Expenses" tone="expense" amountCentavos={totals.expenseCentavos} /></View>
       <SavingsPreview />
     </>}
@@ -54,7 +54,7 @@ const createStyles = (C: BulsaColors) => StyleSheet.create({
   avatarText: { color: C.onSummary, fontSize: 20 },
   heroAction: { minHeight: 48, justifyContent: 'center', paddingHorizontal: 4 },
   heroLink: { color: C.onSummary, fontSize: 16 },
-  hero: { backgroundColor: C.summary, borderRadius: 24, padding: 20, gap: 12 },
+  hero: { backgroundColor: C.summary, borderRadius: 20, padding: 20, gap: 8 },
   label: { color: C.summaryMuted, fontSize: 14, lineHeight: 21 },
   total: { color: C.onSummary, fontSize: 36, fontWeight: '700' },
   spent: { color: C.onSummary, fontSize: 16, lineHeight: 24 },

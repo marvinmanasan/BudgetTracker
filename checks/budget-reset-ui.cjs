@@ -6,7 +6,10 @@ const ledger={wallets:[{id:'cash',name:'Cash',included:true,hidden:false}],trans
 const slots=[];let cursor=0,pending=null,commits=0,limitState={value:null,loading:false,error:'',reload:async()=>{}};
 const react={useCallback:fn=>fn,useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],value=>{slots[i]=typeof value==='function'?value(slots[i]):value;}];}};
 const jsx={jsx:(type,props,key)=>({type,props,key}),jsxs:(type,props,key)=>({type,props,key})};
+const fade={duration(){return this},reduceMotion(){return this}};
 const common={
+ '../components/centered-popup':{CenteredPopup:'Popup'},
+ 'react-native-reanimated':{default:{View:'AnimatedView'},FadeIn:fade,ReduceMotion:{System:'system'}},
  'react':react,'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',BackHandler:{addEventListener:()=>({remove(){}})}},
  'expo-router':{router:{push(){},replace(){},back(){}},useFocusEffect(){}},
  '../components/pocket-screen':{PocketScreen:'Screen'},'../components/pocket-button':{PocketButton:'Button'},'./pocket-button':{PocketButton:'Button'},
@@ -34,10 +37,13 @@ const render=()=>{cursor=0;return screen();};
 const button=(tree,title)=>nodes(tree).find(n=>n.type==='Button'&&n.props.title===title);
 tree=render();assert(!button(tree,'Delete Selected Records'));
 button(tree,'General').props.onPress();tree=render();
+button(tree,'General').props.onPress();tree=render();
+assert.equal(nodes(tree).filter(n=>n.type==='Switch').length,0,'Tapping selected scope clears it');
+button(tree,'General').props.onPress();tree=render();
 assert.deepEqual(nodes(tree).filter(n=>n.type==='Switch').map(n=>n.props.value),[false,false]);
 nodes(tree).find(n=>n.type==='Switch'&&n.props.accessibilityLabel==='Remove income').props.onValueChange(true);
 tree=render();button(tree,'Preview Selection').props.onPress();tree=render();
-assert(button(tree,'Continue to Confirmation'));assert(!button(tree,'Delete Selected Records'));
+assert.equal(nodes(tree).find(n=>n.type==='Popup').props.stepKey,'review','Preview starts at the top inside popup');assert(nodes(tree).some(n=>n.type==='Text'&&String(n.props.children).includes('Nothing has been deleted')));assert(button(tree,'Continue to Confirmation'));assert(!button(tree,'Delete Selected Records'));
 button(tree,'Continue to Confirmation').props.onPress();tree=render();assert.equal(button(tree,'Delete Selected Records').props.disabled,true);
 nodes(tree).find(n=>n.type==='Field'&&n.props.label==='Type RESET to Confirm').props.onChangeText('reset');tree=render();assert.equal(button(tree,'Delete Selected Records').props.disabled,true);
 nodes(tree).find(n=>n.type==='Field').props.onChangeText('RESET');tree=render();assert.equal(button(tree,'Delete Selected Records').props.disabled,false);

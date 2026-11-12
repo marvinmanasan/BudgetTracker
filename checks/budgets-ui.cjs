@@ -7,6 +7,7 @@ const mocks={react:{useState:initial=>[typeof initial==='function'?initial():ini
  '@/components/category-budget-panel':{CategoryBudgetPanel:'CategoryPanel'},'@/components/savings-preview':{SavingsPreview:'Savings'},'@/components/monthly-limit-history':{MonthlyLimitHistory:'History'},'@/components/monthly-limit-notice':{MonthlyLimitNotice:'Limit'},
  '@/hooks/use-ledger':{useLedger:()=>state},'@/lib/ledger':load('src/lib/ledger.ts'),'@/lib/validation':{localDate:()=> '2026-11-12'},'@/lib/display-date':load('src/lib/display-date.ts'),'@/lib/activity':load('src/lib/activity.ts'),
 };
+mocks['@/components/month-picker'] = {MonthPicker:'MonthPicker'};
 const result={exports:{}};const code=ts.transpileModule(fs.readFileSync('src/app/(tabs)/budgets.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
 vm.runInThisContext('(function(require,module,exports){'+code+'})')(name=>mocks[name]??require(name),result,result.exports);
 const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children)]:[];
