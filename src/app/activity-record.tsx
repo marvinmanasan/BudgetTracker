@@ -2,7 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState, useCallback } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { PocketScreen } from '../components/pocket-screen';
-import { BackButton, ReadState, ui } from '../components/bulsa-form';
+import { BackButton, ReadState, useUI } from '../components/bulsa-form';
 import { PocketButton } from '../components/pocket-button';
 import { ActivityAmount } from '../components/activity-amount';
 import { UndoNotice } from '../components/undo-notice';
@@ -15,6 +15,7 @@ import { activityRecord } from '../lib/activity';
 import { displayDate } from '../lib/display-date';
 
 export default function ActivityRecord() {
+  const ui = useUI();
   const { record } = useLocalSearchParams<{ record?: string | string[] }>();
   const { data, loading, error, reload } = useLedger();
   const item = useMemo(() => {

@@ -36,7 +36,11 @@ function validId(id: string) {
 }
 
 export async function requireWallet(db: SQLiteDatabase, id: string, allowHidden = false) {
-  const data = await readLedger(db);
+  return requireWalletInLedger(await readLedger(db), id, allowHidden);
+}
+
+// Reuse only a snapshot read inside the same queued write transaction.
+export function requireWalletInLedger(data: Ledger, id: string, allowHidden = false) {
   const wallet = deriveBalances(data).wallets.find(w => w.id === id);
   if (!wallet || !wallet.configured) throw new Error('Set this wallet’s starting balance first.');
   if (wallet.hidden && !allowHidden) throw new Error('Restore this wallet before using it for a new entry.');

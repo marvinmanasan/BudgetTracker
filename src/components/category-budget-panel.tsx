@@ -1,3 +1,4 @@
+import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { router } from 'expo-router';
 import { useMemo } from 'react';
 import { Text, View } from 'react-native';
@@ -5,11 +6,13 @@ import type { Ledger } from '../types/wallet';
 import { useCategoryPlan } from '../hooks/use-category-plan';
 import { categoryBudgetSummary } from '../lib/category-budgets';
 import { formatCentavos } from '../lib/money';
-import { PocketColors as C } from '../constants/pocket';
-import { ReadState, ui } from './bulsa-form';
+
+import { ReadState, useUI } from './bulsa-form';
 import { PocketButton } from './pocket-button';
 
 export function CategoryBudgetPanel({ data, month }: { data: Ledger; month: string }) {
+  const ui = useUI();
+  const { colors: C } = useBulsaTheme();
   const { plan, loading, error, reload } = useCategoryPlan(month);
   const result = useMemo(() => {
     if (!plan || plan.limitCentavos === null) return null;

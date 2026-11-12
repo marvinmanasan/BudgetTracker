@@ -1,13 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from 'react-native';
 import { PocketScreen } from '../components/pocket-screen';
-import { BackButton, ReadState, ui } from '../components/bulsa-form';
+import { BackButton, ReadState, useUI } from '../components/bulsa-form';
 import { PocketButton } from '../components/pocket-button';
 import { CategoryLimitForm } from '../components/category-limit-form';
 import { useCategoryPlan } from '../hooks/use-category-plan';
 import { localDate } from '../lib/validation';
 
 export default function CategoryLimits() {
+  const ui = useUI();
   const { month: param } = useLocalSearchParams<{ month?: string }>();
   const month = param && /^[0-9]{4}-(0[1-9]|1[0-2])$/.test(param) && !param.startsWith('0000-') ? param : localDate().slice(0, 7);
   const state = useCategoryPlan(month);

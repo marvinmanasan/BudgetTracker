@@ -1,7 +1,8 @@
+import { useBulsaTheme } from '../../hooks/use-bulsa-theme';
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Switch, Text, View } from "react-native";
-import { BackButton, Field, ReadState, ui } from "../../components/bulsa-form";
+import { BackButton, Field, ReadState, useUI } from "../../components/bulsa-form";
 import { PocketButton } from "../../components/pocket-button";
 import { PocketScreen } from "../../components/pocket-screen";
 import { useLedger, useSaveAction } from "../../hooks/use-ledger";
@@ -15,6 +16,8 @@ import {
 } from "../../storage/wallets";
 
 export default function WalletDetails() {
+  const ui = useUI();
+  const { colors: C } = useBulsaTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { balances, data, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
@@ -164,8 +167,8 @@ export default function WalletDetails() {
             <Text style={[ui.body, { flex: 1 }]}>Include in Total Budget</Text>
             <Switch
               hitSlop={12}
-              trackColor={{ false: "#EADFD5", true: "#8A533A" }}
-              thumbColor="#FFFFFF"
+              trackColor={{ false: C.track, true: C.accent }}
+              thumbColor={C.switchThumb}
               accessibilityLabel="Include in Total Budget"
               disabled={busy}
               value={wallet.included}

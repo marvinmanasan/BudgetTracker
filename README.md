@@ -1,56 +1,76 @@
-# Welcome to your Expo app 👋
+# Bulsa
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A little room for what matters.
 
-## Get started
+Bulsa is a mobile budget tracker for recording money, managing wallets and planning spending. Entries are added manually and saved on the device.
 
-1. Install dependencies
+## Main features
 
-   ```bash
-   npm install
+- Wallets with starting balances, inclusion in Total Budget, renaming and hiding/restoring.
+- Expense and income records with categories, dates, wallet assignment and optional notes.
+- Transaction editing, deletion and Undo.
+- Activity search, filters and record details.
+- Transfers between wallets and balance corrections.
+- Monthly spending limits, category limits and Everything Else.
+- One savings goal, savings records and progress.
+- Display name and Light, Dark or System appearance.
+
+## Download
+
+[Download Bulsa 1.0.0 for Android](https://github.com/marvinmanasan/BudgetTracker/releases/download/v1.0.0/Bulsa-1.0.0.apk).
+
+Open the APK on your Android phone and follow the installation prompts. If Bulsa is already installed, install it as an update to keep your saved entries.
+
+## How to Use
+
+1. Tap **Set Up Wallets**, or open **View Wallets ›** from **Overview**. Set starting balances for the wallets you use.
+2. Choose which wallets have **Include in Total Budget** switched on.
+3. On **Overview**, tap **+ Add Expense**. Enter the amount, category, wallet and date, then tap **Save Expense**. Choose **Income** in the same form to record income.
+4. Open **Activity** to search, filter or correct saved transactions.
+5. Open **Budgets** to set spending limits. Use **Set Savings Goal** to start tracking savings separately.
+
+Dates use **MM-DD-YYYY**. Month fields use **MM-YYYY**.
+
+**Total Budget** is General plus included wallet balances. A transaction saved with **Not Specified** affects General. A monthly spending limit is a plan and does not add money. Savings records track progress separately from wallet money.
+
+Read the [full user guide](docs/user-guide.md) and [feature list](docs/features.md).
+
+## Tech stack
+
+- **Expo SDK 58:** tools for developing and building the app.
+- **React Native and React:** the mobile interface.
+- **TypeScript:** JavaScript with type checking.
+- **Expo Router:** navigation between screens.
+- **Expo SQLite:** local storage on the device.
+- **npm:** installs the project dependencies.
+
+## Run locally
+
+You need Git, a supported Node.js LTS installation with npm, and an Android runtime compatible with Expo SDK 58. The project checks require Node.js 22.13 or newer.
+
+1. Clone this repository and open its folder in a terminal.
+2. Install the locked dependencies:
+
+   ```sh
+   npm ci
    ```
 
-2. Start the app
+3. Start the development server:
 
-   ```bash
+   ```sh
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+4. Open the project in your compatible Android development build. Follow the [Expo development-build guide](https://docs.expo.dev/develop/development-builds/introduction/) to set up your own build.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Environment values
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+The app currently requires no application environment variables or API keys. `.env.example` is intentionally empty. No environment values need to be copied to run the local features.
 
-## Get a fresh project
+For your own cloud build, use your own Expo account and link your own Expo project following the [Expo build setup guide](https://docs.expo.dev/build/setup/). Configure your own app identity and signing credentials through Expo's tooling.
 
-When you're ready, run:
+## Version
 
-```bash
-npm run reset-project
-```
+Version **1.0.0**. See the [release notes](RELEASE_NOTES.md) for the feature summary.
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Bulsa is a beginner portfolio project developed through manual coding and AI-assisted development.

@@ -2,9 +2,10 @@ import { Text, View } from 'react-native';
 import { useTransactionUndo } from '../hooks/use-transaction-undo';
 import { formatCentavos } from '../lib/money';
 import { PocketButton } from './pocket-button';
-import { ui } from './bulsa-form';
+import { useUI } from './bulsa-form';
 
 export function UndoNotice({ onRestored }: { onRestored: () => void }) {
+  const ui = useUI();
   const undo = useTransactionUndo();
   if (!undo.record && !undo.error) return null;
   return <View style={ui.soft}>

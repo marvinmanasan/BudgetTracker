@@ -2,7 +2,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { PocketScreen } from '../components/pocket-screen';
-import { BackButton, Field, ReadState, ui } from '../components/bulsa-form';
+import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { PocketButton } from '../components/pocket-button';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { adjustmentPreview } from '../lib/editing';
@@ -12,6 +12,7 @@ import { localDate } from '../lib/validation';
 import { adjustWallet } from '../storage/wallets';
 
 export default function AdjustBalance() {
+  const ui = useUI();
   const { wallet: walletId } = useLocalSearchParams<{ wallet?: string }>();
   const { data, balances, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();

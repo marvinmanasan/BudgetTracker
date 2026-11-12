@@ -1,6 +1,8 @@
+import type { BulsaColors } from '../constants/pocket';
+import { useBulsaStyles } from '../hooks/use-bulsa-theme';
 import { useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
-import { PocketColors } from "../constants/pocket";
+
 import { formatCentavos } from "../lib/money";
 import { displayDate } from "../lib/display-date";
 import { getTransactions, saveTransaction } from "../storage/transactions";
@@ -15,6 +17,7 @@ const EXAMPLE: Transaction = {
 };
 
 export function StorageCheck() {
+  const styles = useBulsaStyles(createStyles);
   const [records, setRecords] = useState<Transaction[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +61,7 @@ export function StorageCheck() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (PocketColors: BulsaColors) => StyleSheet.create({
   panel: { padding: 16, borderRadius: 16, backgroundColor: PocketColors.surface, gap: 12 },
   heading: { color: PocketColors.text, fontSize: 18, fontWeight: "600" },
   body: { color: PocketColors.muted, fontSize: 14, lineHeight: 21 },

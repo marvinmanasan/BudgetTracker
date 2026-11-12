@@ -1,7 +1,7 @@
 import type { Transaction } from "../types/transaction";
 import { validateTransaction } from "../lib/validation";
 import { withDatabase } from "./database";
-import { readLedger, requireWallet } from "./wallets";
+import { readLedger, requireWallet, requireWalletInLedger } from "./wallets";
 export { validateTransaction } from "../lib/validation";
 
 export async function saveTransaction(record: Transaction, databaseName = "bulsa.db"): Promise<void> {
@@ -27,10 +27,11 @@ export async function updateTransaction(record: Transaction, databaseName = "bul
   expected = expected ? { ...expected } : undefined;
   validateTransaction(record);
   await withDatabase(databaseName, async db => {
-    const old = (await readLedger(db)).transactions.find(r => r.id === record.id);
+    const data = await readLedger(db);
+    const old = data.transactions.find(r => r.id === record.id);
     if (!old) throw new Error("Transaction not found.");
     if (expected && (['id', 'type', 'amountCentavos', 'category', 'date', 'paymentMethod', 'note', 'walletId'] as const).some(key => (old[key] ?? null) !== (expected![key] ?? null))) throw new Error('This record changed. Reopen it before saving your edits.');
-    if (record.walletId != null) await requireWallet(db, record.walletId, record.walletId === old.walletId);
+    if (record.walletId != null) requireWalletInLedger(data, record.walletId, record.walletId === old.walletId);
     await db.runAsync("UPDATE transactions SET type=?,amountCentavos=?,category=?,date=?,paymentMethod=?,note=?,walletId=? WHERE id=?",
       record.type, record.amountCentavos, record.category, record.date,
       record.paymentMethod, record.note ?? null, record.walletId ?? null, record.id);

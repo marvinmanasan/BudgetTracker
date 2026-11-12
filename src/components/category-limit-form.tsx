@@ -11,9 +11,10 @@ import { displayMonth } from '../lib/display-date';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { PocketScreen } from './pocket-screen';
 import { PocketButton } from './pocket-button';
-import { BackButton, Field, ui } from './bulsa-form';
+import { BackButton, Field, useUI } from './bulsa-form';
 
 export function CategoryLimitForm({ month, initial, sourceError, sourceLoading, retry }: { month: string; initial: CategoryPlan; sourceError: string; sourceLoading: boolean; retry: () => void }) {
+  const ui = useUI();
   const [original] = useState(initial);
   const [rows, setRows] = useState(() => original.allocations.map(a => ({ category: a.category, amount: centavosInput(a.limitCentavos) })));
   const [category, setCategory] = useState(''), [amount, setAmount] = useState('');

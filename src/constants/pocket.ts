@@ -14,4 +14,16 @@ export const PocketColors = {
   selected: "#E9CDB1",
   track: "#EADFD5",
   income: "#426B50",
+  soft: "#F2E4D4",
+  excluded: "#F0E9E1",
+  switchThumb: "#FFFFFF",
+};
+
+export type BulsaColors = typeof PocketColors;
+export const DarkColors: BulsaColors = {
+  background: '#211B18', surface: '#332A25', soft: '#49382E', excluded: '#332A25',
+  text: '#F8F1E9', muted: '#D6C6B9', accent: '#D8AD8D', warning: '#F0B2A3',
+  summary: '#49382E', onSummary: '#F8F1E9', summaryMuted: '#D6C6B9',
+  onAccent: '#382D29', selected: '#49382E', track: '#685348', income: '#A9D2AD',
+  switchThumb: '#F8F1E9',
 };

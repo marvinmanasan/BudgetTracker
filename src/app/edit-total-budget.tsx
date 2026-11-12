@@ -4,7 +4,7 @@ import { BackHandler, Text, View } from 'react-native';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { PocketScreen } from '../components/pocket-screen';
 import { PocketButton } from '../components/pocket-button';
-import { BackButton, Field, ReadState, ui } from '../components/bulsa-form';
+import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { MoneyReview } from '../components/money-review';
 import { totalBudgetPreview } from '../lib/total-budget';
 import { newRecordId, parseBalance } from '../lib/form-money';
@@ -13,6 +13,7 @@ import { localDate } from '../lib/validation';
 import { setTotalBudget } from '../storage/total-budget';
 
 export default function EditTotalBudget() {
+  const ui = useUI();
   const { data, balances, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
   const [target, setTarget] = useState('');

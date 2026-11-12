@@ -2,7 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { PocketScreen } from './pocket-screen';
-import { BackButton, Field, ui } from './bulsa-form';
+import { BackButton, Field, useUI } from './bulsa-form';
 import { PocketButton } from './pocket-button';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { setMonthlyLimit } from '../storage/budgets';
@@ -13,6 +13,7 @@ import { displayMonth } from '../lib/display-date';
 import { formatCentavos } from '../lib/money';
 
 export function MonthlyLimitForm({ month, initial, sourceError, sourceLoading, retry }: { month: string; initial: number | null; sourceError: string; sourceLoading: boolean; retry: () => void }) {
+  const ui = useUI();
   const [amount, setAmount] = useState(initial === null ? '' : centavosInput(initial));
   const { data, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();

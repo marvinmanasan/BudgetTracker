@@ -1,15 +1,19 @@
+import type { BulsaColors } from '../constants/pocket';
+import { useBulsaStyles } from '../hooks/use-bulsa-theme';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { PocketColors as C } from '../constants/pocket';
+
 import { PRESET_CHOICES, type ChoiceKind, type CustomChoice } from '../lib/choices';
 import { newRecordId } from '../lib/form-money';
 import { addChoice, getChoices, removeChoice, renameChoice } from '../storage/choices';
-import { Field, ui } from './bulsa-form';
+import { Field, useUI } from './bulsa-form';
 import { PocketButton } from './pocket-button';
 
 type Props = { kind: ChoiceKind; value: string; onChange: (value: string) => void; disabled: boolean; onBusyChange: (busy: boolean) => void; retainedValue?: string };
 
 export function CategoryPicker({ kind, value, onChange, disabled, onBusyChange, retainedValue }: Props) {
+  const ui = useUI();
+  const styles = useBulsaStyles(createStyles);
   const [custom, setCustom] = useState<CustomChoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -99,7 +103,7 @@ export function CategoryPicker({ kind, value, onChange, disabled, onBusyChange, 
   </View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (C: BulsaColors) => StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { minHeight: 48, maxWidth: '100%', paddingHorizontal: 14, paddingVertical: 12, justifyContent: 'center', borderRadius: 16, backgroundColor: C.background, borderWidth: 2, borderColor: C.track },
   selected: { backgroundColor: C.selected, borderColor: C.accent },

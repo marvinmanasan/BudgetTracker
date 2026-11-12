@@ -1,47 +1,69 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Dependencies and generated output
 node_modules/
-
-# Expo
 .expo/
 dist/
+build/
 web-build/
+coverage/
 expo-env.d.ts
-
-# Native
+*.tsbuildinfo
+/android/
+/ios/
 .kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-
-# Metro
+.gradle/
+.cache/
 .metro-health-check*
 
-# debug
+# Environment and credentials
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.key
+*.mobileprovision
+**/google-services.json
+**/GoogleService-Info.plist
+**/credentials.json
+.npmrc
+.netrc
+
+# Local records, build packages, archives and logs
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.apk
+*.aab
+*.ipa
+*.zip
+*.tar
+*.gz
+*.log
 npm-debug.*
 yarn-debug.*
 yarn-error.*
-
-# macOS
+*.orig
+*.orig.*
 .DS_Store
-*.pem
+Thumbs.db
 
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-example
-
-# generated native folders
-/ios
-/android
-
-# Local coaching instructions, plans and design handoffs
+# Local editor and agent files
+.vscode/
+.idea/
+.codex/
+.agents/
 /AGENTS.md
-/docs/
+/example/
+
+# Local planning/design material. Only the two public guides are eligible.
+/docs/*
+!/docs/user-guide.md
+!/docs/features.md
+/bulsa-preview.html
+/bulsa-palette-comparison.html

@@ -5,9 +5,10 @@ import { getMonthlyLimits, type MonthlyLimit } from '../storage/budgets';
 import { displayMonth } from '../lib/display-date';
 import { formatCentavos } from '../lib/money';
 import { PocketButton } from './pocket-button';
-import { ReadState, ui } from './bulsa-form';
+import { ReadState, useUI } from './bulsa-form';
 
 export function MonthlyLimitHistory() {
+  const ui = useUI();
   const [rows, setRows] = useState<MonthlyLimit[]>([]);
   const [loading, setLoading] = useState(true), [error, setError] = useState('');
   const request = useRef(0);

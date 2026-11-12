@@ -1,19 +1,22 @@
+import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Switch, Text, View } from 'react-native';
 import { PocketScreen } from '../components/pocket-screen';
 import { PocketButton } from '../components/pocket-button';
-import { BackButton, Field, ReadState, ui } from '../components/bulsa-form';
+import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { MoneyReview } from '../components/money-review';
 import { UndoNotice } from '../components/undo-notice';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { useTransactionUndo } from '../hooks/use-transaction-undo';
 import { previewReset, type ResetSelection, type ResetPreview } from '../lib/selective-reset';
 import { applyReset } from '../storage/selective-reset';
-import { PocketColors as C } from '../constants/pocket';
+
 
 const emptyKinds = () => ({ expenses: false, income: false, transfers: false, adjustments: false });
 export default function ResetSelectedData() {
+  const ui = useUI();
+  const { colors: C } = useBulsaTheme();
   const { data, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
   const undo = useTransactionUndo();
@@ -88,9 +91,9 @@ export default function ResetSelectedData() {
         <Text style={ui.heading}>Choose What to Remove</Text>
         {(['expenses', 'income', 'transfers', 'adjustments'] as const).filter(kind => scope !== 'general' || kind === 'expenses' || kind === 'income').map(kind => <View key={kind} style={[ui.card, ui.row]}>
           <Text style={[ui.body, { flex: 1 }]}>{({ expenses: 'Expenses', income: 'Income', transfers: 'Transfers', adjustments: 'Balance Adjustments' })[kind]}</Text>
-          <Switch accessibilityLabel={`Remove ${kind}`} value={kinds[kind]} disabled={blocked} onValueChange={value => { setKinds(previous => ({ ...previous, [kind]: value })); setStarting(false); }} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.surface} />
+          <Switch accessibilityLabel={`Remove ${kind}`} value={kinds[kind]} disabled={blocked} onValueChange={value => { setKinds(previous => ({ ...previous, [kind]: value })); setStarting(false); }} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.switchThumb} />
         </View>)}
-        {scope === 'general' ? <Text style={ui.caption}>General only contains income and expenses without a wallet.</Text> : <View style={ui.card}><Text style={ui.heading}>Starting Balances</Text><View style={ui.row}><Text style={[ui.body, { flex: 1 }]}>Reset Starting Balances</Text><Switch accessibilityLabel="Reset Starting Balances" disabled={blocked || !allKinds} value={resetStartingBalances} onValueChange={setStarting} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.surface} /></View><Text style={ui.caption}>Available only when all linked financial history is selected. Otherwise starting balances stay saved.</Text></View>}
+        {scope === 'general' ? <Text style={ui.caption}>General only contains income and expenses without a wallet.</Text> : <View style={ui.card}><Text style={ui.heading}>Starting Balances</Text><View style={ui.row}><Text style={[ui.body, { flex: 1 }]}>Reset Starting Balances</Text><Switch accessibilityLabel="Reset Starting Balances" disabled={blocked || !allKinds} value={resetStartingBalances} onValueChange={setStarting} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.switchThumb} /></View><Text style={ui.caption}>Available only when all linked financial history is selected. Otherwise starting balances stay saved.</Text></View>}
       </>}
       <PocketButton title="Preview Selection" disabled={blocked || !!undo.record} onPress={prepare} />
     </>}

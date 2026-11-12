@@ -12,8 +12,11 @@ export function useCategoryPlan(month: string) {
   const reload = useCallback(async () => {
     const version = ++request.current; setLoading(true); setError('');
     try {
-      if (month === localDate().slice(0, 7)) await ensureMonthlyLimit(month);
-      const next = await getCategoryPlan(month);
+      let next = await getCategoryPlan(month);
+      if (next.limitCentavos === null && month === localDate().slice(0, 7)) {
+        await ensureMonthlyLimit(month);
+        next = await getCategoryPlan(month);
+      }
       if (version === request.current) { setPlan(next); setResolved(month); }
     } catch (cause) { if (version === request.current) setError(cause instanceof Error ? cause.message : 'Could not read category limits.'); }
     finally { if (version === request.current) setLoading(false); }

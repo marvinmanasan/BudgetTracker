@@ -48,9 +48,9 @@ const EntryForm = () => null;
 const stubs = {
   'expo-router': { useLocalSearchParams: () => ({ id: original.id }) },
   'react-native': { Text: 'Text' },
-  '../components/entry-form': { EntryForm },
+  '../components/entry-form': { EntryForm, EntryFields: EntryForm },
   '../components/pocket-screen': { PocketScreen: 'Screen' },
-  '../components/bulsa-form': { BackButton: 'Back', ReadState: 'ReadState', ui: {} },
+  '../components/bulsa-form': { BackButton: 'Back', ReadState: 'ReadState', useUI: () => ({}) },
   '../hooks/use-ledger': { useLedger: () => screenState },
   'react/jsx-runtime': { jsx: (type, props, key) => ({type, props, key}), jsxs: (type, props, key) => ({type, props, key}) },
 };
@@ -63,9 +63,11 @@ assert.notEqual(renderEditor().type,EntryForm);
 screenState = {data,loading:false,error:'',reload:()=>{}};
 const mountedEditor = renderEditor();
 assert.equal(mountedEditor.type,EntryForm);
+assert.equal(mountedEditor.props.ledger,screenState,'Editor shares its loaded ledger rather than issuing duplicate queries');
 screenState = {...screenState,loading:false,error:'Temporary read failure'};
 assert.equal(renderEditor().type,mountedEditor.type,'refresh failure must not unmount an existing draft');
 assert.equal(renderEditor().key,mountedEditor.key);
+assert.equal(renderEditor().props.ledger.error,'Temporary read failure');
 screenState = {...screenState,loading:true,error:''};
 assert.equal(renderEditor().type,mountedEditor.type);
 console.log('Editor route checks passed: loading and retry preserve mounted draft identity.');

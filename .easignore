@@ -1,0 +1,73 @@
+# Dependencies and generated output
+node_modules/
+.expo/
+dist/
+build/
+web-build/
+coverage/
+expo-env.d.ts
+*.tsbuildinfo
+/android/
+/ios/
+.kotlin/
+.gradle/
+.cache/
+.metro-health-check*
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.key
+*.mobileprovision
+**/google-services.json
+**/GoogleService-Info.plist
+**/credentials.json
+.npmrc
+.netrc
+
+# Local records, build packages, archives and logs
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.apk
+*.aab
+*.ipa
+*.zip
+*.tar
+*.gz
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.orig
+*.orig.*
+.DS_Store
+Thumbs.db
+
+# Local editor and agent files
+.vscode/
+.idea/
+.codex/
+.agents/
+/AGENTS.md
+/example/
+
+# Local planning/design material. Only the two public guides are eligible.
+/docs/*
+!/docs/user-guide.md
+!/docs/features.md
+/bulsa-preview.html
+/bulsa-palette-comparison.html
+
+# Local Git metadata and public guides are not build inputs
+.git
+/docs/

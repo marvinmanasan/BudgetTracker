@@ -2,7 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text } from 'react-native';
 import { PocketScreen } from './pocket-screen';
-import { BackButton, Field, ReadState, ui } from './bulsa-form';
+import { BackButton, Field, ReadState, useUI } from './bulsa-form';
 import { PocketButton } from './pocket-button';
 import { useSaveAction } from '../hooks/use-ledger';
 import { newRecordId } from '../lib/form-money';
@@ -13,6 +13,7 @@ import { localDate } from '../lib/validation';
 import { recordSavingsContribution, saveSavingsGoal, type SavingsGoal } from '../storage/savings';
 
 export function SavingsForm({ initial, contribution = false, loading, readError, retry }: { initial?: SavingsGoal; contribution?: boolean; loading: boolean; readError: string; retry: () => void }) {
+  const ui = useUI();
   const [original] = useState(initial);
   const [title, setTitle] = useState(original?.title ?? '');
   const [amount, setAmount] = useState(contribution ? '' : original ? centavosInput(original.targetCentavos) : '');

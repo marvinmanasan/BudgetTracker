@@ -1,4 +1,5 @@
-import { PocketColors } from "@/constants/pocket";
+import { useBulsaStyles } from '@/hooks/use-bulsa-theme';
+import type { BulsaColors } from '@/constants/pocket';
 import { Pressable, StyleSheet, Text } from "react-native";
 
 type PocketButtonProps = {
@@ -6,6 +7,7 @@ type PocketButtonProps = {
   onPress: () => void;
   secondary?: boolean;
   disabled?: boolean;
+  selected?: boolean;
 };
 
 export function PocketButton({
@@ -13,11 +15,13 @@ export function PocketButton({
   onPress,
   secondary = false,
   disabled = false,
+  selected,
 }: PocketButtonProps) {
+  const styles = useBulsaStyles(createStyles);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled, selected }}
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -34,7 +38,7 @@ export function PocketButton({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (PocketColors: BulsaColors) => StyleSheet.create({
   button: {
     minHeight: 48,
     padding: 16,

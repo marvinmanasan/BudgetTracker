@@ -1,7 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, BackHandler, Pressable, Text, View } from 'react-native';
-import { BackButton, Field, ReadState, ui } from './bulsa-form';
+import { BackButton, Field, ReadState, useUI } from './bulsa-form';
 import { CategoryPicker } from './category-picker';
 import { PocketButton } from './pocket-button';
 import { MonthlyLimitNotice } from './monthly-limit-notice';
@@ -17,7 +17,13 @@ import { saveTransaction, updateTransaction } from '../storage/transactions';
 import { transactionDraft, editedTransaction, editPreview } from '../lib/editing';
 import type { Transaction } from '../types/transaction';
 
-export function EntryForm({ original: incoming }: { original?: Transaction }) {
+export function EntryForm({ original }: { original?: Transaction }) {
+  const ledger = useLedger();
+  return <EntryFields original={original} ledger={ledger} />;
+}
+
+export function EntryFields({ original: incoming, ledger }: { original?: Transaction; ledger: ReturnType<typeof useLedger> }) {
+  const ui = useUI();
   const [original] = useState(incoming);
   const initial = original ? transactionDraft(original) : undefined;
   const [reviewing, setReviewing] = useState(false);
@@ -33,7 +39,7 @@ export function EntryForm({ original: incoming }: { original?: Transaction }) {
   const [details, setDetails] = useState(false);
   const [payment, setPayment] = useState(initial?.payment ?? '');
   const [note, setNote] = useState(initial?.note ?? '');
-  const { data, balances, loading, error: readError, reload } = useLedger();
+  const { data, balances, loading, error: readError, reload } = ledger;
   const { busy, error, run } = useSaveAction();
   const blocked = busy || choicesBusy;
   const selected = balances?.wallets.find(w => w.id === walletId);

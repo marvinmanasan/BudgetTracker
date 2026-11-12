@@ -1,15 +1,18 @@
+import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { router } from 'expo-router';
 import { Text, View } from 'react-native';
 import { PocketScreen } from '../components/pocket-screen';
-import { BackButton, ReadState, ui } from '../components/bulsa-form';
+import { BackButton, ReadState, useUI } from '../components/bulsa-form';
 import { PocketButton } from '../components/pocket-button';
 import { useSavings } from '../hooks/use-savings';
 import { savingsSummary } from '../lib/savings-summary';
 import { formatCentavos } from '../lib/money';
 import { displayDate } from '../lib/display-date';
-import { PocketColors as C } from '../constants/pocket';
+
 
 export default function SavingsScreen() {
+  const ui = useUI();
+  const { colors: C } = useBulsaTheme();
   const { data, loading, error, reload } = useSavings();
   const goal = data?.goals.find(g => g.id === 'main');
   let summary: ReturnType<typeof savingsSummary> | null = null, calculationError = '';

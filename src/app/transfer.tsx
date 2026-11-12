@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { PocketScreen } from '../components/pocket-screen';
 import { PocketButton } from '../components/pocket-button';
-import { BackButton, Field, ReadState, ui } from '../components/bulsa-form';
+import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { MoneyReview } from '../components/money-review';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { transferPreview } from '../lib/transfers';
@@ -15,6 +15,7 @@ import { recordTransfer } from '../storage/wallets';
 import type { Transfer } from '../types/wallet';
 
 export default function TransferScreen() {
+  const ui = useUI();
   const { data, balances, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
   const [id] = useState(() => newRecordId('transfer'));

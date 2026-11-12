@@ -1,15 +1,20 @@
+import type { BulsaColors } from '../../constants/pocket';
+import { useBulsaTheme, useBulsaStyles } from '../../hooks/use-bulsa-theme';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
-import { BackButton, ReadState, ui } from '../../components/bulsa-form';
+import { BackButton, ReadState, useUI } from '../../components/bulsa-form';
 import { PocketButton } from '../../components/pocket-button';
 import { PocketScreen } from '../../components/pocket-screen';
-import { PocketColors as C } from '../../constants/pocket';
+
 import { useLedger, useSaveAction } from '../../hooks/use-ledger';
 import { formatCentavos } from '../../lib/money';
 import { setWalletFlags } from '../../storage/wallets';
 
 export default function Wallets() {
+  const ui = useUI();
+  const { colors: C } = useBulsaTheme();
+  const styles = useBulsaStyles(createStyles);
   const { view } = useLocalSearchParams<{ view?: string }>();
   const [showHidden, setShowHidden] = useState(view === 'hidden');
   const { balances, error, loading, reload } = useLedger();
@@ -34,7 +39,7 @@ export default function Wallets() {
           <Text style={[wallet.balanceCentavos < 0 ? ui.error : ui.body, !wallet.included && wallet.balanceCentavos >= 0 && styles.muted]}>{wallet.configured ? formatCentavos(wallet.balanceCentavos) : 'Starting Balance Not Set'}</Text>
           <Text style={ui.caption}>{wallet.included ? 'Included in Total Budget' : 'Not Included'}{wallet.hidden ? ' · Hidden' : ''}</Text>
         </Pressable>
-        <View style={styles.switchRow}><Text style={[ui.body, styles.switchLabel]}>Include in Total Budget</Text><View style={styles.switchTarget}><Switch accessibilityLabel={`Include ${wallet.name} in Total Budget`} value={wallet.included} disabled={busy} onValueChange={value => void include(wallet.id, value)} hitSlop={8} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.surface} /></View></View>
+        <View style={styles.switchRow}><Text style={[ui.body, styles.switchLabel]}>Include in Total Budget</Text><View style={styles.switchTarget}><Switch accessibilityLabel={`Include ${wallet.name} in Total Budget`} value={wallet.included} disabled={busy} onValueChange={value => void include(wallet.id, value)} hitSlop={8} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.switchThumb} /></View></View>
       </View>)}
       {!balances.wallets.some(w => w.hidden === showHidden) && <Text style={ui.body}>{showHidden ? 'No hidden wallets.' : 'No visible wallets. Add one or restore a hidden wallet.'}</Text>}
       {!showHidden && <PocketButton secondary title="Transfer Between Wallets" disabled={busy} onPress={() => router.push('/transfer')} />}
@@ -47,9 +52,9 @@ export default function Wallets() {
   </PocketScreen>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (C: BulsaColors) => StyleSheet.create({
   wallet: { backgroundColor: C.surface, borderRadius: 20, overflow: 'hidden' },
-  excluded: { backgroundColor: '#F0E9E1', borderWidth: 1, borderColor: C.track },
+  excluded: { backgroundColor: C.excluded, borderWidth: 1, borderColor: C.track },
   muted: { color: C.muted },
   details: { minHeight: 48, padding: 18, gap: 8 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 18, paddingBottom: 12, borderTopWidth: 1, borderColor: C.track },

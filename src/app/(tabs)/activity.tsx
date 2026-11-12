@@ -1,20 +1,23 @@
+import { useBulsaTheme } from '@/hooks/use-bulsa-theme';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, SectionList, Text, View } from 'react-native';
 import { PocketScreen } from '@/components/pocket-screen';
 import { PocketButton } from '@/components/pocket-button';
-import { Field, ReadState, ui } from '@/components/bulsa-form';
+import { Field, ReadState, useUI } from '@/components/bulsa-form';
 import { ActivityAmount } from '@/components/activity-amount';
 import { useLedger } from '@/hooks/use-ledger';
 import { filterActivitySections, parseActivityMonth, spendingSummary, type ActivityFilters } from '@/lib/activity';
 import { ActivityFilterPanel } from '@/components/activity-filters';
 import { UndoNotice } from '@/components/undo-notice';
-import { PocketColors as C } from '@/constants/pocket';
+
 import { formatCentavos } from '@/lib/money';
 import { localDate } from '@/lib/validation';
 import { displayDate, displayMonth } from '@/lib/display-date';
 
 export default function Activity() {
+  const ui = useUI();
+  const { colors: C } = useBulsaTheme();
   const { message, wallet } = useLocalSearchParams<{ message?: string; wallet?: string }>();
   const { data, loading, error, reload } = useLedger();
   const [filters, setFilters] = useState<ActivityFilters>({});
@@ -67,7 +70,7 @@ export default function Activity() {
         onPress={() => router.push({ pathname: '/activity-record', params: { record: item.key } })}
         style={({ pressed }) => [{ minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingVertical: 12, opacity: pressed ? 0.75 : 1 }]}
       >
-        <View style={{ width: 44, minHeight: 44, borderRadius: 14, backgroundColor: '#F2E4D4', alignItems: 'center', justifyContent: 'center' }}><Text style={ui.heading}>{Array.from(item.title)[0]}</Text></View>
+        <View style={{ width: 44, minHeight: 44, borderRadius: 14, backgroundColor: C.soft, alignItems: 'center', justifyContent: 'center' }}><Text style={ui.heading}>{Array.from(item.title)[0]}</Text></View>
         <View style={{ flex: 1, minWidth: 120, gap: 2 }}><Text style={[ui.body, { fontWeight: '700' }]}>{item.title}</Text><Text style={ui.caption}>{item.detail}</Text></View>
         <ActivityAmount item={item} />
       </Pressable>}

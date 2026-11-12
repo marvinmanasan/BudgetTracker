@@ -6,7 +6,7 @@ const mocks = {
  'react/jsx-runtime':jsx, 'react-native':{Text:'Text'},
  'expo-router':{useLocalSearchParams:()=>({month:'2026-11'}),router:{push(){}}},
  '../components/pocket-screen':{PocketScreen:'Screen'}, '../components/pocket-button':{PocketButton:'Button'},
- '../components/bulsa-form':{BackButton:'Back',ReadState:'ReadState',ui:{}},
+ '../components/bulsa-form':{BackButton:'Back',ReadState:'ReadState',useUI:()=>({})},
  '../components/category-limit-form':{CategoryLimitForm:'Editor'},
  '../hooks/use-category-plan':{useCategoryPlan:()=>state}, '../lib/validation':{localDate:()=> '2026-11-12'},
 };

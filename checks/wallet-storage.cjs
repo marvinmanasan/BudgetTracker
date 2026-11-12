@@ -68,7 +68,9 @@ async function main() {
     await assert.rejects(store.removeWallet('zero',assigned),/history/,'zero opening still protects a used wallet');
     await tx.saveTransaction(record,dbName);
     assert.equal((await balances()).totalCentavos,140000);
+    const editReadsBefore = ledgerReads;
     await tx.updateTransaction({...record,walletId:'wallet-gcash'},dbName);
+    assert.equal(ledgerReads - editReadsBefore,8,'Assigned edits reuse the transaction-local snapshot, retaining post-write validation');
     assert.equal((await balances()).totalCentavos,140000);
     assert.equal((await balances()).generalCentavos,0);
     await tx.updateTransaction({...record,walletId:'wallet-maya'},dbName);

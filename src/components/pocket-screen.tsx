@@ -1,9 +1,12 @@
+import type { BulsaColors } from '@/constants/pocket';
+import { useBulsaStyles } from '@/hooks/use-bulsa-theme';
 import type { PropsWithChildren, ReactNode } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PocketColors } from "@/constants/pocket";
+
 
 export function PocketScreen({ children, scrollable = true, header }: PropsWithChildren<{ scrollable?: boolean; header?: ReactNode }>) {
+  const styles = useBulsaStyles(createStyles);
   return (
     <SafeAreaView style={styles.screen} edges={["top", "bottom", "left", "right"]}>
       {header && <View style={styles.header}>{header}</View>}
@@ -14,7 +17,7 @@ export function PocketScreen({ children, scrollable = true, header }: PropsWithC
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (PocketColors: BulsaColors) => StyleSheet.create({
   screen: { flex: 1, backgroundColor: PocketColors.background },
   header: { paddingHorizontal: 24, paddingVertical: 4, width: '100%', maxWidth: 600, alignSelf: 'center' },
   withHeader: { paddingTop: 12 },
