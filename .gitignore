@@ -67,3 +67,10 @@ Thumbs.db
 !/docs/features.md
 /bulsa-preview.html
 /bulsa-palette-comparison.html
+
+# Private financial exports and release QA artifacts
+Bulsa-Backup-*.json
+Bulsa-Before-Restore-*.json
+Bulsa-Safety-*.json
+/qa/
+/qa-screenshots/

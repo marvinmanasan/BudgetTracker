@@ -12,10 +12,13 @@ Bulsa is a mobile budget tracker for recording money, managing wallets and plann
 - Activity search, filters and record details.
 - Transfers between wallets and balance corrections.
 - Monthly spending limits, category limits and Everything Else.
-- One savings goal, savings records and progress.
+- One savings goal, editable savings records and progress.
+- Local backup and restore for financial records and custom category and income source lists, with a replacement preview.
 - Display name and Light, Dark or System appearance.
 
 ## Download
+
+Version **1.1.0** is being prepared. The latest published APK is still **1.0.0**.
 
 [Download Bulsa 1.0.0 for Android](https://github.com/marvinmanasan/BudgetTracker/releases/download/v1.0.0/Bulsa-1.0.0.apk).
 
@@ -23,15 +26,16 @@ Open the APK on your Android phone and follow the installation prompts. If Bulsa
 
 ## How to Use
 
-1. Tap **Set Up Wallets**, or open **View Wallets ›** from **Overview**. Set starting balances for the wallets you use.
+1. Tap **Set Up Wallets**, or open **View Wallets ›** from **Overview**. Set starting balances for the wallets you use. **Add Wallet** is at the top of the wallet list.
 2. Choose which wallets have **Include in Total Budget** switched on.
 3. On **Overview**, tap **+ Add Expense**. Enter the amount, category, wallet and date, then tap **Save Expense**. Choose **Income** in the same form to record income.
 4. Open **Activity** to search, filter or correct saved transactions.
-5. Open **Budgets** to set spending limits. Use **Set Savings Goal** to start tracking savings separately.
+5. Open **Budgets** to set spending limits. Use **Set Savings Goal** to start tracking savings separately. Open **Savings History** to edit or delete a contribution.
+6. Find balance corrections under **Wallets**. Open **Settings → Backup and Restore** to export or restore financial records. Keep backup files private because they contain your financial records.
 
 Dates use **MM-DD-YYYY**. Months use full names, such as **November 2026**.
 
-**Total Budget** is General plus included wallet balances. A transaction saved with **Not Specified** affects General. A monthly spending limit is a plan and does not add money. Savings records track progress separately from wallet money.
+**Total Budget** is General plus included wallet balances. The form shows **Wallet: General** when no specific wallet is selected. That entry affects General. A monthly spending limit is a plan and does not add money. Savings records track progress separately from wallet money.
 
 Read the [full user guide](docs/user-guide.md) and [feature list](docs/features.md).
 
@@ -71,6 +75,6 @@ For your own cloud build, use your own Expo account and link your own Expo proje
 
 ## Version
 
-Version **1.0.0**. See the [release notes](RELEASE_NOTES.md) for the feature summary.
+Version **1.1.0**. See the [release notes](RELEASE_NOTES.md) for the feature summary.
 
 Bulsa is a beginner portfolio project developed through manual coding and AI-assisted development.

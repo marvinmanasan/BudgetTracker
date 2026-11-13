@@ -13,7 +13,7 @@ Bulsa helps you record money manually, manage wallets and plan spending. Dates u
 
 ## Add a wallet
 
-1. On **Overview**, tap **View Wallets ›**, then **Add Wallet**.
+1. On **Overview**, tap **View Wallets ›**, then **Add Wallet** at the top.
 2. Enter **Wallet Name** and **Starting Balance (PHP)**.
 3. Choose whether **Include in Total Budget** is on.
 4. Tap **Add Wallet**.
@@ -62,7 +62,7 @@ The wallet balance rises. Total Budget rises if the wallet is included.
 3. Enter **Custom Name**, then tap **Save Choice**.
 4. Complete and save the transaction.
 
-The custom choice becomes selected. Expense categories and income sources use separate lists.
+The custom choice becomes selected. Expense categories and income sources use separate lists. **Everything Else** is reserved for the automatic category allowance, so choose another name for a custom expense category.
 
 ## Manage custom choices
 
@@ -73,14 +73,14 @@ The custom choice becomes selected. Expense categories and income sources use se
 
 Old transactions keep their original names. Preset choices are retained.
 
-## Use Not Specified and General
+## Use Wallet: General
 
 1. In a transaction form, tap the **Wallet:** button.
-2. On **Choose Wallet**, tap **Not Specified**.
+2. On **Choose Wallet**, tap **General**. The form then shows **Wallet: General**.
 3. Save the transaction.
 4. Open **Wallets** to see **General · Always Included**.
 
-Income adds to General and expenses subtract from it. General always counts in Total Budget.
+Income adds to General and expenses subtract from it. General always counts in Total Budget and can be negative. Add Expense and Add Income both explain this beside **Wallet: General**.
 
 ## Record a transfer
 
@@ -94,7 +94,7 @@ Activity shows Transfer. Both wallets must be visible and have starting balances
 
 ## Adjust a balance
 
-1. Open the wallet and tap **Adjust Balance**.
+1. Open **Wallets**, choose the wallet and tap **Adjust Balance**.
 2. Enter **Actual Balance (PHP)** and a **Reason**.
 3. Tap **Review Adjustment**.
 4. Check the difference, then tap **Confirm Adjustment**.
@@ -103,7 +103,7 @@ The balance is corrected. Activity shows Balance Adjustment. An unchanged balanc
 
 ## Correct Total Budget
 
-1. On **Overview**, tap **Edit Total Budget**.
+1. Open **Wallets**, then tap **Edit Total Budget**. Balance correction controls live under Wallets.
 2. Enter **New Total Budget (PHP)**.
 3. Under **Wallet Receiving the Difference**, choose an included wallet with a starting balance.
 4. Enter a **Reason** and tap **Review Change**.
@@ -127,7 +127,7 @@ The original record is updated. Income and spending follow its corrected amount 
 3. Tap **Review Changes** and check the old and new balance effects.
 4. Tap **Save Changes**.
 
-The old money effect is reversed and applied to the chosen wallet. For a record previously using Not Specified, its effect is removed from General.
+The old money effect is reversed and applied to the chosen wallet. For a record previously assigned to General, its effect is removed from General.
 
 ## Delete a transaction
 
@@ -170,12 +170,12 @@ Only wallets with no financial history can be deleted. A zero starting balance s
 ## Use Activity
 
 1. Open **Activity** and enter text in **Search Activity**.
-2. Tap **Filters** to open the separate filter screen. Choose a month, **Record Type**, **Category or Source**, or a historical **Payment Method**.
-3. Tap **Apply Filters** to use the choices, or **Cancel** to keep the current filters.
-3. Tap a result for its details.
-4. Tap **Clear All Filters** to remove the search and filters.
+2. Tap **Filters** to open the filter popup. Choose a month, **Record Type**, **Category or Source**, or a historical **Payment Method** when that filter is useful.
+3. Tap **Apply Filters** to use the choices, or **Back** to keep the current filters.
+4. Tap a result for its details.
+5. Open **Filters** and tap **Clear All Filters**, then **Apply Filters**, to clear the filter choices. Clear the search field separately.
 
-Records are grouped by date, newest dates first. The spending card shows all expenses for its month, before the other Activity filters.
+Records are grouped by date, newest dates first. The **All Wallets This Month** spending card shows all expenses for its month, before the other Activity filters.
 
 ## View one wallet's Activity
 
@@ -230,9 +230,29 @@ Editing preserves previous savings records.
 
 Savings History and progress increase. Wallet balances and Total Budget stay unchanged.
 
+## Edit or delete a savings contribution
+
+1. Open **View Savings** and find the contribution in **Savings History**.
+2. Tap **Edit Savings Record** to change its amount, date or note.
+3. Tap **Review Correction**, check **Before** and **After**, then **Confirm Correction**.
+4. To remove one contribution instead, tap **Delete Savings Record**, review it, then **Confirm Delete**.
+
+Progress updates from the corrected history. The savings goal, other contributions, wallet balances and Total Budget stay unchanged. Deleting a savings contribution has no Undo. Choose **Cancel** or **Back** before confirming to keep it.
+
+## Backup and Restore
+
+1. Open **Settings**, then **Backup and Restore**.
+2. Tap **Export Financial Backup** and choose where to save or share the JSON file. Check that the destination saved it. Keep a copy outside the app.
+3. To restore, tap **Choose Backup to Restore** and select a supported Bulsa backup file.
+4. Read **Review Replacement** and compare the current and incoming record counts. Restore replaces records rather than merging them.
+5. Keep a separate external backup of your current records. Bulsa also saves a local safety copy before replacement.
+6. Enter RESTORE in **Type RESTORE to Confirm**, then tap **Replace Financial Records**. Choose **Cancel Restore** to leave the current records intact.
+
+The backup contains personal financial records, including wallets, transactions, transfers, balance changes, spending plans and savings. It also includes your custom expense category and income source lists. Keep the file private. It is a readable JSON file. Display settings are not included. Supported files are up to 10 MB and 50,000 financial rows. Finish or dismiss any pending transaction Undo before restoring.
+
 ## Change name or appearance
 
-1. On **Overview**, tap the profile circle.
+1. On **Overview**, open **Settings** using the profile control.
 2. In **Settings**, enter **Display Name (Optional)** if wanted.
 3. Choose **Light**, **Dark** or **System** under **Appearance**.
 4. Tap **Save Settings**.
@@ -253,7 +273,7 @@ This permanently removes the selection. Removing a transfer reverses both wallet
 ## Key ideas
 
 - **Total Budget:** General plus included wallet balances.
-- **General:** income and expenses saved with Not Specified. It always counts.
+- **General:** income and expenses saved without choosing a specific wallet. It always counts.
 - **Include in Total Budget:** controls whether a wallet balance contributes to the total.
 - **Monthly Spending Limit:** a plan for spending, separate from recorded money.
 - **Negative balance:** recorded spending or corrections exceed recorded funding.
