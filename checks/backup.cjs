@@ -22,7 +22,13 @@ const fixture = {
     savings_contributions: [{ id: 'saving', goalId: 'goal', amountCentavos: 300, date: '2026-11-12', note: '' }],
   },
 };
+fixture.tables.activity_order = [
+  ['change','opening'],['change','bank-opening'],['change','adjust'],['transaction','expense'],['transaction','income'],['transfer','transfer']
+].map(([recordType,recordId], index) => ({ sequence:index+1,recordType,recordId }));
+fixture.tables = Object.fromEntries(Object.keys(backupColumns).map(table => [table, fixture.tables[table]]));
 const clone = value => JSON.parse(JSON.stringify(value));
+const previousFormat = clone(fixture); delete previousFormat.tables.activity_order;
+assert.equal(validateBackup(previousFormat).tables.activity_order.length, 6, 'Earlier unreleased nine-table backups receive deterministic order metadata');
 // The normal storage API allows long notes and embedded NUL characters.
 fixture.tables.transactions[1].note = 'a'.repeat(10001) + '\0🙂';
 assert.deepEqual(parseBackup(JSON.stringify(fixture)), fixture);
@@ -53,6 +59,12 @@ copied.tables.wallets[0].name = 'Changed';
 assert.equal(fixture.tables.wallets[0].name, 'Cash');
 const badCases = [
   b => b.version = 2,
+  b => b.tables.activity_order.pop(),
+  b => b.tables.activity_order[0].sequence = 0,
+  b => b.tables.activity_order[0].sequence = Number.MAX_SAFE_INTEGER + 1,
+  b => b.tables.activity_order[1].sequence = b.tables.activity_order[0].sequence,
+  b => b.tables.activity_order[0].recordId = 'deleted-id',
+  b => b.tables.activity_order[0].recordType = 'wallet',
   b => b.tables.custom_choices[0].kind = 'payment',
   b => b.tables.custom_choices.push({ ...b.tables.custom_choices[0], id: 'duplicate-name' }),
   b => b.tables.evil = [],

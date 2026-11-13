@@ -84,7 +84,7 @@ Income adds to General and expenses subtract from it. General always counts in T
 
 ## Record a transfer
 
-1. In **Wallets**, tap **Transfer Between Wallets**.
+1. In **Wallets**, tap **Transfer Money Between Wallets**.
 2. Tap **From: Choose Wallet** and choose the source.
 3. Tap **To: Choose Wallet** and choose the destination.
 4. Enter **Amount (PHP)**, check the date and add an optional note.
@@ -315,3 +315,11 @@ For example, with General at zero: GCash 1,000 and Cash 500, both included, make
 **What does a zero limit mean?** The saved allowance is zero. It is different from having no limit.
 
 **Does next month copy the old plan?** An absent current-month limit can copy the immediately previous month's limit. Category allocations and unused allowance do not carry over.
+
+## Finding Your Wallets and Transfers
+
+Tap **Wallets** in the bottom tabs. **Add Wallet** and **Transfer Money Between Wallets** are at the top. To transfer, choose the source and destination wallets, enter the amount, review the balances and confirm. Transfers move existing money and do not count as income or expenses.
+
+## Activity Order
+
+Activity shows the newest dates first. Within each date, the most recently added record appears first. Editing a record keeps its saved position, and Undo returns a deleted transaction to its original position. Some older records use a stable fallback order because their original save order was not recorded.

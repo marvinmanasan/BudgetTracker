@@ -32,14 +32,14 @@ async function main() {
     const legacy = new DatabaseSync(path.join(folder, filename));
     legacy.exec(`CREATE TABLE wallets(id TEXT PRIMARY KEY,name TEXT,nameKey TEXT,included INTEGER,hidden INTEGER);
       CREATE TABLE transactions(id TEXT PRIMARY KEY,type TEXT,amountCentavos INTEGER,category TEXT,date TEXT,paymentMethod TEXT,note TEXT,walletId TEXT);
-      CREATE TABLE balance_changes(id TEXT PRIMARY KEY,walletId TEXT,kind TEXT,deltaCentavos INTEGER,date TEXT,reason TEXT,targetCentavos INTEGER);
-      CREATE TABLE transfers(id TEXT PRIMARY KEY,fromWalletId TEXT,toWalletId TEXT,amountCentavos INTEGER,date TEXT,note TEXT);
+      CREATE TABLE balance_changes(id TEXT PRIMARY KEY,walletId TEXT,kind TEXT,deltaCentavos INTEGER,date TEXT,reason TEXT,targetCentavos INTEGER,createdAt TEXT DEFAULT '2026-01-01 00:00:00');
+      CREATE TABLE transfers(id TEXT PRIMARY KEY,fromWalletId TEXT,toWalletId TEXT,amountCentavos INTEGER,date TEXT,note TEXT,createdAt TEXT DEFAULT '2026-01-01 00:00:00');
       CREATE TABLE custom_choices(id TEXT PRIMARY KEY,name TEXT);
       CREATE TABLE monthly_limits(month TEXT PRIMARY KEY,limitCentavos INTEGER);
       INSERT INTO wallets VALUES('custom','my bank','my bank',0,1);
       INSERT INTO transactions VALUES('old','expense',901,'Old renamed choice','2026-11-01','Other','Keep',NULL);
-      INSERT INTO balance_changes VALUES('opening','custom','opening',500,'2026-01-01','Keep',500);
-      INSERT INTO transfers VALUES('transfer','custom','deleted',100,'2026-01-02','Keep');
+      INSERT INTO balance_changes(id,walletId,kind,deltaCentavos,date,reason,targetCentavos) VALUES('opening','custom','opening',500,'2026-01-01','Keep',500);
+      INSERT INTO transfers(id,fromWalletId,toWalletId,amountCentavos,date,note) VALUES('transfer','custom','deleted',100,'2026-01-02','Keep');
       INSERT INTO custom_choices VALUES('choice','Exact Case');
       INSERT INTO monthly_limits VALUES('2026-11',1000),('2026-10',500);
       PRAGMA user_version=3;`);
@@ -54,7 +54,7 @@ async function main() {
     assert.equal(inspect.prepare("SELECT name FROM sqlite_master WHERE name='category_allocations'").get(), undefined);
     assert.equal(snapshot(inspect), before); inspect.close(); failMigration = false;
     const db = await database.openDatabase(filename);
-    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 5);
+    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 6);
     let categories = load('src/storage/categories.ts'), savings = load('src/storage/savings.ts');
     const budgets = load('src/storage/budgets.ts');
     assert.deepEqual(await categories.getCategoryPlan('2026-12', filename), { limitCentavos: null, allocations: [], signature: '[null,[]]' });

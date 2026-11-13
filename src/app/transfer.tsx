@@ -54,7 +54,7 @@ export default function TransferScreen() {
     <Text style={ui.caption}>Only visible wallets with starting balances are eligible. General cannot be transferred.</Text>
   </BulsaScreen>;
   return <BulsaScreen header={<BackButton disabled={busy} />}>
-    <Text style={ui.title}>{'Transfer Between Wallets'}</Text>
+    <Text style={ui.title}>{'Transfer Money Between Wallets'}</Text>
     {(!data && loading) || readError ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
     {review && <CenteredPopup onClose={() => setReview(null)} busy={busy}><Text style={ui.title}>Review Transfer</Text>
       <Text style={ui.heading}>{names.get(from)} → {names.get(to)}</Text><Text style={ui.body}>{formatCentavos(review.record.amountCentavos)} · {displayDate(review.record.date)}</Text>

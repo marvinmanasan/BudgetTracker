@@ -1,10 +1,12 @@
 import { deriveBalances, monthlyTotalsByMonth } from './ledger';
 import { validateDate } from './validation';
+import { legacyActivityOrder } from './activity';
 import type { Ledger } from '../types/wallet';
 
 export const BACKUP_MAX_BYTES = 10 * 1024 * 1024;
 export const backupColumns = {
   custom_choices: ['id', 'kind', 'name', 'nameKey'],
+  activity_order: ['sequence', 'recordType', 'recordId'],
   wallets: ['id', 'name', 'nameKey', 'included', 'hidden', 'createdAt', 'updatedAt'],
   transactions: ['id', 'type', 'amountCentavos', 'category', 'date', 'paymentMethod', 'note', 'walletId'],
   balance_changes: ['id', 'walletId', 'kind', 'deltaCentavos', 'date', 'reason', 'targetCentavos', 'createdAt'],
@@ -47,13 +49,19 @@ export function validateBackup(value: unknown): FinancialBackup {
   if (root.format !== 'bulsa-financial-backup' || root.version !== 1) fail();
   text(root.createdAt);
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(root.createdAt) || !Number.isFinite(Date.parse(root.createdAt)) || new Date(root.createdAt).toISOString() !== root.createdAt) fail();
-  const source = object(root.tables);
+  const source = { ...object(root.tables) };
+  if (!Object.hasOwn(source, 'activity_order')) {
+    // Unreleased earlier snapshots lacked saved-order metadata. Their exact
+    // insertion chronology cannot be restored; recover the same stable fallback.
+    if (![source.transactions, source.transfers, source.balance_changes].every(Array.isArray)) fail();
+    source.activity_order = legacyActivityOrder({ transactions: source.transactions as { id: string }[], transfers: source.transfers as { id: string; createdAt?: string }[], changes: source.balance_changes as { id: string; createdAt?: string }[] });
+  }
   keys(source, Object.keys(backupColumns));
   const tables = {} as BackupTables;
   let count = 0;
   for (const table of Object.keys(backupColumns) as BackupTable[]) {
     const rows = source[table];
-    if (!Array.isArray(rows) || (count += rows.length) > 50000) fail();
+    if (!Array.isArray(rows) || rows.length > 50000 || (table !== 'activity_order' && (count += rows.length) > 50000)) fail();
     const unique = new Set<string>();
     tables[table] = rows.map(value => {
       const raw = object(value);
@@ -61,7 +69,8 @@ export function validateBackup(value: unknown): FinancialBackup {
       const row: BackupRow = {};
       for (const column of backupColumns[table]) {
         const value = raw[column];
-        if (column === 'included' || column === 'hidden') {
+        if (table === 'activity_order' && column === 'sequence') money(value, 1);
+        else if (column === 'included' || column === 'hidden') {
           if (value !== 0 && value !== 1) fail();
         } else if (column.endsWith('Centavos')) {
           if (column === 'targetCentavos' && table === 'balance_changes' && value === null) { /* opening */ }
@@ -80,12 +89,25 @@ export function validateBackup(value: unknown): FinancialBackup {
           if (!/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(stamp.slice(11))) fail();
         }
       }
-      const key = table === 'category_allocations' ? JSON.stringify([row.month, row.category]) : String(row.id ?? row.month);
+      const key = table === 'activity_order' ? String(row.sequence) : table === 'category_allocations' ? JSON.stringify([row.month, row.category]) : String(row.id ?? row.month);
       if (unique.has(key)) fail();
       unique.add(key);
       return row;
     });
   }
+  const expectedOrder = new Set([
+    ...tables.transactions.map(row => `transaction-${row.id}`),
+    ...tables.transfers.map(row => `transfer-${row.id}`),
+    ...tables.balance_changes.map(row => `change-${row.id}`),
+  ]);
+  for (const row of tables.activity_order) {
+    if (!['transaction', 'transfer', 'change'].includes(row.recordType as string) || !expectedOrder.delete(`${row.recordType}-${row.recordId}`)) fail();
+  }
+  if (expectedOrder.size) fail();
+  // Relative order is the exported contract. Dense numbering avoids importing
+  // an exhausted/poisoned counter and never changes financial values or dates.
+  tables.activity_order.sort((a, b) => (a.sequence as number) - (b.sequence as number));
+  tables.activity_order.forEach((row, index) => { row.sequence = index + 1; });
   const choiceNames = new Set<string>();
   for (const row of tables.custom_choices) {
     if (!['expense', 'income'].includes(row.kind as string)) fail();
@@ -166,5 +188,5 @@ export function parseBackup(json: string) {
 }
 
 export function backupCounts(backup: FinancialBackup) {
-  return (Object.keys(backupColumns) as BackupTable[]).map(table => ({ table, count: backup.tables[table].length }));
+  return (Object.keys(backupColumns) as BackupTable[]).filter(table => table !== 'activity_order').map(table => ({ table, count: backup.tables[table].length }));
 }

@@ -39,8 +39,8 @@ async function main() {
     let load = fresh();
     let db = await load('src/storage/database.ts').openDatabase(mainName);
     await db.runAsync('INSERT INTO transactions(id,type,amountCentavos,category,date,paymentMethod,note) VALUES(?,?,?,?,?,?,?)', 'expense', 'expense', 12500, 'Everything Else', '2026-11-13', 'Not specified', 'Old category stays');
-    await db.execAsync('DROP TABLE IF EXISTS custom_choices; PRAGMA user_version=4');
-    const ledgerBefore = await load('src/storage/wallets.ts').readLedger(db);
+    const ledgerBefore = await load('src/storage/wallets.ts').readLedger(db); delete ledgerBefore.activityOrder;
+    await db.execAsync('DROP TRIGGER IF EXISTS activity_transactions_added; DROP TRIGGER IF EXISTS activity_transfers_added; DROP TRIGGER IF EXISTS activity_changes_added; DROP TRIGGER IF EXISTS activity_transfers_removed; DROP TRIGGER IF EXISTS activity_changes_removed; DROP TABLE IF EXISTS activity_order; DROP TABLE IF EXISTS custom_choices; PRAGMA user_version=4');
     await db.closeAsync();
     const legacy = new DatabaseSync(path.join(folder, legacyName));
     legacy.exec(`CREATE TABLE custom_choices(id TEXT PRIMARY KEY NOT NULL,kind TEXT NOT NULL CHECK(kind IN ('expense','income')),name TEXT NOT NULL,nameKey TEXT NOT NULL,UNIQUE(kind,nameKey))`);
@@ -63,9 +63,9 @@ async function main() {
     inspect.close();
     failCopy = false;
     db = await load('src/storage/database.ts').openDatabase(mainName, legacyName);
-    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 5);
+    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 6);
     assert.deepEqual((await db.getAllAsync('SELECT * FROM custom_choices ORDER BY id')).map(row => ({ ...row })), originalRows);
-    assert.deepEqual(await load('src/storage/wallets.ts').readLedger(db), ledgerBefore, 'Migration keeps every financial record intact');
+    assert.deepEqual((({activityOrder, ...financial}) => financial)(await load('src/storage/wallets.ts').readLedger(db)), ledgerBefore, 'Migration keeps every financial record intact');
     assert.deepEqual(fs.readFileSync(path.join(folder, legacyName)), legacyBytes, 'Legacy source file is unchanged');
     const backup = load('src/storage/backup.ts');
     const saved = await backup.createFinancialBackup(mainName);
@@ -75,10 +75,10 @@ async function main() {
     const opensBefore = legacyOpens;
     load = fresh();
     db = await load('src/storage/database.ts').openDatabase(mainName, legacyName);
-    assert.equal(legacyOpens, opensBefore, 'Schema5 never reopens or reimports legacy choices');
+    assert.equal(legacyOpens, opensBefore, 'Migrated schema never reopens or reimports legacy choices');
     assert.deepEqual(await load('src/storage/choices.ts').getChoices('expense', mainName), [], 'Restored choice deletion cannot resurrect old legacy rows');
-    assert.deepEqual(await load('src/storage/wallets.ts').readLedger(db), ledgerBefore);
-    console.log('Choice migration passed: isolated v4→v5, exact legacy preservation, read/copy failure rollback and retry, unchanged money, source retained, no resurrection after restore/reopen.');
+    assert.deepEqual((({activityOrder, ...financial}) => financial)(await load('src/storage/wallets.ts').readLedger(db)), ledgerBefore);
+    console.log('Choice migration passed: isolated v4→v6, exact legacy preservation, read/copy failure rollback and retry, unchanged money, source retained, no resurrection after restore/reopen.');
   } finally {
     for (const db of connections) db.close();
     fs.rmSync(folder, { recursive: true, force: true });

@@ -1,4 +1,23 @@
 import * as SQLite from "expo-sqlite";
+import { legacyActivityOrder } from '../lib/activity';
+
+const activityOrderTriggers = `
+          CREATE TRIGGER IF NOT EXISTS activity_transactions_added AFTER INSERT ON transactions BEGIN
+            INSERT INTO activity_order(recordType,recordId) SELECT 'transaction',NEW.id WHERE NOT EXISTS(SELECT 1 FROM activity_order WHERE recordType='transaction' AND recordId=NEW.id);
+          END;
+          CREATE TRIGGER IF NOT EXISTS activity_transfers_added AFTER INSERT ON transfers BEGIN
+            INSERT INTO activity_order(recordType,recordId) SELECT 'transfer',NEW.id WHERE NOT EXISTS(SELECT 1 FROM activity_order WHERE recordType='transfer' AND recordId=NEW.id);
+          END;
+          CREATE TRIGGER IF NOT EXISTS activity_changes_added AFTER INSERT ON balance_changes BEGIN
+            INSERT INTO activity_order(recordType,recordId) SELECT 'change',NEW.id WHERE NOT EXISTS(SELECT 1 FROM activity_order WHERE recordType='change' AND recordId=NEW.id);
+          END;
+          CREATE TRIGGER IF NOT EXISTS activity_transfers_removed AFTER DELETE ON transfers BEGIN
+            DELETE FROM activity_order WHERE recordType='transfer' AND recordId=OLD.id;
+          END;
+          CREATE TRIGGER IF NOT EXISTS activity_changes_removed AFTER DELETE ON balance_changes BEGIN
+            DELETE FROM activity_order WHERE recordType='change' AND recordId=OLD.id;
+          END;
+`;
 
 const databasePromises = new Map<string, Promise<SQLite.SQLiteDatabase>>();
 
@@ -35,17 +54,18 @@ async function initializeDatabase(name: string, legacyChoicesName?: string) {
       "PRAGMA user_version",
     );
     const version = versionRow?.user_version ?? 0;
-    if (version > 5) {
+    if (version > 6) {
       throw new Error(
         "This database uses a newer version. Update Bulsa before opening it.",
       );
     }
     await db.execAsync('PRAGMA foreign_keys = ON');
-    if (version < 5) {
+    if (version < 6) {
       // Read the old independent file without changing or deleting it. Only the
       // main database is written, so table/copy/version changes commit together.
-      const choices = legacyChoicesName ? await readLegacyChoices(legacyChoicesName) : [];
+      const choices = version < 5 && legacyChoicesName ? await readLegacyChoices(legacyChoicesName) : [];
       await db.withTransactionAsync(async () => {
+        if (version < 5) {
         if (version < 4) {
           if (version < 2) {
             if (version === 0) {
@@ -138,8 +158,29 @@ async function initializeDatabase(name: string, legacyChoicesName?: string) {
         // Schema version is the one-time migration marker. Restoring an empty
         // list later cannot accidentally import the retained legacy file again.
         await db.execAsync('PRAGMA user_version = 5');
+        }
+        await db.execAsync(`CREATE TABLE activity_order (
+          sequence INTEGER PRIMARY KEY AUTOINCREMENT CHECK(sequence > 0 AND sequence <= 9007199254740991),
+          recordType TEXT NOT NULL CHECK(recordType IN ('transaction','transfer','change')),
+          recordId TEXT NOT NULL,
+          UNIQUE(recordType,recordId)
+        );`);
+        const historical = legacyActivityOrder({
+          transactions: await db.getAllAsync<{ id: string }>('SELECT id FROM transactions ORDER BY rowid'),
+          transfers: await db.getAllAsync<{ id: string; createdAt: string }>('SELECT id,createdAt FROM transfers ORDER BY rowid'),
+          changes: await db.getAllAsync<{ id: string; createdAt: string }>('SELECT id,createdAt FROM balance_changes ORDER BY rowid'),
+        });
+        for (const row of historical) await db.runAsync('INSERT INTO activity_order(sequence,recordType,recordId) VALUES(?,?,?)', row.sequence, row.recordType, row.recordId);
+        // Transaction identities keep a deleted record's position for Undo.
+        // Non-Undo types drop identities when removed, so a fresh starting
+        // balance after reset gets a new position. Edits and clocks do not move rows.
+        await db.execAsync(activityOrderTriggers);
+        await db.execAsync('PRAGMA user_version = 6');
       });
     }
+    // Some local unreleased schema6 builds predate the non-Undo delete triggers.
+    // Idempotent trigger installation repairs that draft without rewriting rows.
+    if (version === 6) await db.withTransactionAsync(() => db.execAsync(activityOrderTriggers));
     return db;
   } catch (error) {
     await db.closeAsync().catch(() => {});

@@ -2,7 +2,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { deriveBalances, monthlyTotalsByMonth } from '../lib/ledger';
 import { adjustmentPreview, balanceEffectsSignature } from '../lib/editing';
 import { localDate, validateCentavos, validateDate, validateTransaction } from '../lib/validation';
-import type { Ledger, Wallet, BalanceChange, Transfer } from '../types/wallet';
+import type { Ledger, Wallet, BalanceChange, Transfer, ActivityOrder } from '../types/wallet';
 import type { Transaction } from '../types/transaction';
 import { withDatabase } from './database';
 
@@ -14,7 +14,11 @@ export async function readLedger(db: SQLiteDatabase): Promise<Ledger> {
   transactions.forEach(validateTransaction);
   const changes = await db.getAllAsync<BalanceChange>('SELECT id,walletId,kind,deltaCentavos,date,reason,targetCentavos FROM balance_changes ORDER BY rowid');
   const transfers = await db.getAllAsync<Transfer>('SELECT id,fromWalletId,toWalletId,amountCentavos,date,note FROM transfers ORDER BY rowid');
-  const data: Ledger = { wallets: rows.map(w => ({ ...w, included: w.included === 1, hidden: w.hidden === 1 })), transactions, changes, transfers };
+  const activityOrder = await db.getAllAsync<ActivityOrder>(`SELECT sequence,recordType,recordId FROM activity_order o WHERE
+    (recordType='transaction' AND EXISTS(SELECT 1 FROM transactions t WHERE t.id=o.recordId)) OR
+    (recordType='transfer' AND EXISTS(SELECT 1 FROM transfers t WHERE t.id=o.recordId)) OR
+    (recordType='change' AND EXISTS(SELECT 1 FROM balance_changes c WHERE c.id=o.recordId)) ORDER BY sequence`);
+  const data: Ledger = { wallets: rows.map(w => ({ ...w, included: w.included === 1, hidden: w.hidden === 1 })), transactions, changes, transfers, activityOrder };
   deriveBalances(data);
   monthlyTotalsByMonth(data);
   return data;

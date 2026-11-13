@@ -1,4 +1,4 @@
-import type { Ledger } from '../types/wallet';
+import type { ActivityOrder, Ledger } from '../types/wallet';
 import { formatCentavos } from './money';
 
 export type ActivityRow = {
@@ -10,7 +10,7 @@ export type ActivitySection = { date: string; data: ActivityRow[] };
 
 // A detail view needs one record, not a rebuilt/sorted copy of the whole feed.
 export function activityRecord(data: Ledger, key: string): ActivityRow | undefined {
-  const selected: Ledger = { wallets: data.wallets, transactions: [], transfers: [], changes: [] };
+  const selected: Ledger = { wallets: data.wallets, transactions: [], transfers: [], changes: [], activityOrder: data.activityOrder };
   if (key.startsWith('transaction-')) {
     const row = data.transactions.find(t => t.id === key.slice('transaction-'.length));
     if (row) selected.transactions = [row];
@@ -94,7 +94,8 @@ export function activitySections(ledger: Ledger, wallet?: string): ActivitySecti
       ],
     });
   }
-  rows.sort((a, b) => b.date.localeCompare(a.date) || a.key.localeCompare(b.key));
+  const savedOrder = new Map(ledger.activityOrder?.map(row => [`${row.recordType}-${row.recordId}`, row.sequence]));
+  rows.sort((a, b) => b.date.localeCompare(a.date) || (savedOrder.get(b.key) ?? 0) - (savedOrder.get(a.key) ?? 0) || a.key.localeCompare(b.key));
   const sections: ActivitySection[] = [];
   for (const row of rows) {
     const previous = sections[sections.length - 1];
@@ -102,4 +103,22 @@ export function activitySections(ledger: Ledger, wallet?: string): ActivitySecti
     else sections.push({ date: row.date, data: [row] });
   }
   return sections;
+}
+
+// Older records did not save a global insertion order. Recover recognized app
+// ID timestamps or native creation timestamps where available; unknown/tied
+// records use a stable table/row fallback, not an invented exact chronology.
+export function legacyActivityOrder(data: { transactions: { id: string; createdAt?: string }[]; transfers: { id: string; createdAt?: string }[]; changes: { id: string; createdAt?: string }[] }): ActivityOrder[] {
+  const rows: (Omit<ActivityOrder, 'sequence'> & { timestamp: number; position: number })[] = [];
+  for (const [recordType, records] of [['transaction', data.transactions], ['transfer', data.transfers], ['change', data.changes]] as const) {
+    records.forEach((record, position) => {
+      const match = typeof record.id === 'string' ? /(?:^|-)([a-z0-9]+)-[a-z0-9]+-[a-z0-9]+$/i.exec(record.id) : null;
+      const generated = match ? Number.parseInt(match[1], 36) : 0;
+      const validGenerated = Number.isSafeInteger(generated) && generated >= 946684800000 && generated <= 4133980800000;
+      const created = typeof record.createdAt === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(record.createdAt) ? Date.parse(record.createdAt.replace(' ', 'T') + 'Z') : 0;
+      rows.push({ recordType, recordId: record.id, timestamp: validGenerated ? generated : Number.isFinite(created) ? created : 0, position });
+    });
+  }
+  rows.sort((a, b) => a.timestamp - b.timestamp || a.recordType.localeCompare(b.recordType) || a.position - b.position || a.recordId.localeCompare(b.recordId));
+  return rows.map(({ recordType, recordId }, index) => ({ sequence: index + 1, recordType, recordId }));
 }

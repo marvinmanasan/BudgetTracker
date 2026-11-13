@@ -83,3 +83,9 @@
 
 - Peso amounts with two decimal places.
 - Dates displayed as MM-DD-YYYY and months with full names, such as November 2026.
+
+## Wallet Navigation
+
+- Four bottom tabs: Overview, Wallets, Budgets and Activity.
+- Add Wallet and Transfer Money Between Wallets are available at the top of Wallets.
+- Activity uses saved order within each day; edits and Undo preserve that order.

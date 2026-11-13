@@ -7,7 +7,6 @@ import { Pressable, Text, View, StyleSheet } from 'react-native';
 import { BulsaScreen } from '@/components/bulsa-screen';
 import { BulsaButton } from '@/components/bulsa-button';
 import { SummaryCard } from '@/components/summary-card';
-import { StorageCheck } from '@/components/storage-check';
 import { MonthlyLimitNotice } from '@/components/monthly-limit-notice';
 import { SavingsPreview } from '@/components/savings-preview';
 import { ReadState, useUI } from '@/components/bulsa-form';
@@ -44,7 +43,6 @@ export default function Index() {
       <View style={styles.summary}><SummaryCard label="Income" tone="income" amountCentavos={totals.incomeCentavos} /><SummaryCard label="Expenses" tone="expense" amountCentavos={totals.expenseCentavos} /></View>
       <SavingsPreview />
     </>}
-    {__DEV__ && <StorageCheck />}
   </BulsaScreen>;
 }
 const createStyles = (C: BulsaColors) => StyleSheet.create({

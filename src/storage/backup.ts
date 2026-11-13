@@ -5,7 +5,12 @@ import { withDatabase } from './database';
 async function readBackup(db: SQLiteDatabase): Promise<FinancialBackup> {
   const tables = {} as BackupTables;
   for (const table of Object.keys(backupColumns) as BackupTable[]) {
-    tables[table] = await db.getAllAsync(`SELECT ${backupColumns[table].join(',')} FROM ${table} ORDER BY rowid`);
+    tables[table] = table === 'activity_order'
+      ? await db.getAllAsync(`SELECT sequence,recordType,recordId FROM activity_order o WHERE
+        (recordType='transaction' AND EXISTS(SELECT 1 FROM transactions t WHERE t.id=o.recordId)) OR
+        (recordType='transfer' AND EXISTS(SELECT 1 FROM transfers t WHERE t.id=o.recordId)) OR
+        (recordType='change' AND EXISTS(SELECT 1 FROM balance_changes c WHERE c.id=o.recordId)) ORDER BY sequence`)
+      : await db.getAllAsync(`SELECT ${backupColumns[table].join(',')} FROM ${table} ORDER BY rowid`);
   }
   return validateBackup({ format: 'bulsa-financial-backup', version: 1, createdAt: new Date().toISOString(), tables });
 }
@@ -25,9 +30,12 @@ export function restoreFinancialBackup(input: FinancialBackup, expectedSignature
   return withDatabase(name, async db => {
     if (!canRestore()) throw new Error('Finish or dismiss the pending Undo before restoring.');
     if (financialSignature(await readBackup(db)) !== expectedSignature) throw new Error('Your records changed. Choose the backup again and review a fresh preview.');
-    const deletionOrder: BackupTable[] = ['custom_choices', 'savings_contributions', 'category_allocations', 'transactions', 'transfers', 'balance_changes', 'savings_goals', 'monthly_limits', 'wallets'];
+    const deletionOrder: BackupTable[] = ['custom_choices', 'savings_contributions', 'category_allocations', 'transactions', 'transfers', 'balance_changes', 'savings_goals', 'monthly_limits', 'wallets', 'activity_order'];
     for (const table of deletionOrder) await db.runAsync(`DELETE FROM ${table}`);
-    const insertionOrder: BackupTable[] = ['wallets', 'monthly_limits', 'savings_goals', 'balance_changes', 'transactions', 'transfers', 'category_allocations', 'savings_contributions', 'custom_choices'];
+    // All active order rows will be restored explicitly. Reset the private
+    // AUTOINCREMENT high-water mark in the same transaction, including rollback.
+    await db.runAsync("DELETE FROM sqlite_sequence WHERE name='activity_order'");
+    const insertionOrder: BackupTable[] = ['activity_order', 'wallets', 'monthly_limits', 'savings_goals', 'balance_changes', 'transactions', 'transfers', 'category_allocations', 'savings_contributions', 'custom_choices'];
     for (const table of insertionOrder) {
       const columns = backupColumns[table];
       for (const row of backup.tables[table]) {

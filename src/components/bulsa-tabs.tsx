@@ -13,14 +13,15 @@ export default function BulsaTabs() {
       tabBarActiveTintColor: dark ? LightColors.onAccent : LightColors.text,
       tabBarInactiveTintColor: LightColors.muted,
       tabBarHideOnKeyboard: true,
-      tabBarStyle: { backgroundColor: LightColors.surface, borderTopWidth: 0, elevation: 0, shadowOpacity: 0, height: 76 + insets.bottom, paddingTop: 8, paddingBottom: insets.bottom + 8, paddingHorizontal: 16 },
+      tabBarStyle: { backgroundColor: LightColors.surface, borderTopWidth: 0, elevation: 0, shadowOpacity: 0, height: 76 + insets.bottom, paddingTop: 8, paddingBottom: insets.bottom + 8, paddingHorizontal: 8 },
       tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 4 },
       tabBarIconStyle: { marginTop: 4 },
       tabBarActiveBackgroundColor: dark ? LightColors.accent : LightColors.selected,
-      tabBarItemStyle: { borderRadius: 16, overflow: 'hidden', marginHorizontal: 4 },
+      tabBarItemStyle: { borderRadius: 16, overflow: 'hidden', marginHorizontal: 2 },
       sceneStyle: { backgroundColor: LightColors.background },
     }}>
       <Tabs.Screen name="index" options={{ title: "Overview", tabBarIcon: ({ focused }) => <Image source={require('../../assets/icons/overview.svg')} tintColor={focused ? (dark ? LightColors.onAccent : LightColors.text) : LightColors.muted} contentFit="contain" style={{ width: 24, height: 24 }} accessible={false} /> }} />
+      <Tabs.Screen name="wallets" options={{ title: "Wallets", tabBarIcon: ({ focused }) => <Image source={require('../../assets/icons/wallets.svg')} tintColor={focused ? (dark ? LightColors.onAccent : LightColors.text) : LightColors.muted} contentFit="contain" style={{ width: 24, height: 24 }} accessible={false} /> }} />
       <Tabs.Screen name="budgets" options={{ title: "Budgets", tabBarIcon: ({ focused }) => <Image source={require('../../assets/icons/budgets.svg')} tintColor={focused ? (dark ? LightColors.onAccent : LightColors.text) : LightColors.muted} contentFit="contain" style={{ width: 24, height: 24 }} accessible={false} /> }} />
       <Tabs.Screen name="activity" options={{ title: "Activity", tabBarIcon: ({ focused }) => <Image source={require('../../assets/icons/activity.svg')} tintColor={focused ? (dark ? LightColors.onAccent : LightColors.text) : LightColors.muted} contentFit="contain" style={{ width: 24, height: 24 }} accessible={false} /> }} />
     </Tabs>

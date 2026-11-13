@@ -77,7 +77,7 @@ async function main() {
     assert.equal((await balances()).totalCentavos,140000);
     const editReadsBefore = ledgerReads;
     await tx.updateTransaction({...record,walletId:'wallet-gcash'},dbName);
-    assert.equal(ledgerReads - editReadsBefore,8,'Assigned edits reuse the transaction-local snapshot, retaining post-write validation');
+    assert.equal(ledgerReads - editReadsBefore,10,'Assigned edits reuse the transaction-local snapshot, retaining post-write validation');
     assert.equal((await balances()).totalCentavos,140000);
     assert.equal((await balances()).generalCentavos,0);
     await tx.updateTransaction({...record,walletId:'wallet-maya'},dbName);
@@ -90,7 +90,7 @@ async function main() {
     const transfer={id:'transfer',fromWalletId:'wallet-gcash',toWalletId:'wallet-maya',amountCentavos:20000,date:'2026-11-08',note:''};
     const readsBeforeTransfer = ledgerReads;
     await store.recordTransfer(transfer,dbName);
-    assert.equal(ledgerReads - readsBeforeTransfer,8,'one pre-save snapshot and one post-save integrity check');
+    assert.equal(ledgerReads - readsBeforeTransfer,10,'one pre-save snapshot and one post-save integrity check');
     assert.equal((await balances()).totalCentavos,130000);
     await assert.rejects(store.recordTransfer({...transfer,id:'same',toWalletId:'wallet-gcash'},dbName));
     await assert.rejects(store.recordTransfer({...transfer,id:'zero',amountCentavos:0},dbName));

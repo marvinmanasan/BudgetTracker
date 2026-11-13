@@ -26,7 +26,7 @@ Open the APK on your Android phone and follow the installation prompts. If Bulsa
 
 ## How to Use
 
-1. Tap **Set Up Wallets**, or open **View Wallets ›** from **Overview**. Set starting balances for the wallets you use. **Add Wallet** is at the top of the wallet list.
+1. Tap **Set Up Wallets**, or tap the **Wallets** tab. Set starting balances for the wallets you use. **Add Wallet** and **Transfer Money Between Wallets** are at the top of the wallet list.
 2. Choose which wallets have **Include in Total Budget** switched on.
 3. On **Overview**, tap **+ Add Expense**. Enter the amount, category, wallet and date, then tap **Save Expense**. Choose **Income** in the same form to record income.
 4. Open **Activity** to search, filter or correct saved transactions.
