@@ -23,5 +23,12 @@ const load=createLoader({'expo-file-system':{File,Directory,Paths:{document:'pri
  corrupt=true;await assert.rejects(()=>service.saveRestoreSafetyCopy(backup));corrupt=false;
  assert.equal(files.size,1,'Failed verification keeps prior safety copy');
  assert.deepEqual(await service.readRestoreSafetyCopy(uri),backup);
+ const realNow=Date.now;
+ try {
+  Date.now=()=>2000; const first=await service.saveRestoreSafetyCopy(backup);
+  Date.now=()=>1000; const second=await service.saveRestoreSafetyCopy({...backup,createdAt:'2026-11-12T00:00:00.000Z'});
+  assert.notEqual(first,second);
+  assert.equal(await service.latestRestoreSafetyCopy(),second,'Last restore stays discoverable when the device clock moves backward');
+ } finally {Date.now=realNow;}
  console.log('Restore safety copy passed: verified private copy, restart discovery, disk failure and corrupt-write cleanup preserve previous copy.');
 })().catch(e=>{console.error(e);process.exitCode=1});
