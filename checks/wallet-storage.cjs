@@ -77,7 +77,7 @@ async function main() {
     assert.equal((await balances()).totalCentavos,140000);
     const editReadsBefore = ledgerReads;
     await tx.updateTransaction({...record,walletId:'wallet-gcash'},dbName);
-    assert.equal(ledgerReads - editReadsBefore,8,'Assigned edits reuse the transaction-local snapshot, retaining post-write validation');
+    assert.equal(ledgerReads - editReadsBefore,10,'Assigned edits reuse the transaction-local snapshot, retaining post-write validation');
     assert.equal((await balances()).totalCentavos,140000);
     assert.equal((await balances()).generalCentavos,0);
     await tx.updateTransaction({...record,walletId:'wallet-maya'},dbName);
@@ -90,7 +90,7 @@ async function main() {
     const transfer={id:'transfer',fromWalletId:'wallet-gcash',toWalletId:'wallet-maya',amountCentavos:20000,date:'2026-11-08',note:''};
     const readsBeforeTransfer = ledgerReads;
     await store.recordTransfer(transfer,dbName);
-    assert.equal(ledgerReads - readsBeforeTransfer,8,'one pre-save snapshot and one post-save integrity check');
+    assert.equal(ledgerReads - readsBeforeTransfer,10,'one pre-save snapshot and one post-save integrity check');
     assert.equal((await balances()).totalCentavos,130000);
     await assert.rejects(store.recordTransfer({...transfer,id:'same',toWalletId:'wallet-gcash'},dbName));
     await assert.rejects(store.recordTransfer({...transfer,id:'zero',amountCentavos:0},dbName));
@@ -156,6 +156,21 @@ async function main() {
     assert.equal(deriveBalances(await store.getLedger(h)).totalCentavos,30000);
     assert.equal((await store.getLedger(h)).wallets.find(w=>w.id==='wallet-gcash').name,'Everyday');
     assert.equal((await store.getLedger(h)).wallets.length,5,'defaults seed once');
+    const singleFunded = 'single-funded-transfer.db';
+    await store.setOpening('wallet-maribank',100000,singleFunded);
+    await store.setOpening('wallet-gotyme',0,singleFunded);
+    const move250 = {id:'mari-go-250',fromWalletId:'wallet-maribank',toWalletId:'wallet-gotyme',amountCentavos:25000,date:'2026-11-13',note:'Move to savings account'};
+    const preview250 = load('src/lib/transfers.ts').transferPreview(await store.getLedger(singleFunded),move250);
+    await store.recordTransfer(move250,singleFunded,preview250.signature);
+    const moved250 = await store.getLedger(singleFunded), balances250 = deriveBalances(moved250);
+    assert.equal(balances250.wallets.find(w=>w.id==='wallet-maribank').balanceCentavos,75000);
+    assert.equal(balances250.wallets.find(w=>w.id==='wallet-gotyme').balanceCentavos,25000);
+    assert.equal(balances250.totalCentavos,100000,'One funded source and zero destination keep included Total Budget unchanged');
+    assert.equal(moved250.transactions.length,0,'Transfer creates neither income nor expenses');
+    assert.equal(moved250.transfers.length,1);
+    assert.deepEqual(load('src/lib/ledger.ts').monthlyTotals(moved250,'2026-11'),{incomeCentavos:0,expenseCentavos:0});
+    await assert.rejects(store.recordTransfer({...move250,id:'over-balance',amountCentavos:75001},singleFunded),/Not enough/);
+    assert.equal((await store.getLedger(singleFunded)).transfers.length,1);
     console.log('Wallet SQLite checks passed: v1 preservation/rollback/retry, openings, inclusion, hiding, safe delete, reassignment, concurrent transfers, adjustments, negative historical edits, overflow rollback and reopen.');
   } finally {
     for(const db of connections) db.close();

@@ -3,7 +3,7 @@ const {createLoader}=require('./load-typescript.cjs'),load=createLoader();
 let state={data:{wallets:[],transactions:[],transfers:[],changes:[]},loading:false,error:'',reload:async()=>{}};
 const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};
 const mocks={react:{useState:initial=>[typeof initial==='function'?initial():initial,()=>{}]},'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View'},'expo-router':{router:{push(){}}},
- '@/components/pocket-screen':{PocketScreen:'Screen'},'@/components/pocket-button':{PocketButton:'Button'},'@/components/bulsa-form':{Field:'Field',ReadState:'ReadState',useUI:()=>({})},
+ '@/components/bulsa-screen':{BulsaScreen:'Screen'},'@/components/bulsa-button':{BulsaButton:'Button'},'@/components/bulsa-form':{Field:'Field',ReadState:'ReadState',useUI:()=>({})},
  '@/components/category-budget-panel':{CategoryBudgetPanel:'CategoryPanel'},'@/components/savings-preview':{SavingsPreview:'Savings'},'@/components/monthly-limit-history':{MonthlyLimitHistory:'History'},'@/components/monthly-limit-notice':{MonthlyLimitNotice:'Limit'},
  '@/hooks/use-ledger':{useLedger:()=>state},'@/lib/ledger':load('src/lib/ledger.ts'),'@/lib/validation':{localDate:()=> '2026-11-12'},'@/lib/display-date':load('src/lib/display-date.ts'),'@/lib/activity':load('src/lib/activity.ts'),
 };

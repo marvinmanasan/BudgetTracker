@@ -1,5 +1,5 @@
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { Text, View } from 'react-native';
 import type { Ledger } from '../types/wallet';
@@ -8,9 +8,10 @@ import { categoryBudgetSummary } from '../lib/category-budgets';
 import { formatCentavos } from '../lib/money';
 
 import { ReadState, useUI } from './bulsa-form';
-import { PocketButton } from './pocket-button';
+import { BulsaButton } from './bulsa-button';
 
 export function CategoryBudgetPanel({ data, month }: { data: Ledger; month: string }) {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { plan, loading, error, reload } = useCategoryPlan(month);
@@ -22,7 +23,7 @@ export function CategoryBudgetPanel({ data, month }: { data: Ledger; month: stri
   return <View style={{ gap: 12 }}>
     <Text style={ui.heading}>Category Limits</Text>
     {loading || error ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : !plan || plan.limitCentavos === null ? <>
-      <Text style={ui.body}>Set a monthly spending limit before dividing it into categories.</Text><PocketButton secondary title="Set Monthly Limit" onPress={() => router.push({ pathname: '/monthly-limit', params: { month } })} />
+      <Text style={ui.body}>Set a monthly spending limit before dividing it into categories.</Text><BulsaButton secondary title="Set Monthly Limit" onPress={() => router.push({ pathname: '/monthly-limit', params: { month } })} />
     </> : <>
       {!!result?.error && <Text style={ui.error}>{result.error}</Text>}
       {result?.summary?.buckets.map(bucket => <View key={bucket.category} style={ui.card}>
@@ -32,7 +33,7 @@ export function CategoryBudgetPanel({ data, month }: { data: Ledger; month: stri
         <Text style={bucket.status === 'over' ? ui.error : ui.body}>{formatCentavos(bucket.remainingCentavos)} remaining{bucket.status === 'over' ? ' · Over Limit' : bucket.status === 'near' ? ' · Near Limit' : ''}</Text>
       </View>)}
       <Text style={ui.caption}>Everything Else includes every expense without a named allocation, including older custom labels. All wallets count in spending.</Text>
-      <PocketButton secondary title="Edit Category Limits" onPress={() => router.push({ pathname: '/category-limits', params: { month } })} />
+      <BulsaButton secondary title="Edit Category Limits" onPress={() => router.push({ pathname: '/category-limits', params: { month } })} />
     </>}
   </View>;
 }

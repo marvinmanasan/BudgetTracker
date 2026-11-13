@@ -5,9 +5,9 @@ const theme={preferences:{displayName:'Ana',appearance:'light',onboardingComplet
 const mocks={
  'react':{useCallback:fn=>fn,useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],value=>{slots[i]=value;}];}},
  'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',BackHandler:{addEventListener:()=>({remove(){}})}},
- 'expo-router':{router:{push:route=>navigation.push(route)},useFocusEffect(){},useNavigation:()=>({isFocused:()=>focused})},
+ 'expo-router':{useRouter:()=>({push:route=>navigation.push(route)}),useFocusEffect(){},useNavigation:()=>({isFocused:()=>focused})},
  '../hooks/use-bulsa-theme':{useBulsaTheme:()=>({...theme,saving})},
- './pocket-screen':{PocketScreen:'Screen'},'./pocket-button':{PocketButton:'Button'},'./bulsa-form':{BackButton:'Back',Field:'Field',useUI:()=>({})},
+ './bulsa-screen':{BulsaScreen:'Screen'},'./bulsa-button':{BulsaButton:'Button'},'./bulsa-form':{BackButton:'Back',Field:'Field',useUI:()=>({})},
 };
 function read(file){const result={exports:{}};const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+code+'})')(name=>mocks[name]??require(name),result,result.exports);return result.exports;}
 const form=read('src/components/settings-form.tsx').SettingsForm;

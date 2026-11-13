@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const {createLoader}=require('./load-typescript.cjs');
-const load=createLoader(),palettes=load('src/constants/pocket.ts'),lib=load('src/lib/preferences.ts');
+const load=createLoader(),palettes=load('src/constants/bulsa.ts'),lib=load('src/lib/preferences.ts');
 function harness(){
  const slots=[],effects=[];let cursor=0,system='dark',reads=0,writes=0,changes=0,readError=false;
  let read=async()=>{reads++;if(readError)throw Error('settings read failed');return {...lib.DEFAULT_PREFERENCES};};
@@ -12,7 +12,7 @@ function harness(){
  };
  const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};
  const mocks={react,'react/jsx-runtime':jsx,'react-native':{Appearance:{setColorScheme:choice=>native.push(choice)},useColorScheme:()=>system,SafeAreaView:'SafeArea',Pressable:'Button',Text:'Text',View:'View'},
-  '../storage/preferences':{getPreferences:()=>read(),updatePreferences:patch=>{writes++;return write(patch);}},'../lib/preferences':lib,'../constants/pocket':palettes};
+  '../storage/preferences':{getPreferences:()=>read(),updatePreferences:patch=>{writes++;return write(patch);}},'../lib/preferences':lib,'../constants/bulsa':palettes};
  const result={exports:{}};const code=ts.transpileModule(fs.readFileSync('src/hooks/use-bulsa-theme.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
  vm.runInThisContext('(function(require,module,exports){'+code+'})')(name=>mocks[name]??require(name),result,result.exports);
  return {render(){cursor=0;const tree=result.exports.BulsaThemeProvider({children:'App'});while(effects.length)effects.shift()();return tree;},unmount(){for(const slot of slots)slot?.cleanup?.();},get native(){return native;},get writes(){return writes;},get changes(){return changes;},setSystem:v=>{system=v;},setRead:v=>{read=v;},setWrite:v=>{write=v;},setReadError:v=>{readError=v;},get reads(){return reads;}};

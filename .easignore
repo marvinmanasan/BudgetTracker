@@ -71,3 +71,10 @@ Thumbs.db
 # Local Git metadata and public guides are not build inputs
 .git
 /docs/
+
+# Private financial exports and release QA artifacts
+Bulsa-Backup-*.json
+Bulsa-Before-Restore-*.json
+Bulsa-Safety-*.json
+/qa/
+/qa-screenshots/

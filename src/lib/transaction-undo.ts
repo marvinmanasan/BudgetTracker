@@ -1,7 +1,7 @@
 import type { Transaction } from '../types/transaction';
 
 type State = { record: Transaction | null; busy: boolean; error: string };
-export function createUndoController(storage: { remove: (record: Transaction) => Promise<Transaction>; restore: (record: Transaction) => Promise<void> }) {
+export function createUndoController(storage: { remove: (record: Transaction, expectedPreviewSignature?: string) => Promise<Transaction>; restore: (record: Transaction) => Promise<void> }) {
   let state: State = { record: null, busy: false, error: '' };
   const listeners = new Set<() => void>();
   function publish(next: State) { state = next; listeners.forEach(listener => listener()); }
@@ -9,10 +9,10 @@ export function createUndoController(storage: { remove: (record: Transaction) =>
     snapshot: () => state,
     subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
     dismiss: () => { if (!state.busy) publish({ record: null, busy: false, error: '' }); },
-    async remove(record: Transaction) {
+    async remove(record: Transaction, expectedPreviewSignature?: string) {
       if (state.busy || state.record) return false;
       publish({ record: null, busy: true, error: '' });
-      try { const deleted = await storage.remove({ ...record }); publish({ record: deleted, busy: false, error: '' }); return true; }
+      try { const deleted = await storage.remove({ ...record }, expectedPreviewSignature); publish({ record: deleted, busy: false, error: '' }); return true; }
       catch (cause) { publish({ record: null, busy: false, error: cause instanceof Error ? cause.message : 'Could not delete.' }); return false; }
     },
     async undo() {

@@ -2,10 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Appearance, Pressable, SafeAreaView, Text, useColorScheme, View } from 'react-native';
 import { getPreferences, updatePreferences } from '../storage/preferences';
 import { DEFAULT_PREFERENCES, resolveAppearance, type Preferences } from '../lib/preferences';
-import { DarkColors, PocketColors, type BulsaColors } from '../constants/pocket';
+import { DarkColors, LightColors, type BulsaColors } from '../constants/bulsa';
 
 type ThemeState = { colors: BulsaColors; dark: boolean; preferences: Preferences; saving: boolean; error: string; save: (patch: Partial<Preferences>) => Promise<boolean> };
-const ThemeContext = createContext<ThemeState>({ colors: PocketColors, dark: false, preferences: DEFAULT_PREFERENCES, saving: false, error: '', save: async () => false });
+const ThemeContext = createContext<ThemeState>({ colors: LightColors, dark: false, preferences: DEFAULT_PREFERENCES, saving: false, error: '', save: async () => false });
 
 export function BulsaThemeProvider({ children }: PropsWithChildren) {
   const [preferences, setPreferences] = useState<Preferences | null>(null);
@@ -32,7 +32,7 @@ export function BulsaThemeProvider({ children }: PropsWithChildren) {
     if (preferences) Appearance.setColorScheme(preferences.appearance === 'system' ? 'auto' : preferences.appearance);
   }, [preferences]);
   const dark = resolveAppearance(preferences?.appearance ?? 'light', system) === 'dark';
-  const colors = dark ? DarkColors : PocketColors;
+  const colors = dark ? DarkColors : LightColors;
   async function save(patch: Partial<Preferences>) {
     if (pending.current || !preferences) return false;
     pending.current = true; setSaving(true); setError('');

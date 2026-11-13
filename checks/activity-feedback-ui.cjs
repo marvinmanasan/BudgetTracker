@@ -11,10 +11,10 @@ const mocks={
  '@/components/money-review':{MoneyReview:'MoneyReview'},'@/lib/selected-deletion':load('src/lib/selected-deletion.ts'),'@/storage/selected-deletion':{deleteSelectedTransactions:async()=>{}},
  react:{useCallback:fn=>fn,useMemo:fn=>fn(),useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},
  'expo-image':{Image:'Image'},'react/jsx-runtime':jsx,'react-native':{BackHandler:{addEventListener:()=>({remove(){}})},Text:'Text',View:'View',Pressable:'Pressable',SectionList:'List',Modal:'Modal',Alert:{alert:(title,message,buttons)=>alertButtons=buttons}},
- 'expo-router':{useFocusEffect(){},useLocalSearchParams:()=>params,router:{setParams:p=>Object.assign(params,p),push:r=>routes.push(r)}},
+ 'expo-router':{useFocusEffect(){},useLocalSearchParams:()=>params,useNavigation:()=>({setParams:p=>Object.assign(params,p)}),useRouter:()=>({push:r=>routes.push(r)})},
  '@/hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{}})},'@/hooks/use-ledger':{useSaveAction:()=>({busy:false,error:'',run:async fn=>{await fn();return true;}}),useLedger:()=>({data,loading:false,error:'',reload(){}})},
  '@/hooks/use-transaction-undo':{useTransactionUndo:()=>({busy:false,record:pending,snapshot:()=>({busy:false,record:pending})})},
- '@/components/pocket-screen':{PocketScreen:'Screen'},'@/components/pocket-button':{PocketButton:'Button'},
+ '@/components/bulsa-screen':{BulsaScreen:'Screen'},'@/components/bulsa-button':{BulsaButton:'Button'},
  '@/components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'ReadState',useUI:()=>({})},'@/components/activity-amount':{ActivityAmount:'Amount'},
  '@/components/activity-filters':{ActivityFilterPanel:'Filters'},'@/components/undo-notice':{UndoNotice:'Undo'},
  '@/lib/activity':load('src/lib/activity.ts'),'@/lib/validation':{localDate:()=> '2026-11-12'},'@/lib/money':load('src/lib/money.ts'),'@/lib/display-date':load('src/lib/display-date.ts'),
@@ -27,7 +27,7 @@ const render=()=>{cursor=0;return moduleObject.exports.default();};
 const find=(t,type)=>nodes(t).find(n=>n.type===type);
 const button=(t,title)=>nodes(t).find(n=>n.type==='Button'&&n.props.title===title);
 const header=t=>find(t,'List').props.ListHeaderComponent;
-let tree=render();button(header(tree),'Filters').props.onPress();tree=render();
+let tree=render();button(header(tree),'Filters').props.onPress();tree=render();assert.equal(find(tree,'Popup').props.dismissOnBackdropPress,true,'Filters opt in to outside dismissal');
 find(tree,'Filters').props.onMonth('2026-10');tree=render();assert.equal(find(tree,'List').props.sections.length,2,'Draft month does not alter Activity');
 find(tree,'Popup').props.onClose();tree=render();assert.equal(find(tree,'Popup'),undefined);
 button(header(tree),'Filters').props.onPress();tree=render();assert.equal(find(tree,'Filters').props.month,'','Cancel discards draft month');

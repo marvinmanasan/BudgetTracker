@@ -1,7 +1,8 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { deriveBalances, monthlyTotalsByMonth } from '../lib/ledger';
+import { adjustmentPreview, balanceEffectsSignature } from '../lib/editing';
 import { localDate, validateCentavos, validateDate, validateTransaction } from '../lib/validation';
-import type { Ledger, Wallet, BalanceChange, Transfer } from '../types/wallet';
+import type { Ledger, Wallet, BalanceChange, Transfer, ActivityOrder } from '../types/wallet';
 import type { Transaction } from '../types/transaction';
 import { withDatabase } from './database';
 
@@ -13,7 +14,11 @@ export async function readLedger(db: SQLiteDatabase): Promise<Ledger> {
   transactions.forEach(validateTransaction);
   const changes = await db.getAllAsync<BalanceChange>('SELECT id,walletId,kind,deltaCentavos,date,reason,targetCentavos FROM balance_changes ORDER BY rowid');
   const transfers = await db.getAllAsync<Transfer>('SELECT id,fromWalletId,toWalletId,amountCentavos,date,note FROM transfers ORDER BY rowid');
-  const data: Ledger = { wallets: rows.map(w => ({ ...w, included: w.included === 1, hidden: w.hidden === 1 })), transactions, changes, transfers };
+  const activityOrder = await db.getAllAsync<ActivityOrder>(`SELECT sequence,recordType,recordId FROM activity_order o WHERE
+    (recordType='transaction' AND EXISTS(SELECT 1 FROM transactions t WHERE t.id=o.recordId)) OR
+    (recordType='transfer' AND EXISTS(SELECT 1 FROM transfers t WHERE t.id=o.recordId)) OR
+    (recordType='change' AND EXISTS(SELECT 1 FROM balance_changes c WHERE c.id=o.recordId)) ORDER BY sequence`);
+  const data: Ledger = { wallets: rows.map(w => ({ ...w, included: w.included === 1, hidden: w.hidden === 1 })), transactions, changes, transfers, activityOrder };
   deriveBalances(data);
   monthlyTotalsByMonth(data);
   return data;
@@ -121,12 +126,14 @@ export function recordTransfer(record: Transfer, name = 'bulsa.db', expectedSign
   }, true);
 }
 
-export function adjustWallet(input: { id: string; walletId: string; targetCentavos: number; reason: string; date: string; expectedBalanceCentavos?: number }, name = 'bulsa.db') {
+export function adjustWallet(input: { id: string; walletId: string; targetCentavos: number; reason: string; date: string; expectedBalanceCentavos?: number; expectedPreviewSignature?: string }, name = 'bulsa.db') {
   input = { ...input };
   return withDatabase(name, async db => {
     validId(input.id); validateDate(input.date); validateCentavos(input.targetCentavos);
     if (typeof input.reason !== 'string' || !input.reason.trim()) throw new Error('Enter a reason for this adjustment.');
-    const wallet = await requireWallet(db, input.walletId, true);
+    const data = await readLedger(db);
+    const wallet = requireWalletInLedger(data, input.walletId, true);
+    if (input.expectedPreviewSignature !== undefined && balanceEffectsSignature(adjustmentPreview(data, input.walletId, input.targetCentavos)) !== input.expectedPreviewSignature) throw new Error('Your balances changed. Refresh and review this adjustment again.');
     if (input.expectedBalanceCentavos !== undefined && input.expectedBalanceCentavos !== wallet.balanceCentavos) throw new Error('The balance changed. Review the latest balance before saving.');
     const delta = input.targetCentavos - wallet.balanceCentavos;
     validateCentavos(delta);

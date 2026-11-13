@@ -1,4 +1,4 @@
-import type { BulsaColors } from '../constants/pocket';
+import type { BulsaColors } from '../constants/bulsa';
 import { useBulsaStyles } from '../hooks/use-bulsa-theme';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -7,7 +7,7 @@ import { PRESET_CHOICES, type ChoiceKind, type CustomChoice } from '../lib/choic
 import { newRecordId } from '../lib/form-money';
 import { addChoice, getChoices, removeChoice, renameChoice } from '../storage/choices';
 import { Field, useUI } from './bulsa-form';
-import { PocketButton } from './pocket-button';
+import { BulsaButton } from './bulsa-button';
 
 type Props = { kind: ChoiceKind; value: string; onChange: (value: string) => void; disabled: boolean; onBusyChange: (busy: boolean) => void; retainedValue?: string };
 
@@ -87,19 +87,19 @@ export function CategoryPicker({ kind, value, onChange, disabled, onBusyChange, 
     </View>
     {loading && <Text style={ui.caption}>Reading your choices…</Text>}
     <View style={ui.row}>
-      <PocketButton secondary title="Add Custom" disabled={blocked} onPress={() => edit('new')} />
-      {custom.length > 0 && <PocketButton secondary title={managing ? 'Done Managing' : 'Manage Custom'} disabled={blocked} onPress={() => { setManaging(!managing); setEditor(null); }} />}
+      <BulsaButton secondary title="Add Custom" disabled={blocked} onPress={() => edit('new')} />
+      {custom.length > 0 && <BulsaButton secondary title={managing ? 'Done Managing' : 'Manage Custom'} disabled={blocked} onPress={() => { setManaging(!managing); setEditor(null); }} />}
     </View>
     {managing && custom.map(choice => <View key={choice.id} style={styles.customRow}>
       <Text style={[ui.body, styles.customName]}>{choice.name}</Text>
-      <View style={ui.row}><PocketButton secondary title="Rename" disabled={blocked} onPress={() => edit(choice)} /><PocketButton secondary title="Remove" disabled={blocked} onPress={() => confirmRemove(choice)} /></View>
+      <View style={ui.row}><BulsaButton secondary title="Rename" disabled={blocked} onPress={() => edit(choice)} /><BulsaButton secondary title="Remove" disabled={blocked} onPress={() => confirmRemove(choice)} /></View>
     </View>)}
     {editor && <View style={styles.editor}>
       <Field label={editor === 'new' ? 'Custom Name' : 'Rename Choice'} value={draft} onChangeText={setDraft} maxLength={80} editable={!disabled && !busy} autoCapitalize="none" autoCorrect={false} />
-      <View style={ui.row}><PocketButton title={busy ? 'Saving…' : 'Save Choice'} disabled={disabled || busy} onPress={() => void save()} /><PocketButton secondary title="Cancel" disabled={disabled || busy} onPress={() => setEditor(null)} /></View>
+      <View style={ui.row}><BulsaButton title={busy ? 'Saving…' : 'Save Choice'} disabled={disabled || busy} onPress={() => void save()} /><BulsaButton secondary title="Cancel" disabled={disabled || busy} onPress={() => setEditor(null)} /></View>
       <Text style={ui.caption}>Changing a choice does not change old transactions.</Text>
     </View>}
-    {!!error && <><Text style={ui.error} accessibilityLiveRegion="polite">{error}</Text><PocketButton secondary title="Try Again" disabled={disabled || busy} onPress={() => void run(async () => {})} /></>}
+    {!!error && <><Text style={ui.error} accessibilityLiveRegion="polite">{error}</Text><BulsaButton secondary title="Try Again" disabled={disabled || busy} onPress={() => void run(async () => {})} /></>}
   </View>;
 }
 

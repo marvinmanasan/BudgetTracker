@@ -67,7 +67,7 @@ async function main() {
     let load = fresh();
     let database = load('src/storage/database.ts');
     const migrated = await database.openDatabase('legacy.db');
-    assert.equal((await migrated.getFirstAsync('PRAGMA user_version')).user_version, 4, 'v2 financial database upgrades to month-limit schema');
+    assert.equal((await migrated.getFirstAsync('PRAGMA user_version')).user_version, 6, 'v2 financial database upgrades to month-limit schema');
     assert.deepEqual(await migrated.getAllAsync('SELECT * FROM monthly_limits'), [], 'migration never invents a budget');
     let inspect = new DatabaseSync(filename);
     assert.equal(legacySnapshot(inspect), before, 'v2 money, renamed/hidden/excluded wallets, choices and deleted defaults remain exact');
@@ -76,7 +76,7 @@ async function main() {
 
     // A failed post-DDL setup must roll back both version and table, then retry the same loader.
     inspect = new DatabaseSync(filename);
-    inspect.exec('DROP TABLE monthly_limits; PRAGMA user_version=2');
+    inspect.exec('DROP TABLE monthly_limits; DROP TRIGGER activity_transactions_added; DROP TRIGGER activity_transfers_added; DROP TRIGGER activity_changes_added; DROP TRIGGER activity_transfers_removed; DROP TRIGGER activity_changes_removed; DROP TABLE activity_order; PRAGMA user_version=2');
     inspect.close();
     load = fresh(); database = load('src/storage/database.ts');
     failMigration = true;

@@ -1,11 +1,11 @@
 import { CenteredPopup } from '../components/centered-popup';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Switch, Text, View } from 'react-native';
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
-import { PocketScreen } from '../components/pocket-screen';
-import { PocketButton } from '../components/pocket-button';
+import { BulsaScreen } from '../components/bulsa-screen';
+import { BulsaButton } from '../components/bulsa-button';
 import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { MoneyReview } from '../components/money-review';
 import { UndoNotice } from '../components/undo-notice';
@@ -18,6 +18,7 @@ import { applyReset } from '../storage/selective-reset';
 const emptyKinds = () => ({ expenses: false, income: false, transfers: false, adjustments: false });
 const stepEntrance = FadeIn.duration(180).reduceMotion(ReduceMotion.System);
 export default function ResetSelectedData() {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { data, loading, error: readError, reload } = useLedger();
@@ -64,7 +65,7 @@ export default function ResetSelectedData() {
     });
     if (saved) router.replace({ pathname: '/activity', params: { message: 'Selected records removed. Other records and wallet names were kept.' } });
   }
-  return <PocketScreen header={<BackButton disabled={blocked} />}>
+  return <BulsaScreen header={<BackButton disabled={blocked} />}>
     <Animated.View entering={stepEntrance} style={{ gap: 16 }}>
     <Text style={ui.title}>Reset Selected Data</Text>
     <UndoNotice onRestored={() => void reload(true)} />
@@ -78,23 +79,23 @@ export default function ResetSelectedData() {
       {!review.preview.hasChanges ? <Text style={ui.body}>No matching records. Nothing has been changed.</Text> : confirming ? <>
         <Text style={ui.error}>This permanently removes the reviewed records. Single-record Undo cannot recover a bulk reset.</Text>
         <Field label="Type RESET to Confirm" value={typed} onChangeText={setTyped} autoCapitalize="characters" autoCorrect={false} editable={!blocked} />
-        <PocketButton title={busy ? 'Deleting…' : 'Delete Selected Records'} disabled={blocked || !!undo.record || typed !== 'RESET'} onPress={() => void commit()} />
+        <BulsaButton title={busy ? 'Deleting…' : 'Delete Selected Records'} disabled={blocked || !!undo.record || typed !== 'RESET'} onPress={() => void commit()} />
       </> : <>
         <MoneyReview before={review.preview.before} after={review.preview.after} walletIds={review.preview.affectedWalletIds} negativeExplanation="Remaining records exceed remaining funding. Negative balances can result from removing funding; only the selected records will be removed." />
         {review.preview.counts.transfers > 0 && <Text style={ui.body}>A transfer is one record. Removing it reverses both wallet effects, including a wallet outside your selection.</Text>}
         <Text style={ui.caption}>Wallet names, inclusion, hidden status, custom choices, monthly limits, savings and settings stay saved. Unselected records stay unchanged.</Text>
         {review.selection.resetStartingBalances && <Text style={ui.body}>Selected wallets will need starting balances again. No income is created.</Text>}
-        <PocketButton title="Continue to Confirmation" disabled={blocked || !!undo.record} onPress={() => setConfirming(true)} />
+        <BulsaButton title="Continue to Confirmation" disabled={blocked || !!undo.record} onPress={() => setConfirming(true)} />
       </>}
-      <PocketButton secondary title={confirming ? 'Review Again' : 'Change Selection'} disabled={blocked} onPress={backStep} />
+      <BulsaButton secondary title={confirming ? 'Review Again' : 'Change Selection'} disabled={blocked} onPress={backStep} />
       {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
     </CenteredPopup>}
     <>
       <Text style={ui.caption}>For a wrong balance, use Adjust Balance and keep your correct transactions. Choose records below only when you want to remove them.</Text>
-      <PocketButton secondary title="Manage Wallet Balances" disabled={blocked} onPress={() => router.push('/wallets')} />
+      <BulsaButton secondary title="Manage Wallet Balances" disabled={blocked} onPress={() => router.push('/wallets')} />
       <Text style={ui.heading}>Choose Where</Text>
-      {(['wallet', 'general', 'all'] as const).map(value => <PocketButton key={value} secondary={scope !== value} title={value === 'wallet' ? 'One Wallet' : value === 'general' ? 'General' : 'All Wallets'} disabled={blocked} onPress={() => chooseScope(value)} />)}
-      {scope === 'wallet' && data.wallets.map(w => <PocketButton key={w.id} secondary={walletId !== w.id} title={w.name + (w.hidden ? ' · Hidden' : '') + (!w.included ? ' · Excluded' : '') + (walletId === w.id ? ' · Selected' : '')} disabled={blocked} onPress={() => { setWalletId(previous => previous === w.id ? '' : w.id); setKinds(emptyKinds()); setStarting(false); }} />)}
+      {(['wallet', 'general', 'all'] as const).map(value => <BulsaButton key={value} secondary={scope !== value} title={value === 'wallet' ? 'One Wallet' : value === 'general' ? 'General' : 'All Wallets'} disabled={blocked} onPress={() => chooseScope(value)} />)}
+      {scope === 'wallet' && data.wallets.map(w => <BulsaButton key={w.id} secondary={walletId !== w.id} title={w.name + (w.hidden ? ' · Hidden' : '') + (!w.included ? ' · Excluded' : '') + (walletId === w.id ? ' · Selected' : '')} disabled={blocked} onPress={() => { setWalletId(previous => previous === w.id ? '' : w.id); setKinds(emptyKinds()); setStarting(false); }} />)}
       {scope === 'all' && <Text style={ui.body}>Includes General and every hidden or excluded wallet.</Text>}
       {scope && <>
         <Text style={ui.heading}>Choose What to Remove</Text>
@@ -105,11 +106,11 @@ export default function ResetSelectedData() {
         {scope === 'general' ? <Text style={ui.caption}>General only contains income and expenses without a wallet.</Text> : <View style={ui.card}><Text style={ui.heading}>Starting Balances</Text><View style={ui.row}><Text style={[ui.body, { flex: 1 }]}>Reset Starting Balances</Text><Switch accessibilityLabel="Reset Starting Balances" disabled={blocked || !allKinds} value={resetStartingBalances} onValueChange={setStarting} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.switchThumb} /></View><Text style={ui.caption}>Available only when all linked financial history is selected. Otherwise starting balances stay saved.</Text></View>}
       </>}
       <View style={ui.soft}><Text style={ui.body}>After choosing where and what to remove, tap Preview Selection to review the affected records and balances. Nothing is deleted until you confirm.</Text></View>
-      <PocketButton title="Preview Selection" disabled={blocked || !!undo.record} onPress={prepare} />
+      <BulsaButton title="Preview Selection" disabled={blocked || !!undo.record} onPress={prepare} />
     </>
     </>}
     {!!validation && <Text style={ui.error}>{validation}</Text>}
-    {!!error && <><Text style={ui.error} accessibilityLiveRegion="polite">{error}</Text><PocketButton secondary title="Refresh and Review Again" disabled={blocked} onPress={() => { setReview(null); setConfirming(false); setTyped(''); void reload(); }} /></>}
+    {!!error && <><Text style={ui.error} accessibilityLiveRegion="polite">{error}</Text><BulsaButton secondary title="Refresh and Review Again" disabled={blocked} onPress={() => { setReview(null); setConfirming(false); setTyped(''); void reload(); }} /></>}
     </Animated.View>
-  </PocketScreen>;
+  </BulsaScreen>;
 }

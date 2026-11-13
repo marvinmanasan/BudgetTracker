@@ -139,7 +139,7 @@ async function main() {
         INSERT INTO category_allocations(month,category,limitCentavos) VALUES('2026-11','Food',5000);
         INSERT INTO savings_goals(id,title,targetCentavos) VALUES('main','Keep Goal',10000);
         INSERT INTO savings_contributions(id,goalId,amountCentavos,date,note) VALUES('saved','main',800,'2026-11-01','Keep contribution');
-        CREATE TABLE custom_choices(id TEXT PRIMARY KEY, name TEXT); INSERT INTO custom_choices VALUES('food','My food');
+        INSERT INTO custom_choices(id,kind,name,nameKey) VALUES('food','expense','My food','my food');
         CREATE TABLE savings(id TEXT PRIMARY KEY,amountCentavos INTEGER); INSERT INTO savings VALUES('kept',800);
         CREATE TABLE settings(id TEXT PRIMARY KEY,value TEXT); INSERT INTO settings VALUES('theme','dark');`);
       return db;

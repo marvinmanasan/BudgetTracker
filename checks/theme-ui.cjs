@@ -1,23 +1,23 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const {createLoader}=require('./load-typescript.cjs');
-const palettes=createLoader()('src/constants/pocket.ts');let colors=palettes.PocketColors;
+const palettes=createLoader()('src/constants/bulsa.ts');let colors=palettes.LightColors;
 const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};
 const mocks={
  'react/jsx-runtime':jsx,'react-native':{Pressable:'Button',Text:'Text',View:'View',StyleSheet:{create:s=>s}},
- '@/constants/pocket':palettes,
+ '@/constants/bulsa':palettes,
  '../lib/money':createLoader()('src/lib/money.ts'),
- 'expo-router':{router:{push(){}}},
- './pocket-button':{PocketButton:'Button'},'./bulsa-form':{ReadState:'ReadState',useUI:()=>({})},
+ 'expo-router':{useRouter:()=>({push(){}})},
+ './bulsa-button':{BulsaButton:'Button'},'./bulsa-form':{ReadState:'ReadState',useUI:()=>({})},
  '../lib/savings-summary':createLoader()('src/lib/savings-summary.ts'),
  '../hooks/use-savings':{useSavings:()=>({data:{goals:[{id:'main',title:'My Goal',targetCentavos:10000}],contributions:[{id:'saved',goalId:'main',amountCentavos:12000,date:'2026-11-12',note:''}]},loading:false,error:'',reload(){}})},
  '@/hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors}),useBulsaStyles:factory=>factory(colors)},
  '../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors}),useBulsaStyles:factory=>factory(colors)},
 };
 function component(file){const result={exports:{}};const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+code+'})')(name=>mocks[name]??require(name),result,result.exports);return result.exports;}
-const button=component('src/components/pocket-button.tsx').PocketButton;
+const button=component('src/components/bulsa-button.tsx').BulsaButton;
 const summary=component('src/components/summary-card.tsx').SummaryCard;
 const preview=component('src/components/savings-preview.tsx').SavingsPreview;
-for(const palette of [palettes.PocketColors,palettes.DarkColors]){
+for(const palette of [palettes.LightColors,palettes.DarkColors]){
  colors=palette;
  const primary=button({title:'Save',onPress(){}});
  assert.equal(primary.props.style({pressed:false})[0].backgroundColor,palette.accent);

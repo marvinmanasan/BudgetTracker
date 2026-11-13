@@ -1,4 +1,4 @@
-import type { BulsaColors } from '@/constants/pocket';
+import type { BulsaColors } from '@/constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '@/hooks/use-bulsa-theme';
 
 import { StyleSheet, Text, View } from "react-native";
@@ -21,8 +21,8 @@ export function SummaryCard({ label, amount, amountCentavos, tone }: SummaryCard
   );
 }
 
-const createStyles = (PocketColors: BulsaColors) => StyleSheet.create({
-  card: { flex: 1, minWidth: 0, backgroundColor: PocketColors.surface, borderRadius: 20, padding: 16, gap: 8 },
-  label: { color: PocketColors.muted, fontSize: 14 },
-  amount: { color: PocketColors.text, fontSize: 22, fontWeight: "700", flexShrink: 1 },
+const createStyles = (LightColors: BulsaColors) => StyleSheet.create({
+  card: { flex: 1, minWidth: 0, backgroundColor: LightColors.surface, borderRadius: 20, padding: 16, gap: 8 },
+  label: { color: LightColors.muted, fontSize: 14 },
+  amount: { color: LightColors.text, fontSize: 22, fontWeight: "700", flexShrink: 1 },
 });

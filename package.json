@@ -1,19 +1,21 @@
 {
   "name": "budgettracker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/ui": "~58.0.28",
-    "expo": "~58.0.24",
+    "expo": "~58.0.25",
     "expo-constants": "~58.0.13",
     "expo-device": "~58.0.5",
+    "expo-file-system": "~58.0.13",
     "expo-font": "~58.0.10",
     "expo-glass-effect": "~58.0.5",
     "expo-image": "~58.0.18",
     "expo-linking": "~58.0.17",
     "expo-router": "~58.0.31",
+    "expo-sharing": "~58.0.23",
     "expo-splash-screen": "~58.0.14",
-    "expo-sqlite": "~58.0.16",
+    "expo-sqlite": "~58.0.17",
     "expo-status-bar": "~58.0.5",
     "expo-symbols": "~58.0.5",
     "expo-system-ui": "~58.0.7",
@@ -35,7 +37,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "test": "node checks/money.cjs && node checks/ledger.cjs && node checks/storage.cjs && node checks/wallet-storage.cjs && node checks/display.cjs && node checks/choices.cjs && node checks/save-lifecycle.cjs && node checks/activity.cjs && node checks/editing.cjs && node checks/undo.cjs && node checks/budgets.cjs && node checks/selective-reset.cjs && node checks/total-budget.cjs && node checks/budget-reset-ui.cjs && node checks/transfers.cjs && node checks/category-summary.cjs && node checks/category-savings.cjs && node checks/savings-summary.cjs && node checks/savings-ui.cjs && node checks/category-ui.cjs && node checks/preferences.cjs && node checks/appearance.cjs && node checks/theme-ui.cjs && node checks/settings-ui.cjs && node checks/theme-lifecycle.cjs && node checks/category-loading.cjs && node checks/budgets-ui.cjs && node checks/mobile-feedback.cjs && node checks/activity-feedback-ui.cjs && node checks/centered-popup.cjs && node checks/selected-deletion.cjs",
+    "test": "node checks/money.cjs && node checks/ledger.cjs && node checks/storage.cjs && node checks/wallet-storage.cjs && node checks/display.cjs && node checks/choices.cjs && node checks/save-lifecycle.cjs && node checks/activity.cjs && node checks/editing.cjs && node checks/undo.cjs && node checks/budgets.cjs && node checks/selective-reset.cjs && node checks/total-budget.cjs && node checks/budget-reset-ui.cjs && node checks/transfers.cjs && node checks/category-summary.cjs && node checks/category-savings.cjs && node checks/savings-summary.cjs && node checks/savings-ui.cjs && node checks/category-ui.cjs && node checks/preferences.cjs && node checks/appearance.cjs && node checks/theme-ui.cjs && node checks/settings-ui.cjs && node checks/theme-lifecycle.cjs && node checks/category-loading.cjs && node checks/budgets-ui.cjs && node checks/mobile-feedback.cjs && node checks/activity-feedback-ui.cjs && node checks/centered-popup.cjs && node checks/selected-deletion.cjs && node checks/preview-integrity.cjs && node checks/savings-corrections.cjs && node checks/qa-ui-fixes.cjs && node checks/backup.cjs && node checks/restore-safety.cjs && node checks/adjustment-refresh-ui.cjs && node checks/choice-migration.cjs && node checks/wallet-navigation.cjs && node checks/activity-order.cjs && node checks/transfer-setup-ui.cjs && node checks/upgrade-preservation.cjs",
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
