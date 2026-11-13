@@ -20,7 +20,7 @@
 ## Expenses and income
 
 - Amount, category or income source, wallet and date.
-- Optional payment-method label and note.
+- Optional note. Historical payment-method values remain saved.
 - Preset choices and custom choices with add, rename and remove controls.
 - Edit records and reassign their wallet.
 - Delete expenses or income and restore using Undo while available.
@@ -68,4 +68,4 @@
 ## Display
 
 - Peso amounts with two decimal places.
-- Dates displayed as MM-DD-YYYY and months as MM-YYYY.
+- Dates displayed as MM-DD-YYYY and months with full names, such as November 2026.

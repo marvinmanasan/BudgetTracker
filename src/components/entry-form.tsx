@@ -16,7 +16,7 @@ import { expenseWalletChoices, expenseAvailable } from '../lib/expense-wallets';
 import { localDate } from '../lib/validation';
 import { displayDate, parseDisplayDate } from '../lib/display-date';
 import { saveTransaction, updateTransaction } from '../storage/transactions';
-import { transactionDraft, editedTransaction, editPreview } from '../lib/editing';
+import { transactionDraft, editedTransaction, editPreview, balanceEffectsSignature } from '../lib/editing';
 import type { Transaction } from '../types/transaction';
 
 export function EntryForm({ original }: { original?: Transaction }) {
@@ -75,7 +75,8 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
     if (choicesBusy) return;
     const saved = await run(async () => {
       if (original) {
-        await updateTransaction(editedTransaction(original, draft), 'bulsa.db', original);
+        if (!preview) throw new Error('Review your changes before saving.');
+        await updateTransaction(editedTransaction(original, draft), 'bulsa.db', original, balanceEffectsSignature(preview));
         return;
       }
       const storedDate = parseDisplayDate(date);
@@ -91,7 +92,7 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
   if (picker) return <PocketScreen header={<BackButton title="‹ Back to Transaction" onPress={() => setPicker(false)} />}>
     <Text style={ui.title}>Choose Wallet</Text>
     {loading || readError || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
-      <Pressable style={[ui.card, walletId === null && ui.selected]} accessibilityRole="radio" accessibilityState={{ checked: walletId === null }} onPress={() => { setWalletId(null); setPicker(false); }}><Text style={ui.heading}>Not Specified</Text><Text style={ui.caption}>General · Always Included</Text></Pressable>
+      <Pressable style={[ui.card, walletId === null && ui.selected]} accessibilityRole="radio" accessibilityState={{ checked: walletId === null }} onPress={() => { setWalletId(null); setPicker(false); }}><Text style={ui.heading}>General</Text><Text style={ui.caption}>No specific wallet · Always Included</Text></Pressable>
       {(type === 'expense' ? expenseWalletChoices(balances.wallets, original) : balances.wallets.filter(w => !w.hidden || w.id === original?.walletId)).map(w => {
         const available = expenseAvailable(w, original);
         const insufficient = type === 'expense' && draftAmount !== null && draftAmount > available && !(original?.walletId === w.id && draftAmount <= original.amountCentavos);
@@ -112,8 +113,8 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
       <Field label="Amount (PHP)" placeholder="0.00" keyboardType="decimal-pad" value={amount} onChangeText={setAmount} editable={!blocked} />
       {original && <Text style={ui.caption}>Current {type === 'income' ? 'source' : 'category'}: {category}. Older labels stay available on this record.</Text>}
       <CategoryPicker retainedValue={original?.category} key={type} kind={type} value={category} onChange={setCategory} disabled={busy} onBusyChange={setChoicesBusy} />
-      <PocketButton secondary disabled={blocked} title={`Wallet: ${selected?.name ?? 'Not Specified'}  ›`} onPress={() => setPicker(true)} />
-      <Text style={ui.caption}>{walletId === null ? 'Not specified goes to General. General always counts in Total Budget and can be negative.' : selected?.included ? 'This entry affects the wallet and Total Budget.' : 'This entry affects this wallet only. Expenses still count in monthly spending.'}</Text>
+      <PocketButton secondary disabled={blocked} title={`Wallet: ${selected?.name ?? 'General'}  ›`} onPress={() => setPicker(true)} />
+      <Text style={ui.caption}>{walletId === null ? 'No specific wallet selected. This entry goes to General, which always counts in Total Budget and can be negative.' : selected?.included ? 'This entry affects the wallet and Total Budget.' : 'This entry affects this wallet only. Expenses still count in monthly spending.'}</Text>
       <Field label="Date (MM-DD-YYYY)" placeholder="MM-DD-YYYY" value={date} onChangeText={setDate} editable={!blocked} autoCapitalize="none" autoCorrect={false} maxLength={10} />
       <PocketButton secondary disabled={blocked} title={details ? 'Fewer Details' : 'More Details · Optional'} onPress={() => setDetails(value => !value)} />
       {details && <><Field label="Note · Optional" value={note} onChangeText={setNote} editable={!blocked} multiline /></>}
@@ -123,6 +124,6 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
       <PocketButton title={busy ? 'Saving…' : original ? 'Review Changes' : type === 'expense' ? 'Save Expense' : 'Save Income'} disabled={blocked} onPress={() => { if (original && data) { try { editPreview(data, editedTransaction(original, draft)); setPreviewError(''); setReviewing(true); } catch (cause) { setPreviewError(cause instanceof Error ? cause.message : 'Check your fields.'); } } else void save(); }} />
       {original && <PocketButton secondary title="Cancel" disabled={blocked} onPress={() => router.back()} />}
     </>}
-    {reviewing && original && <CenteredPopup onClose={() => setReviewing(false)} busy={blocked}><Text style={ui.title}>Review Changes</Text>{!preview ? <Text style={ui.error}>{validation || 'Could not preview changes.'}</Text> : <><MoneyReview before={preview.before} after={preview.after} walletIds={[original.walletId, walletId]} /><Text style={ui.caption}>This updates the original record once. Income and spending totals follow the corrected amount and date. Transfers and adjustments stay unchanged.</Text><PocketButton title={busy ? 'Saving…' : 'Save Changes'} disabled={blocked} onPress={() => void save()} /></>}{!!error && <Text style={ui.error}>{error}</Text>}<PocketButton secondary title="Keep Editing" disabled={blocked} onPress={() => setReviewing(false)} /></CenteredPopup>}
+    {reviewing && original && <CenteredPopup onClose={() => setReviewing(false)} busy={blocked}><Text style={ui.title}>Review Changes</Text>{!preview ? <Text style={ui.error}>{validation || 'Could not preview changes.'}</Text> : <><MoneyReview before={preview.before} after={preview.after} walletIds={[original.walletId, walletId]} /><Text style={ui.caption}>This updates the original record once. Income and spending totals follow the corrected amount and date. Transfers and adjustments stay unchanged.</Text><PocketButton title={busy ? 'Saving…' : 'Save Changes'} disabled={blocked} onPress={() => void save()} /></>}{!!error && <><Text style={ui.error}>{error}</Text><PocketButton secondary title="Refresh Balances" disabled={blocked} onPress={() => { setReviewing(false); void reload(); }} /></>}<PocketButton secondary title="Keep Editing" disabled={blocked} onPress={() => setReviewing(false)} /></CenteredPopup>}
   </PocketScreen>;
 }

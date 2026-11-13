@@ -1,5 +1,6 @@
 import type { Transaction } from "../types/transaction";
 import { validateTransaction } from "../lib/validation";
+import { balanceEffectsSignature, deletionPreview, editPreview } from '../lib/editing';
 import { withDatabase } from "./database";
 import { readLedger, requireWallet, requireWalletInLedger } from "./wallets";
 export { validateTransaction } from "../lib/validation";
@@ -25,7 +26,7 @@ export function getTransactions(databaseName = "bulsa.db"): Promise<Transaction[
   return withDatabase(databaseName, async db => (await readLedger(db)).transactions);
 }
 
-export async function updateTransaction(record: Transaction, databaseName = "bulsa.db", expected?: Transaction): Promise<void> {
+export async function updateTransaction(record: Transaction, databaseName = "bulsa.db", expected?: Transaction, expectedPreviewSignature?: string): Promise<void> {
   record = { ...record };
   expected = expected ? { ...expected } : undefined;
   validateTransaction(record);
@@ -34,6 +35,7 @@ export async function updateTransaction(record: Transaction, databaseName = "bul
     const old = data.transactions.find(r => r.id === record.id);
     if (!old) throw new Error("Transaction not found.");
     if (expected && (['id', 'type', 'amountCentavos', 'category', 'date', 'paymentMethod', 'note', 'walletId'] as const).some(key => (old[key] ?? null) !== (expected![key] ?? null))) throw new Error('This record changed. Reopen it before saving your edits.');
+    if (expectedPreviewSignature !== undefined && balanceEffectsSignature(editPreview(data, record)) !== expectedPreviewSignature) throw new Error('Your balances changed. Refresh and review these edits again.');
     if (record.walletId != null) {
       const wallet = requireWalletInLedger(data, record.walletId, record.walletId === old.walletId);
       if (record.type === 'expense' && (old.type !== 'expense' || record.walletId !== old.walletId || record.amountCentavos > old.amountCentavos)) {
@@ -49,12 +51,14 @@ export async function updateTransaction(record: Transaction, databaseName = "bul
   }, true);
 }
 
-export function deleteTransaction(id: string, databaseName = "bulsa.db", expected?: Transaction): Promise<Transaction> {
+export function deleteTransaction(id: string, databaseName = "bulsa.db", expected?: Transaction, expectedPreviewSignature?: string): Promise<Transaction> {
   expected = expected ? { ...expected } : undefined;
   return withDatabase(databaseName, async db => {
-    const old = (await readLedger(db)).transactions.find(t => t.id === id);
+    const data = await readLedger(db);
+    const old = data.transactions.find(t => t.id === id);
     if (!old) throw new Error("Transaction not found.");
     if (expected && (['id', 'type', 'amountCentavos', 'category', 'date', 'paymentMethod', 'note', 'walletId'] as const).some(key => (old[key] ?? null) !== (expected![key] ?? null))) throw new Error("This record changed. Reopen it before deleting.");
+    if (expectedPreviewSignature !== undefined && balanceEffectsSignature(deletionPreview(data, id)) !== expectedPreviewSignature) throw new Error('Your balances changed. Refresh and review this deletion again.');
     const result = await db.runAsync("DELETE FROM transactions WHERE id=?", id);
     if (!result.changes) throw new Error("Transaction not found.");
     await readLedger(db);

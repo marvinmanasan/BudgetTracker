@@ -112,7 +112,7 @@ export default function Activity() {
     {filtering && <View><Text style={ui.caption}>Filtered records only. Your money totals are unchanged.</Text><PocketButton secondary title="Clear All Filters" onPress={clear} /></View>}
     {wallet && <><Text style={ui.caption}>{walletName} Records</Text><PocketButton secondary title="Show All Activity" onPress={() => router.setParams({ wallet: undefined })} /></>}
     {summary && !monthError && <View style={[ui.card, { backgroundColor: C.summary, borderRadius: 22, padding: 20, gap: 12 }]}>
-      <Text style={[ui.body, { color: C.summaryMuted }]}>{monthKey ? `Spent In ${monthName(monthKey)}` : 'Spent This Month'}</Text>
+      <Text style={[ui.body, { color: C.summaryMuted }]}>{monthKey ? `All Wallets · ${monthName(monthKey)}` : 'All Wallets This Month'}</Text>
       <Text style={[ui.money, { color: C.onSummary, fontSize: 36 }]}>{formatCentavos(summary.expenseCentavos)}</Text>
       <Text style={[ui.caption, { color: C.summaryMuted }]}>Across {summary.count} recorded expense{summary.count === 1 ? '' : 's'} · All wallets, before Activity filters.</Text>
     </View>}

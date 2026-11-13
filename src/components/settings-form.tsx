@@ -30,8 +30,8 @@ export function SettingsForm() {
     <PocketButton title={saving ? 'Saving…' : 'Save Settings'} disabled={saving} onPress={() => void submit()} />
     <View style={ui.card}><Text style={ui.heading}>Your Records</Text>
       <PocketButton secondary title="Manage Wallets" disabled={saving} onPress={() => router.push('/wallets')} />
-      <PocketButton secondary title="Edit Total Budget" disabled={saving} onPress={() => router.push('/edit-total-budget')} />
       <PocketButton secondary title="Reset Selected Data" disabled={saving} onPress={() => router.push('/reset-data')} />
+      <PocketButton secondary title="Backup and Restore" disabled={saving} onPress={() => router.push('/backup')} />
     </View>
     <View style={ui.card}><Text style={ui.heading}>Privacy and Storage</Text><Text style={ui.body}>Your records and preferences are stored on this device. Bulsa does not connect to your bank or sync records between devices.</Text><Text style={ui.body}>Removing the app or clearing its data can delete your records. Bulsa does not provide cloud recovery. Keep a separate copy of important records.</Text></View>
   </PocketScreen>;

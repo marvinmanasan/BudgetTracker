@@ -5,7 +5,7 @@ import { deleteTransaction, restoreTransaction } from '../storage/transactions';
 // One pending Undo survives navigation, but not closing the app. Never persisted
 // as a second financial record or silently replaced by another deletion.
 const controller = createUndoController({
-  remove: record => deleteTransaction(record.id, 'bulsa.db', record),
+  remove: (record, expectedPreviewSignature) => deleteTransaction(record.id, 'bulsa.db', record, expectedPreviewSignature),
   restore: record => restoreTransaction(record),
 });
 export function useTransactionUndo() {

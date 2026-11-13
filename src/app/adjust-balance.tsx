@@ -6,7 +6,7 @@ import { PocketScreen } from '../components/pocket-screen';
 import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { PocketButton } from '../components/pocket-button';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
-import { adjustmentPreview } from '../lib/editing';
+import { adjustmentPreview, balanceEffectsSignature } from '../lib/editing';
 import { newRecordId, parseBalance } from '../lib/form-money';
 import { formatCentavos } from '../lib/money';
 import { localDate } from '../lib/validation';
@@ -42,7 +42,7 @@ export default function AdjustBalance() {
   }
   async function confirm() {
     if (!review || !walletId) return;
-    const saved = await run(() => adjustWallet({ id, walletId, targetCentavos: parseBalance(target)!, reason, date: localDate(), expectedBalanceCentavos: review.currentCentavos }));
+    const saved = await run(() => adjustWallet({ id, walletId, targetCentavos: parseBalance(target)!, reason, date: localDate(), expectedBalanceCentavos: review.currentCentavos, expectedPreviewSignature: balanceEffectsSignature(review) }));
     if (saved) router.back();
   }
   return <PocketScreen header={<BackButton disabled={busy} />}>

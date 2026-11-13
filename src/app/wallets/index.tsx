@@ -33,6 +33,7 @@ export default function Wallets() {
   return <PocketScreen header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>{showHidden ? 'Hidden Wallets' : 'Wallets'}</Text>
     <Text style={ui.caption}>Recorded money, in one place. No bank connection.</Text>
+    {!showHidden && <PocketButton title="Add Wallet" disabled={busy} onPress={() => router.push('/wallets/add')} />}
     {loading || error || !balances ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : <>
       <View style={ui.soft}><Text style={ui.body}>Total Budget</Text><Text style={ui.money}>{formatCentavos(balances.totalCentavos)}</Text><Text style={ui.caption}>Included wallets + General. Separate from your monthly spending limit.</Text></View>
       {!showHidden && <View style={ui.card}><Text style={ui.heading}>General · Always Included</Text><Text style={ui.money}>{formatCentavos(balances.generalCentavos)}</Text><Text style={ui.caption}>Transactions without a wallet. General can be negative and always counts in Total Budget.</Text></View>}
@@ -46,8 +47,8 @@ export default function Wallets() {
         <View style={styles.switchRow}><Text style={[ui.body, styles.switchLabel]}>Include in Total Budget</Text><View style={styles.switchTarget}><Switch accessibilityLabel={`Include ${wallet.name} in Total Budget`} value={pendingFlags[wallet.id] ?? wallet.included} disabled={busy} onValueChange={value => void include(wallet.id, value)} hitSlop={8} trackColor={{ false: C.track, true: C.accent }} thumbColor={C.switchThumb} /></View></View>
       </View>)}
       {!balances.wallets.some(w => w.hidden === showHidden) && <Text style={ui.body}>{showHidden ? 'No hidden wallets.' : 'No visible wallets. Add one or restore a hidden wallet.'}</Text>}
+      {!showHidden && <PocketButton secondary title="Edit Total Budget" disabled={busy} onPress={() => router.push('/edit-total-budget')} />}
       {!showHidden && <PocketButton secondary title="Transfer Between Wallets" disabled={busy} onPress={() => router.push('/transfer')} />}
-      {!showHidden && <PocketButton title="Add Wallet" disabled={busy} onPress={() => router.push('/wallets/add')} />}
       <View style={styles.hiddenControls}>
         {hiddenCount > 0 && <Text style={ui.caption}>{hiddenCount} hidden wallet{hiddenCount === 1 ? '' : 's'} still count{hiddenCount === 1 ? 's' : ''} in Total Budget.</Text>}
         <PocketButton secondary disabled={busy} title={showHidden ? 'Show Visible Wallets' : 'Manage Hidden Wallets'} onPress={() => setShowHidden(value => !value)} />

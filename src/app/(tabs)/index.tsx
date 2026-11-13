@@ -35,7 +35,7 @@ export default function Index() {
         <Text style={styles.total}>{formatCentavos(balances.totalCentavos)}</Text>
         <Text style={styles.spent}>Spent This Month  {formatCentavos(totals.expenseCentavos)}</Text>
         <Text style={styles.label}>Included Wallets + General</Text>
-        <View style={ui.row}><Pressable accessibilityRole="button" onPress={() => router.push('/wallets')} style={styles.heroAction}><Text style={styles.heroLink}>View Wallets ›</Text></Pressable><Pressable accessibilityRole="button" onPress={() => router.push('/edit-total-budget')} style={styles.heroAction}><Text style={styles.heroLink}>Edit Total Budget</Text></Pressable></View>
+        <View style={ui.row}><Pressable accessibilityRole="button" onPress={() => router.push('/wallets')} style={styles.heroAction}><Text style={styles.heroLink}>View Wallets ›</Text></Pressable></View>
       </View>
       {!balances.wallets.some(w => w.configured) && <View style={ui.soft}><Text style={ui.heading}>Start With Your Wallets</Text><Text style={ui.body}>Add the money you have before recording its transactions. Not specified entries go to General.</Text><PocketButton title="Set Up Wallets" onPress={() => router.push('/wallets')} /></View>}
       <MonthlyLimitNotice compact month={localDate().slice(0, 7)} spent={totals.expenseCentavos} />

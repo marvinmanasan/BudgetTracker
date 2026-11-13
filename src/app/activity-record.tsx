@@ -9,7 +9,7 @@ import { ActivityAmount } from '../components/activity-amount';
 import { UndoNotice } from '../components/undo-notice';
 import { MoneyReview } from '../components/money-review';
 import { useTransactionUndo } from '../hooks/use-transaction-undo';
-import { deriveBalances } from '../lib/ledger';
+import { balanceEffectsSignature, deletionPreview } from '../lib/editing';
 import type { Transaction } from '../types/transaction';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { activityRecord } from '../lib/activity';
@@ -32,7 +32,7 @@ export default function ActivityRecord() {
   function setDeleting(value: Transaction | null) { setDeleteDraft(value); setAutoDelete(false); }
   const preview = useMemo(() => {
     if (!data || !deleting) return null;
-    try { return { before: deriveBalances(data), after: deriveBalances({ ...data, transactions: data.transactions.filter(t => t.id !== deleting.id) }) }; }
+    try { return deletionPreview(data, deleting.id); }
     catch { return null; }
   }, [data, deleting]);
   useFocusEffect(useCallback(() => {
@@ -44,8 +44,8 @@ export default function ActivityRecord() {
     return () => listener.remove();
   }, [deleting, undo.busy]));
   async function confirmDelete() {
-    if (!deleting) return;
-    if (await run(() => undo.remove(deleting))) {
+    if (!deleting || !preview) return;
+    if (await run(() => undo.remove(deleting, balanceEffectsSignature(preview)))) {
       if (router.canGoBack()) router.back(); else router.replace('/activity');
     }
   }
@@ -75,7 +75,7 @@ export default function ActivityRecord() {
     <Text style={ui.body}>{deleting.category} · {displayDate(deleting.date)}</Text>
     {preview ? <MoneyReview {...preview} walletIds={[deleting.walletId]} /> : <Text style={ui.error}>Could not preview this deletion. Return to Activity and try again.</Text>}
     <Text style={ui.caption}>The original record will be removed. Undo is available in Activity until dismissed or the app closes. Existing transfers and adjustments stay unchanged.</Text>
-    {!!undo.error && <Text style={ui.error}>{undo.error}</Text>}
+    {!!undo.error && <><Text style={ui.error}>{undo.error}</Text><PocketButton secondary title="Refresh Balances" disabled={undo.busy} onPress={() => { setDeleting(null); void reload(); }} /></>}
     <PocketButton title={undo.busy ? 'Deleting…' : 'Confirm Delete'} disabled={undo.busy || !preview || !!undo.record} onPress={() => void confirmDelete()} />
     <PocketButton secondary title="Keep Record" disabled={undo.busy} onPress={() => setDeleting(null)} />
   </CenteredPopup>}

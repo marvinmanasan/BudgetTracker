@@ -5,6 +5,17 @@ import { parseAmountToCentavos } from './money';
 import { validateTransaction } from './validation';
 import { deriveBalances, monthlyTotalsByMonth } from './ledger';
 
+// Compare the reviewed before/after wallet effects, including inclusion and
+// General, against a fresh snapshot inside the queued storage transaction.
+export function balanceEffectsSignature(preview: { before: ReturnType<typeof deriveBalances>; after: ReturnType<typeof deriveBalances> }) {
+  return JSON.stringify({ before: preview.before, after: preview.after });
+}
+
+export function deletionPreview(data: Ledger, id: string) {
+  if (!data.transactions.some(t => t.id === id)) throw new Error('Transaction not found.');
+  return { before: deriveBalances(data), after: deriveBalances({ ...data, transactions: data.transactions.filter(t => t.id !== id) }) };
+}
+
 export function centavosInput(value: number) {
   if (!Number.isSafeInteger(value)) throw new Error('Money is outside the safe range.');
   const absolute = Math.abs(value);

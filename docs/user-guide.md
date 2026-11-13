@@ -1,6 +1,6 @@
 # Using Bulsa
 
-Bulsa helps you record money manually, manage wallets and plan spending. Dates use MM-DD-YYYY. Month fields use MM-YYYY.
+Bulsa helps you record money manually, manage wallets and plan spending. Dates use MM-DD-YYYY. Months use full names, such as November 2026.
 
 ## Quick start
 
@@ -41,7 +41,7 @@ Only whether its balance counts in Total Budget changes. Its records remain save
 2. Enter **Amount (PHP)** and choose a **Category**.
 3. Tap the **Wallet:** button and choose the wallet used.
 4. Check **Date (MM-DD-YYYY)**.
-5. To add a payment-method label or note, tap **More Details · Optional**.
+5. To add a note, tap **More Details · Optional**.
 6. Tap **Save Expense**.
 
 Activity shows the expense. The wallet balance falls. Total Budget falls if that wallet is included.
@@ -170,7 +170,8 @@ Only wallets with no financial history can be deleted. A zero starting balance s
 ## Use Activity
 
 1. Open **Activity** and enter text in **Search Activity**.
-2. Tap **Filters** to choose **Month (MM-YYYY)**, **Record Type**, **Category or Source**, or **Payment Method**.
+2. Tap **Filters** to open the separate filter screen. Choose a month, **Record Type**, **Category or Source**, or a historical **Payment Method**.
+3. Tap **Apply Filters** to use the choices, or **Cancel** to keep the current filters.
 3. Tap a result for its details.
 4. Tap **Clear All Filters** to remove the search and filters.
 
@@ -186,7 +187,7 @@ The wallet view includes its transactions, transfers and balance changes.
 
 ## Set a monthly spending limit
 
-1. In **Budgets**, enter **Month (MM-YYYY)**.
+1. In **Budgets**, choose a month. Tap the month name to open the month grid, or use **This Month**.
 2. Tap **Set Monthly Limit** or **Edit Monthly Limit**.
 3. Enter **Spending Limit (PHP)**.
 4. Check **Remaining With This Limit** and tap **Save Monthly Limit**.
@@ -265,7 +266,7 @@ For example, with General at zero: GCash 1,000 and Cash 500, both included, make
 ## Tips
 
 1. Set starting balances before recording the transactions they fund.
-2. Choose the wallet explicitly. Payment Method is only a label.
+2. Choose the wallet explicitly. A funded wallet must cover a new expense.
 3. Enter amounts such as 1000.50, without commas or a peso sign.
 4. Check dates. A future-dated record affects the recorded balance immediately.
 5. Check inclusion when a wallet change does not change Total Budget.

@@ -46,3 +46,38 @@ export async function recordSavingsContribution(record: SavingsContribution, nam
     await readSavings(db);
   }, true);
 }
+
+function validateContribution(record: SavingsContribution) {
+  if (![record.id, record.goalId].every(value => typeof value === 'string' && value.trim())) throw new Error('A contribution ID and goal are required.');
+  if (typeof record.note !== 'string') throw new Error('Note must be text.');
+  validateCentavos(record.amountCentavos, true);
+  validateDate(record.date);
+}
+
+async function requireUnchangedContribution(db: SQLiteDatabase, expected: SavingsContribution) {
+  const current = await db.getFirstAsync<SavingsContribution>('SELECT id,goalId,amountCentavos,date,note FROM savings_contributions WHERE id=?', expected.id);
+  if (!current || current.goalId !== expected.goalId || current.amountCentavos !== expected.amountCentavos || current.date !== expected.date || current.note !== expected.note) {
+    throw new Error('This savings record changed or was deleted. Close this correction and open the current record again.');
+  }
+}
+
+export async function updateSavingsContribution(record: SavingsContribution, expected: SavingsContribution, name = 'bulsa.db'): Promise<void> {
+  record = { ...record }; expected = { ...expected };
+  validateContribution(record); validateContribution(expected);
+  if (record.id !== expected.id || record.goalId !== expected.goalId) throw new Error('A correction must keep the same savings record and goal.');
+  await withDatabase(name, async db => {
+    await requireUnchangedContribution(db, expected);
+    await db.runAsync('UPDATE savings_contributions SET amountCentavos=?,date=?,note=? WHERE id=?', record.amountCentavos, record.date, record.note, record.id);
+    await readSavings(db);
+  }, true);
+}
+
+export async function deleteSavingsContribution(expected: SavingsContribution, name = 'bulsa.db'): Promise<void> {
+  expected = { ...expected };
+  validateContribution(expected);
+  await withDatabase(name, async db => {
+    await requireUnchangedContribution(db, expected);
+    await db.runAsync('DELETE FROM savings_contributions WHERE id=?', expected.id);
+    await readSavings(db);
+  }, true);
+}
