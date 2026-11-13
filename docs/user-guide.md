@@ -327,3 +327,7 @@ Activity shows the newest dates first. Within each date, the most recently added
 ## Transferring With One Wallet Set Up
 
 You do not need two funded wallets. Open **Wallets → Transfer Money**, choose the source and destination, enter the amount and review. A destination at ₱0 can receive money. If a wallet is not set up, tap **Set Up** beside its name, enter the balance it had before the transfer, then return and select it. Use ₱0 only if it was empty before the transfer. This records a transfer you made yourself; Bulsa does not send money through your bank.
+
+## Updating Bulsa
+
+Install a compatible new APK over the existing app and choose **Update**. Keep the existing app installed and keep its data. Export a private backup first if your installed version supports it. If Android reports an incompatible update, stop and check the APK; do not uninstall the existing app to force installation.
