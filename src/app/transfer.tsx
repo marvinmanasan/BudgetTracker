@@ -1,7 +1,8 @@
 import { CenteredPopup } from '../components/centered-popup';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { BackHandler, Text, View } from 'react-native';
+import { BackHandler, Pressable, Text, View } from 'react-native';
+import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { BulsaScreen } from '../components/bulsa-screen';
 import { BulsaButton } from '../components/bulsa-button';
 import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
@@ -17,6 +18,7 @@ import type { Transfer } from '../types/wallet';
 
 export default function TransferScreen() {
   const ui = useUI();
+  const { colors: C } = useBulsaTheme();
   const { data, balances, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
   const [id] = useState(() => newRecordId('transfer'));
@@ -26,7 +28,10 @@ export default function TransferScreen() {
   const [picker, setPicker] = useState<'from' | 'to' | null>(null);
   const [review, setReview] = useState<{ record: Transfer; effects: ReturnType<typeof transferPreview> } | null>(null);
   const [validation, setValidation] = useState('');
-  const eligible = balances?.wallets.filter(w => w.configured && !w.hidden) ?? [];
+  const visibleWallets = balances?.wallets.filter(w => !w.hidden) ?? [];
+  const requiredAmount = parseAmountToCentavos(amount) ?? 1;
+  const priority = (wallet: (typeof visibleWallets)[number]) => !wallet.configured ? 1 : picker === 'from' && wallet.balanceCentavos < requiredAmount ? 2 : 0;
+  const choices = visibleWallets.filter(w => w.id !== (picker === 'from' ? to : from)).sort((a, b) => priority(a) - priority(b));
   const names = new Map(balances?.wallets.map(w => [w.id, w.name]));
   useFocusEffect(useCallback(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -37,6 +42,8 @@ export default function TransferScreen() {
   }, [busy, picker, review]));
   function prepare() {
     try {
+      if (!from) throw new Error('Choose the wallet the money came from.');
+      if (!to) throw new Error('Choose the wallet that received the money.');
       const cents = parseAmountToCentavos(amount);
       if (!data || cents === null) throw new Error('Enter a positive amount with up to two decimal places.');
       const record = { id, fromWalletId: from, toWalletId: to, amountCentavos: cents, date: parseDisplayDate(date), note: note.trim() };
@@ -48,14 +55,41 @@ export default function TransferScreen() {
     const saved = await run(() => recordTransfer(review.record, 'bulsa.db', review.effects.signature));
     if (saved) router.replace({ pathname: '/activity', params: { message: 'Transfer recorded. Income and spending are unchanged.' } });
   }
-  if (picker) return <BulsaScreen header={<BackButton onPress={() => setPicker(null)} />}>
+  function walletRow(wallet: (typeof choices)[number], index: number, rows: typeof choices) {
+    const insufficient = picker === 'from' && wallet.configured && wallet.balanceCentavos < requiredAmount;
+    const disabled = busy || insufficient;
+    return <Pressable key={wallet.id} accessibilityRole="button" accessibilityLabel={wallet.configured ? wallet.name : `Set Up ${wallet.name}`} accessibilityState={{ disabled }} disabled={disabled} onPress={() => {
+      if (!wallet.configured) { router.push({ pathname: '/wallets/[id]', params: { id: wallet.id } }); return; }
+      if (picker === 'from') setFrom(wallet.id); else setTo(wallet.id);
+      setPicker(null);
+    }} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 64, paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: index === rows.length - 1 ? 0 : 1, borderBottomColor: C.track, opacity: disabled ? 0.5 : pressed ? 0.7 : 1 })}>
+      <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
+        <Text style={[ui.body, { fontWeight: '600' }]}>{wallet.name}</Text>
+        {wallet.configured && <Text style={ui.caption}>{insufficient ? 'Not enough recorded money' : wallet.included ? 'Included in Total Budget' : 'Not Included'}</Text>}
+      </View>
+      <Text style={wallet.configured ? ui.body : [ui.body, { color: C.accent }]}>{wallet.configured ? formatCentavos(wallet.balanceCentavos) : 'Set Up'}</Text>
+      <Text accessible={false} style={[ui.body, { color: C.accent }]}>›</Text>
+    </Pressable>;
+  }
+  const configuredChoices = choices.filter(wallet => wallet.configured);
+  const setupChoices = choices.filter(wallet => !wallet.configured);
+  if (picker) return <BulsaScreen key={picker} header={<BackButton disabled={busy} onPress={() => setPicker(null)} />}>
     <Text style={ui.title}>{picker === 'from' ? 'Transfer From' : 'Transfer To'}</Text>
-    {eligible.filter(w => w.id !== (picker === 'from' ? to : from)).map(w => <View key={w.id} style={ui.card}><BulsaButton secondary title={w.name} onPress={() => { if (picker === 'from') setFrom(w.id); else setTo(w.id); setPicker(null); }} /><Text style={ui.body}>{formatCentavos(w.balanceCentavos)} · {w.included ? 'Included' : 'Excluded'}</Text></View>)}
-    <Text style={ui.caption}>Only visible wallets with starting balances are eligible. General cannot be transferred.</Text>
+    {loading || readError || !data || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
+      <Text style={ui.caption}>{picker === 'from' ? 'Choose the wallet the money came from.' : 'Choose the wallet that received the money. Its balance can be ₱0.'}</Text>
+      {!choices.length && <Text style={ui.body}>No other visible wallet is available. Add a wallet to record this transfer.</Text>}
+      {!!configuredChoices.length && <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{configuredChoices.map(walletRow)}</View>}
+      {!!setupChoices.length && <>
+        <View style={{ gap: 4 }}><Text style={ui.heading}>Set Up Another Wallet</Text><Text style={ui.caption}>Enter its balance before this transfer, then return to select it. If it was empty, use ₱0.</Text></View>
+        <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{setupChoices.map(walletRow)}</View>
+      </>}
+      <BulsaButton secondary title="Add Wallet" disabled={busy} onPress={() => router.push('/wallets/add')} />
+    </>}
   </BulsaScreen>;
-  return <BulsaScreen header={<BackButton disabled={busy} />}>
+  return <BulsaScreen key="transfer" header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>{'Transfer Money Between Wallets'}</Text>
-    {(!data && loading) || readError ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
+    <Text style={ui.caption}>Record money you already moved from one account to another. Bulsa updates your records only.</Text>
+    {loading || readError || !data || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
     {review && <CenteredPopup onClose={() => setReview(null)} busy={busy}><Text style={ui.title}>Review Transfer</Text>
       <Text style={ui.heading}>{names.get(from)} → {names.get(to)}</Text><Text style={ui.body}>{formatCentavos(review.record.amountCentavos)} · {displayDate(review.record.date)}</Text>
       {!!review.record.note && <Text style={ui.body}>{review.record.note}</Text>}
@@ -65,16 +99,12 @@ export default function TransferScreen() {
       {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       <BulsaButton secondary title="Keep Editing" disabled={busy} onPress={() => setReview(null)} />
     </CenteredPopup>}
-    {eligible.length < 2 ? <>
-      <Text style={ui.body}>Set starting balances for at least two visible wallets first.</Text><BulsaButton title="Manage Wallets" onPress={() => router.push('/wallets')} />
-    </> : <>
-      <BulsaButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} onPress={() => setPicker('from')} />
-      <BulsaButton secondary title={`To: ${names.get(to) ?? 'Choose Wallet'}`} onPress={() => setPicker('to')} />
-      <Field label="Amount (PHP)" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
-      <Field label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} />
-      <Field label="Note · Optional" value={note} onChangeText={setNote} multiline />
-      <BulsaButton title="Review Transfer" onPress={prepare} />
-    </>}
+      <BulsaButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('from')} />
+      <BulsaButton secondary title={`To: ${names.get(to) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('to')} />
+      <Field editable={!busy} label="Amount (PHP)" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
+      <Field editable={!busy} label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} />
+      <Field editable={!busy} label="Note · Optional" value={note} onChangeText={setNote} multiline />
+      <BulsaButton title="Review Transfer" disabled={busy} onPress={prepare} />
     </>}
     {!!validation && <Text style={ui.error}>{validation}</Text>}
     {!!error && <><Text style={ui.error}>{error}</Text><BulsaButton secondary title="Refresh and Review Again" disabled={busy} onPress={() => { setReview(null); void reload(); }} /></>}
