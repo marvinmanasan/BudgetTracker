@@ -1,5 +1,5 @@
 import { CenteredPopup } from '../components/centered-popup';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { BulsaScreen } from '../components/bulsa-screen';
@@ -13,6 +13,7 @@ import { localDate } from '../lib/validation';
 import { adjustWallet } from '../storage/wallets';
 
 export default function AdjustBalance() {
+  const router = useRouter();
   const ui = useUI();
   const { wallet: walletId } = useLocalSearchParams<{ wallet?: string }>();
   const { data, balances, loading, error: readError, reload } = useLedger();

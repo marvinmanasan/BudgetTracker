@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { Text, View } from 'react-native';
 import { useSavings } from '../hooks/use-savings';
@@ -8,6 +8,7 @@ import { BulsaButton } from './bulsa-button';
 import { ReadState, useUI } from './bulsa-form';
 
 export function SavingsPreview() {
+  const router = useRouter();
   const ui = useUI();
   const { colors } = useBulsaTheme();
   const { data, loading, error, reload } = useSavings();

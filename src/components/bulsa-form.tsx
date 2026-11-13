@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { useCanGoBack, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 import type { BulsaColors } from '../constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '../hooks/use-bulsa-theme';
@@ -10,8 +10,10 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
   return <View style={ui.card}><Text style={ui.caption}>{label}</Text><TextInput accessibilityLabel={label} placeholderTextColor={C.muted} {...props} style={[ui.input, props.style]} /></View>;
 }
 export function BackButton({ disabled = false, onPress, title = '‹ Back' }: { disabled?: boolean; onPress?: () => void; title?: string }) {
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
   const ui = useUI();
-  return <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress ?? (() => router.canGoBack() ? router.back() : router.replace('/'))} style={({ pressed }) => [ui.back, (pressed || disabled) && { opacity: 0.65 }]}><Text style={ui.backLabel}>{title}</Text></Pressable>;
+  return <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress ?? (() => canGoBack ? router.back() : router.replace('/'))} style={({ pressed }) => [ui.back, (pressed || disabled) && { opacity: 0.65 }]}><Text style={ui.backLabel}>{title}</Text></Pressable>;
 }
 export function ReadState({ loading, error, retry }: { loading: boolean; error: string; retry: () => void }) {
   const ui = useUI();

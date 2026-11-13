@@ -1,10 +1,12 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};
 let nav=[],slots=[],cursor=0;
+let onFocus;
+const scopedRouter = { push: path => nav.push(path) };
 const Tabs=Object.assign(()=>{}, {Screen:'Tab'}),Stack=Object.assign(()=>{}, {Screen:'StackScreen'});
 const mocks={
- 'react/jsx-runtime':jsx,react:{useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return [slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v;}];}},
- 'expo-router':{Tabs,Stack,router:{push:p=>nav.push(p)},useLocalSearchParams:()=>({})},
+ 'react/jsx-runtime':jsx,react:{useCallback:fn=>fn,useRef(value){const i=cursor++;return slots[i]??={current:value};},useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return [slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v;}];}},
+ 'expo-router':{Tabs,Stack,router:{push(){throw Error('The imperative router is unavailable before the first render has finished.');}},useRouter:()=>scopedRouter,useFocusEffect(fn){onFocus=fn;},useLocalSearchParams:()=>({})},
  'react-native':{Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',StyleSheet:{create:x=>x}},
  'expo-image':{Image:'Image'},'react-native-safe-area-context':{useSafeAreaInsets:()=>({bottom:0})},
  'hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{},dark:false}),useBulsaStyles:()=>({})},
@@ -18,7 +20,25 @@ const tabs=load('src/components/bulsa-tabs.tsx').default();
 assert.deepEqual(nodes(tabs).filter(n=>n.type==='Tab').map(n=>n.props.options.title),['Overview','Wallets','Budgets','Activity']);
 const file='src/app/(tabs)/wallets.tsx';
 const Wallets=load(file).default;let tree=Wallets();assert.equal(tree.props.header,undefined,'Wallets tab root has no misleading Back button');
-const list=nodes(tree);const transfer=list.find(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Transfer Money Between Wallets');assert(transfer);const total=list.find(n=>n.type==='Text'&&n.props.children==='Total Budget');assert(list.indexOf(transfer)<list.indexOf(total),'Transfer is reachable before wallet cards');transfer.props.onPress();assert.equal(nav.at(-1),'/transfer');
+const list=nodes(tree);const transfer=list.find(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Transfer Money Between Wallets');assert(transfer);const total=list.find(n=>n.type==='Text'&&n.props.children==='Total Budget');assert(list.indexOf(transfer)<list.indexOf(total),'Transfer is reachable before wallet cards');
+assert.equal(transfer.props.disabled, true, 'A Transfer press must wait until the Wallets navigator has focus');
+assert.equal(transfer.props.accessibilityState.disabled, true);
+transfer.props.onPress();
+assert.equal(nav.length, 0);
+const blur = onFocus();
+cursor=0;
+const readyTransfer = nodes(Wallets()).find(n => n.props?.accessibilityLabel === 'Transfer Money Between Wallets');
+assert.equal(readyTransfer.props.disabled, false);
+assert.equal(readyTransfer.props.accessibilityState.disabled, false);
+transfer.props.onPress();
+transfer.props.onPress();
+assert.deepEqual(nav, ['/transfer'], 'Two quick presses open one Transfer on the mounted router');
+blur();
+transfer.props.onPress();
+assert.equal(nav.length, 1, 'A stale press after leaving Wallets cannot navigate');
+onFocus();
+transfer.props.onPress();
+assert.deepEqual(nav, ['/transfer', '/transfer'], 'Returning to Wallets enables the next visit');
 assert.equal(list.filter(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Transfer Money Between Wallets').length,1);
 const add=list.find(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Add Wallet');assert(add,'Compact Add Wallet action stays named and accessible');add.props.onPress();assert.equal(nav.at(-1),'/wallets/add');assert(!list.some(n=>n.type==='Button'&&['Add Wallet','Transfer Money Between Wallets'].includes(n.props.title)),'No competing filled action buttons');
 assert(list.some(n=>n.type==='Text'&&n.props.children==='From one wallet to another'));

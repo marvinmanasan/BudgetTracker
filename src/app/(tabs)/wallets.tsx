@@ -1,7 +1,7 @@
 import type { BulsaColors } from '../../constants/bulsa';
 import { useBulsaTheme, useBulsaStyles } from '../../hooks/use-bulsa-theme';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { BackButton, ReadState, useUI } from '../../components/bulsa-form';
 import { BulsaButton } from '../../components/bulsa-button';
@@ -12,6 +12,7 @@ import { formatCentavos } from '../../lib/money';
 import { setWalletFlags } from '../../storage/wallets';
 
 export default function Wallets() {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const styles = useBulsaStyles(createStyles);
@@ -20,6 +21,23 @@ export default function Wallets() {
   const [pendingFlags, setPendingFlags] = useState<Record<string, boolean>>({});
   const { balances, error, loading, reload } = useLedger();
   const { busy, error: saveError, run } = useSaveAction();
+  const canOpenTransfer = useRef(false);
+  const [transferReady, setTransferReady] = useState(false);
+  useFocusEffect(useCallback(() => {
+    canOpenTransfer.current = true;
+    setTransferReady(true);
+    return () => {
+      canOpenTransfer.current = false;
+      setTransferReady(false);
+    };
+  }, []));
+  const transferDisabled = busy || !transferReady;
+  function openTransfer() {
+    if (busy || !canOpenTransfer.current) return;
+    canOpenTransfer.current = false;
+    setTransferReady(false);
+    router.push('/transfer');
+  }
   const hiddenCount = balances?.wallets.filter(w => w.hidden && w.included).length ?? 0;
   async function include(id: string, included: boolean) {
     if (busy) return;
@@ -37,7 +55,7 @@ export default function Wallets() {
     </View>
     <Text style={ui.caption}>Recorded money, in one place. No bank connection.</Text>
     {!showHidden && <>
-      <Pressable accessibilityRole="button" accessibilityLabel="Transfer Money Between Wallets" accessibilityHint="Choose where the money comes from and where it goes, then review the transfer." accessibilityState={{ disabled: busy }} disabled={busy} onPress={() => router.push('/transfer')} style={({ pressed }) => [styles.transferAction, (pressed || busy) && { opacity: 0.7 }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Transfer Money Between Wallets" accessibilityHint="Choose where the money comes from and where it goes, then review the transfer." accessibilityState={{ disabled: transferDisabled }} disabled={transferDisabled} onPress={openTransfer} style={({ pressed }) => [styles.transferAction, (pressed || transferDisabled) && { opacity: 0.7 }]}>
         <View style={styles.transferIcon}><Text accessible={false} style={styles.transferSymbol}>⇄</Text></View>
         <View style={styles.transferText}><Text style={styles.transferTitle}>Transfer Money</Text><Text style={ui.caption}>From one wallet to another</Text></View>
         <Text accessible={false} style={styles.chevron}>›</Text>

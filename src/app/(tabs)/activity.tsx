@@ -3,7 +3,7 @@ import { previewSelectedDeletion } from '@/lib/selected-deletion';
 import { deleteSelectedTransactions } from '@/storage/selected-deletion';
 import { CenteredPopup } from '@/components/centered-popup';
 import { useBulsaTheme } from '@/hooks/use-bulsa-theme';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useRouter, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { BackHandler, Pressable, SectionList, Text, View } from 'react-native';
 import { BulsaScreen } from '@/components/bulsa-screen';
@@ -21,6 +21,8 @@ import { localDate } from '@/lib/validation';
 import { displayDate, monthName } from '@/lib/display-date';
 
 export default function Activity() {
+  const router = useRouter();
+  const navigation = useNavigation<{ setParams: (params: { wallet?: string; message?: string }) => void }>();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { message, wallet } = useLocalSearchParams<{ message?: string; wallet?: string }>();
@@ -83,7 +85,7 @@ export default function Activity() {
       if (pending.busy || pending.record) throw new Error('Undo or dismiss the previous deletion first.');
       await deleteSelectedTransactions(approved.ids, approved.signature);
     });
-    if (saved) { setDeleteReview(null); setSelectedIds([]); setSelecting(false); router.setParams({ message: `${approved.ids.length} selected transactions deleted. Other records were kept.` }); await reload(true); }
+    if (saved) { setDeleteReview(null); setSelectedIds([]); setSelecting(false); navigation.setParams({ message: `${approved.ids.length} selected transactions deleted. Other records were kept.` }); await reload(true); }
   }
   const selectionToolbar = <View style={{ gap: 8 }}>
     <View style={[ui.row, { justifyContent: 'space-between' }]}><Text accessibilityLiveRegion="polite" style={ui.heading}>{chosenIds.length} Selected</Text><BulsaButton secondary title="Done" disabled={blocked} onPress={finishSelection} /></View>
@@ -99,7 +101,7 @@ export default function Activity() {
   const categories = useMemo(() => [...new Set(data?.transactions.map(t => t.category))].sort(), [data]);
   const payments = useMemo(() => [...new Set(data?.transactions.map(t => t.paymentMethod))].sort(), [data]);
   const filtering = !!(wallet || query.trim() || month || filters.type || filters.category || filters.payment);
-  function clear() { setFilters({}); setQuery(''); setMonth(''); router.setParams({ wallet: undefined }); }
+  function clear() { setFilters({}); setQuery(''); setMonth(''); navigation.setParams({ wallet: undefined }); }
   const walletName = data?.wallets.find(w => w.id === wallet)?.name ?? 'Unknown Wallet';
   const summaryMonth = monthKey ?? localDate().slice(0, 7);
   const summary = useMemo(() => data ? spendingSummary(data, summaryMonth) : null, [data, summaryMonth]);
@@ -110,14 +112,14 @@ export default function Activity() {
     <View style={ui.row}><BulsaButton secondary title="Filters" onPress={openFilters} /><BulsaButton secondary title="Select" disabled={!matchingIds.length || blocked} onPress={() => { setSelecting(true); setSelectedIds([]); }} /></View>
     <Text style={ui.caption}>Tap a record for details. Touch and hold an expense or income to select it.</Text>
     {filtering && <View><Text style={ui.caption}>Filtered records only. Your money totals are unchanged.</Text><BulsaButton secondary title="Clear All Filters" onPress={clear} /></View>}
-    {wallet && <><Text style={ui.caption}>{walletName} Records</Text><BulsaButton secondary title="Show All Activity" onPress={() => router.setParams({ wallet: undefined })} /></>}
+    {wallet && <><Text style={ui.caption}>{walletName} Records</Text><BulsaButton secondary title="Show All Activity" onPress={() => navigation.setParams({ wallet: undefined })} /></>}
     {summary && !monthError && <View style={[ui.card, { backgroundColor: C.summary, borderRadius: 22, padding: 20, gap: 12 }]}>
       <Text style={[ui.body, { color: C.summaryMuted }]}>{monthKey ? `All Wallets · ${monthName(monthKey)}` : 'All Wallets This Month'}</Text>
       <Text style={[ui.money, { color: C.onSummary, fontSize: 36 }]}>{formatCentavos(summary.expenseCentavos)}</Text>
       <Text style={[ui.caption, { color: C.summaryMuted }]}>Across {summary.count} recorded expense{summary.count === 1 ? '' : 's'} · All wallets, before Activity filters.</Text>
     </View>}
     <BulsaButton secondary title="Reset Selected Data" onPress={() => router.push('/reset-data')} />
-    {message && <View style={ui.soft}><Text style={ui.body} accessibilityLiveRegion="polite">{message}</Text><BulsaButton secondary title="Dismiss" onPress={() => router.setParams({ message: undefined })} /></View>}
+    {message && <View style={ui.soft}><Text style={ui.body} accessibilityLiveRegion="polite">{message}</Text><BulsaButton secondary title="Dismiss" onPress={() => navigation.setParams({ message: undefined })} /></View>}
   </View>;
   return <BulsaScreen scrollable={false} header={selecting ? selectionToolbar : undefined}>
     {(!data && loading) || error ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : <SectionList
@@ -156,7 +158,7 @@ export default function Activity() {
         <Text style={ui.title}>Filter Activity</Text>
         {wallet && !clearWallet && <Text style={ui.caption}>Wallet: {walletName}</Text>}
         <ActivityFilterPanel filters={draftFilters} month={draftMonth} monthError="" categories={categories} payments={payments} onChange={setDraftFilters} onMonth={setDraftMonth} onClear={() => { setDraftFilters({}); setDraftMonth(''); setClearWallet(true); }} />
-        <BulsaButton title="Apply Filters" onPress={() => { setFilters(draftFilters); setMonth(draftMonth); if (clearWallet) router.setParams({ wallet: undefined }); setExpanded(false); }} />
+        <BulsaButton title="Apply Filters" onPress={() => { setFilters(draftFilters); setMonth(draftMonth); if (clearWallet) navigation.setParams({ wallet: undefined }); setExpanded(false); }} />
     </CenteredPopup>}
     {deleteReview && <CenteredPopup onClose={finishSelection} busy={blocked}>
       <Text style={ui.title}>Delete {deleteReview.ids.length} Transactions?</Text>

@@ -1,5 +1,5 @@
 import { CenteredPopup } from '../components/centered-popup';
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Pressable, Text, View } from 'react-native';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
@@ -17,6 +17,7 @@ import { recordTransfer } from '../storage/wallets';
 import type { Transfer } from '../types/wallet';
 
 export default function TransferScreen() {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { data, balances, loading, error: readError, reload } = useLedger();

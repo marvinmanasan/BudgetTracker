@@ -2,7 +2,7 @@ import type { BulsaColors } from '@/constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '@/hooks/use-bulsa-theme';
 import { FirstUse } from '@/components/first-use';
 import { needsIntroduction } from '@/lib/preferences';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
 import { BulsaScreen } from '@/components/bulsa-screen';
 import { BulsaButton } from '@/components/bulsa-button';
@@ -18,6 +18,7 @@ import { localDate } from '@/lib/validation';
 import { monthName } from '@/lib/display-date';
 
 export default function Index() {
+  const router = useRouter();
   const ui = useUI();
   const styles = useBulsaStyles(createStyles);
   const { preferences } = useBulsaTheme();

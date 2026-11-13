@@ -11,7 +11,7 @@ const mocks = {
   react: { useCallback: fn => fn, useState(initial) { const i = cursor++; if (!(i in slots)) slots[i] = typeof initial === 'function' ? initial() : initial; return [slots[i], value => { slots[i] = typeof value === 'function' ? value(slots[i]) : value; }]; } },
   'react/jsx-runtime': jsx,
   'react-native': { Text: 'Text', View: 'View', BackHandler: { addEventListener: () => ({ remove() {} }) } },
-  'expo-router': { router: { back: () => assert.fail('A rejected adjustment must not navigate away') }, useFocusEffect() {}, useLocalSearchParams: () => ({ wallet: 'cash' }) },
+  'expo-router': { useRouter:()=>({ back: () => assert.fail('A rejected adjustment must not navigate away') }), useFocusEffect() {}, useLocalSearchParams: () => ({ wallet: 'cash' }) },
   '../components/centered-popup': { CenteredPopup: 'Popup' },
   '../components/bulsa-screen': { BulsaScreen: 'Screen' },
   '../components/bulsa-button': { BulsaButton: 'Button' },

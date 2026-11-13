@@ -1,5 +1,5 @@
 import { CenteredPopup } from '../components/centered-popup';
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
@@ -14,6 +14,7 @@ import { localDate } from '../lib/validation';
 import { setTotalBudget } from '../storage/total-budget';
 
 export default function EditTotalBudget() {
+  const router = useRouter();
   const ui = useUI();
   const { data, balances, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();

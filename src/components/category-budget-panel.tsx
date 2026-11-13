@@ -1,5 +1,5 @@
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { Text, View } from 'react-native';
 import type { Ledger } from '../types/wallet';
@@ -11,6 +11,7 @@ import { ReadState, useUI } from './bulsa-form';
 import { BulsaButton } from './bulsa-button';
 
 export function CategoryBudgetPanel({ data, month }: { data: Ledger; month: string }) {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { plan, loading, error, reload } = useCategoryPlan(month);

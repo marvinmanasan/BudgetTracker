@@ -11,7 +11,7 @@ const common={
  '../components/centered-popup':{CenteredPopup:'Popup'},
  'react-native-reanimated':{default:{View:'AnimatedView'},FadeIn:fade,ReduceMotion:{System:'system'}},
  'react':react,'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',BackHandler:{addEventListener:()=>({remove(){}})}},
- 'expo-router':{router:{push(){},replace(){},back(){}},useFocusEffect(){}},
+ 'expo-router':{useRouter:()=>({push(){},replace(){},back(){}}),useFocusEffect(){}},
  '../components/bulsa-screen':{BulsaScreen:'Screen'},'../components/bulsa-button':{BulsaButton:'Button'},'./bulsa-button':{BulsaButton:'Button'},
  '../components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'ReadState',useUI:()=>({})},'./bulsa-form':{useUI:()=>({})},
  '../components/money-review':{MoneyReview:'MoneyReview'},'../components/undo-notice':{UndoNotice:'UndoNotice'},

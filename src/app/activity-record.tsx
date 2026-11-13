@@ -1,5 +1,5 @@
 import { CenteredPopup } from '../components/centered-popup';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCanGoBack, useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState, useCallback } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { BulsaScreen } from '../components/bulsa-screen';
@@ -16,6 +16,8 @@ import { activityRecord } from '../lib/activity';
 import { displayDate } from '../lib/display-date';
 
 export default function ActivityRecord() {
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
   const ui = useUI();
   const { record, action } = useLocalSearchParams<{ record?: string | string[]; action?: string }>();
   const { data, loading, error, reload } = useLedger();
@@ -46,7 +48,7 @@ export default function ActivityRecord() {
   async function confirmDelete() {
     if (!deleting || !preview) return;
     if (await run(() => undo.remove(deleting, balanceEffectsSignature(preview)))) {
-      if (router.canGoBack()) router.back(); else router.replace('/activity');
+      if (canGoBack) router.back(); else router.replace('/activity');
     }
   }
 

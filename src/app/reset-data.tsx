@@ -1,6 +1,6 @@
 import { CenteredPopup } from '../components/centered-popup';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Switch, Text, View } from 'react-native';
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
@@ -18,6 +18,7 @@ import { applyReset } from '../storage/selective-reset';
 const emptyKinds = () => ({ expenses: false, income: false, transfers: false, adjustments: false });
 const stepEntrance = FadeIn.duration(180).reduceMotion(ReduceMotion.System);
 export default function ResetSelectedData() {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { data, loading, error: readError, reload } = useLedger();

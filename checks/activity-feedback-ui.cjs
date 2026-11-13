@@ -11,7 +11,7 @@ const mocks={
  '@/components/money-review':{MoneyReview:'MoneyReview'},'@/lib/selected-deletion':load('src/lib/selected-deletion.ts'),'@/storage/selected-deletion':{deleteSelectedTransactions:async()=>{}},
  react:{useCallback:fn=>fn,useMemo:fn=>fn(),useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},
  'expo-image':{Image:'Image'},'react/jsx-runtime':jsx,'react-native':{BackHandler:{addEventListener:()=>({remove(){}})},Text:'Text',View:'View',Pressable:'Pressable',SectionList:'List',Modal:'Modal',Alert:{alert:(title,message,buttons)=>alertButtons=buttons}},
- 'expo-router':{useFocusEffect(){},useLocalSearchParams:()=>params,router:{setParams:p=>Object.assign(params,p),push:r=>routes.push(r)}},
+ 'expo-router':{useFocusEffect(){},useLocalSearchParams:()=>params,useNavigation:()=>({setParams:p=>Object.assign(params,p)}),useRouter:()=>({push:r=>routes.push(r)})},
  '@/hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{}})},'@/hooks/use-ledger':{useSaveAction:()=>({busy:false,error:'',run:async fn=>{await fn();return true;}}),useLedger:()=>({data,loading:false,error:'',reload(){}})},
  '@/hooks/use-transaction-undo':{useTransactionUndo:()=>({busy:false,record:pending,snapshot:()=>({busy:false,record:pending})})},
  '@/components/bulsa-screen':{BulsaScreen:'Screen'},'@/components/bulsa-button':{BulsaButton:'Button'},

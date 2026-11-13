@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { useMonthlyLimit } from '../hooks/use-monthly-limit';
 import { formatCentavos } from '../lib/money';
@@ -7,6 +7,7 @@ import { BulsaButton } from './bulsa-button';
 import { useUI } from './bulsa-form';
 
 export function MonthlyLimitNotice({ month, spent, projected, disabled = false, compact = false }: { month: string; spent: number; projected?: number; disabled?: boolean; compact?: boolean }) {
+  const router = useRouter();
   const ui = useUI();
   const { value, loading, error, reload } = useMonthlyLimit(month);
   if (compact) return <View style={ui.card}>

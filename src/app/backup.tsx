@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { BackHandler, Platform, Text, View } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { BackButton, Field, useUI } from '../components/bulsa-form';
 import { BulsaButton } from '../components/bulsa-button';
 import { BulsaScreen } from '../components/bulsa-screen';
@@ -14,6 +14,7 @@ const labels = { wallets: 'Wallets', transactions: 'Income and Expenses', balanc
 type Preview = { incoming: FinancialBackup; current: FinancialBackup; signature: string };
 
 export default function BackupScreen() {
+  const router = useRouter();
   const ui = useUI();
   const undo = useTransactionUndo();
   const lock = useRef(false);

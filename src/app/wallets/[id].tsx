@@ -1,5 +1,5 @@
 import { useBulsaTheme } from '../../hooks/use-bulsa-theme';
-import { router, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Switch, Text, View } from "react-native";
 import { BackButton, Field, ReadState, useUI } from "../../components/bulsa-form";
@@ -16,6 +16,7 @@ import {
 } from "../../storage/wallets";
 
 export default function WalletDetails() {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { id } = useLocalSearchParams<{ id: string }>();

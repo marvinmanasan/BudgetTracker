@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Text, View } from 'react-native';
 import { getMonthlyLimits, type MonthlyLimit } from '../storage/budgets';
@@ -8,6 +8,7 @@ import { BulsaButton } from './bulsa-button';
 import { ReadState, useUI } from './bulsa-form';
 
 export function MonthlyLimitHistory() {
+  const router = useRouter();
   const ui = useUI();
   const [rows, setRows] = useState<MonthlyLimit[]>([]);
   const [loading, setLoading] = useState(true), [error, setError] = useState('');

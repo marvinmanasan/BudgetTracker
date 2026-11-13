@@ -5,7 +5,7 @@ const theme={preferences:{displayName:'Ana',appearance:'light',onboardingComplet
 const mocks={
  'react':{useCallback:fn=>fn,useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],value=>{slots[i]=value;}];}},
  'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',BackHandler:{addEventListener:()=>({remove(){}})}},
- 'expo-router':{router:{push:route=>navigation.push(route)},useFocusEffect(){},useNavigation:()=>({isFocused:()=>focused})},
+ 'expo-router':{useRouter:()=>({push:route=>navigation.push(route)}),useFocusEffect(){},useNavigation:()=>({isFocused:()=>focused})},
  '../hooks/use-bulsa-theme':{useBulsaTheme:()=>({...theme,saving})},
  './bulsa-screen':{BulsaScreen:'Screen'},'./bulsa-button':{BulsaButton:'Button'},'./bulsa-form':{BackButton:'Back',Field:'Field',useUI:()=>({})},
 };

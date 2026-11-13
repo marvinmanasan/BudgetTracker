@@ -1,5 +1,5 @@
 import { CenteredPopup } from './centered-popup';
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Pressable, Text, View } from 'react-native';
 import { BackButton, Field, ReadState, useUI } from './bulsa-form';
@@ -25,6 +25,7 @@ export function EntryForm({ original }: { original?: Transaction }) {
 }
 
 export function EntryFields({ original: incoming, ledger }: { original?: Transaction; ledger: ReturnType<typeof useLedger> }) {
+  const router = useRouter();
   const ui = useUI();
   const [original] = useState(incoming);
   const initial = original ? transactionDraft(original) : undefined;

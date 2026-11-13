@@ -1,5 +1,5 @@
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 import { BulsaScreen } from '../components/bulsa-screen';
 import { BackButton, ReadState, useUI } from '../components/bulsa-form';
@@ -14,6 +14,7 @@ import type { SavingsContribution } from '../storage/savings';
 
 
 export default function SavingsScreen() {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const { data, loading, error, reload } = useSavings();

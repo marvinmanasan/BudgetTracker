@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
@@ -8,6 +8,7 @@ import { BackButton, Field, useUI } from './bulsa-form';
 import type { AppearanceChoice } from '../lib/preferences';
 
 export function SettingsForm() {
+  const router = useRouter();
   const ui = useUI();
   const { preferences, saving, error, save } = useBulsaTheme();
   const [name, setName] = useState(preferences.displayName);

@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { getChoices } from '../storage/choices';
@@ -14,6 +14,7 @@ import { BulsaButton } from './bulsa-button';
 import { BackButton, Field, useUI } from './bulsa-form';
 
 export function CategoryLimitForm({ month, initial, sourceError, sourceLoading, retry }: { month: string; initial: CategoryPlan; sourceError: string; sourceLoading: boolean; retry: () => void }) {
+  const router = useRouter();
   const ui = useUI();
   const [original] = useState(initial);
   const [rows, setRows] = useState(() => original.allocations.map(a => ({ category: a.category, amount: centavosInput(a.limitCentavos) })));

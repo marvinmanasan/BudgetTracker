@@ -1,4 +1,4 @@
-import { router, useFocusEffect, useNavigation } from 'expo-router';
+import { useRouter, useFocusEffect, useNavigation } from 'expo-router';
 import { useCallback } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
@@ -7,6 +7,7 @@ import { BulsaButton } from './bulsa-button';
 import { useUI } from './bulsa-form';
 
 export function FirstUse() {
+  const router = useRouter();
   const ui = useUI();
   const navigation = useNavigation();
   const { saving, error, save } = useBulsaTheme();

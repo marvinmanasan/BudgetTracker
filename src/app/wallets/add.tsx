@@ -1,5 +1,5 @@
 import { useBulsaTheme } from '../../hooks/use-bulsa-theme';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Switch, Text, View } from 'react-native';
 import { BackButton, Field, useUI } from '../../components/bulsa-form';
@@ -10,6 +10,7 @@ import { newRecordId, parseBalance } from '../../lib/form-money';
 import { createWallet } from '../../storage/wallets';
 
 export default function AddWallet() {
+  const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
   const [id] = useState(() => newRecordId('wallet'));

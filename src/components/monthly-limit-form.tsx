@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { useCanGoBack, useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
 import { BulsaScreen } from './bulsa-screen';
@@ -13,6 +13,8 @@ import { monthName } from '../lib/display-date';
 import { formatCentavos } from '../lib/money';
 
 export function MonthlyLimitForm({ month, initial, sourceError, sourceLoading, retry }: { month: string; initial: number | null; sourceError: string; sourceLoading: boolean; retry: () => void }) {
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
   const ui = useUI();
   const [amount, setAmount] = useState(initial === null ? '' : centavosInput(initial));
   const { data, error: readError, reload } = useLedger();
@@ -26,7 +28,7 @@ export function MonthlyLimitForm({ month, initial, sourceError, sourceLoading, r
       if (value === null || value < 0) throw new Error('Enter a limit of zero or more, with up to two decimal places.');
       await setMonthlyLimit(month, value);
     });
-    if (saved) { if (router.canGoBack()) router.back(); else router.replace('/budgets'); }
+    if (saved) { if (canGoBack) router.back(); else router.replace('/budgets'); }
   }
   return <BulsaScreen header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>Monthly Spending Limit</Text>

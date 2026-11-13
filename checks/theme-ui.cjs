@@ -6,7 +6,7 @@ const mocks={
  'react/jsx-runtime':jsx,'react-native':{Pressable:'Button',Text:'Text',View:'View',StyleSheet:{create:s=>s}},
  '@/constants/bulsa':palettes,
  '../lib/money':createLoader()('src/lib/money.ts'),
- 'expo-router':{router:{push(){}}},
+ 'expo-router':{useRouter:()=>({push(){}})},
  './bulsa-button':{BulsaButton:'Button'},'./bulsa-form':{ReadState:'ReadState',useUI:()=>({})},
  '../lib/savings-summary':createLoader()('src/lib/savings-summary.ts'),
  '../hooks/use-savings':{useSavings:()=>({data:{goals:[{id:'main',title:'My Goal',targetCentavos:10000}],contributions:[{id:'saved',goalId:'main',amountCentavos:12000,date:'2026-11-12',note:''}]},loading:false,error:'',reload(){}})},

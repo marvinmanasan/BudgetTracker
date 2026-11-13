@@ -1,4 +1,4 @@
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text } from 'react-native';
 import { BulsaScreen } from './bulsa-screen';
@@ -13,6 +13,7 @@ import { localDate } from '../lib/validation';
 import { recordSavingsContribution, saveSavingsGoal, type SavingsGoal } from '../storage/savings';
 
 export function SavingsForm({ initial, contribution = false, loading, readError, retry }: { initial?: SavingsGoal; contribution?: boolean; loading: boolean; readError: string; retry: () => void }) {
+  const router = useRouter();
   const ui = useUI();
   const [original] = useState(initial);
   const [title, setTitle] = useState(original?.title ?? '');
