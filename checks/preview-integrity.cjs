@@ -10,6 +10,8 @@ async function main() {
   const load = createLoader({ react: { useSyncExternalStore: (_subscribe, snapshot) => snapshot() }, 'expo-sqlite': { openDatabaseAsync: async name => {
     const db = new DatabaseSync(path.join(folder, name)); connections.push(db);
     return {
+      // All names, including the default legacy name, resolve inside this temporary folder.
+      closeAsync: async () => {},
       execAsync: async sql => db.exec(sql),
       runAsync: async (sql, ...args) => db.prepare(sql).run(...args),
       getAllAsync: async (sql, ...args) => db.prepare(sql).all(...args),

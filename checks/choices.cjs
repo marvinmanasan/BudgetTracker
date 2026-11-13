@@ -9,7 +9,7 @@ async function main() {
   const connections = [];
   function fresh() {
     return createLoader({'expo-sqlite': {openDatabaseAsync: async name => {
-      assert.equal(name, 'bulsa-choices.db');
+      assert.equal(name, 'test-choices-main.db', 'Only the isolated main test DB is opened');
       const db = new DatabaseSync(path.join(folder,name)); connections.push(db);
       return {
         execAsync: async sql => db.exec(sql),
@@ -17,16 +17,26 @@ async function main() {
         getAllAsync: async (sql,...args) => db.prepare(sql).all(...args),
         getFirstAsync: async (sql,...args) => db.prepare(sql).get(...args) ?? null,
         closeAsync: async () => db.close(),
+        withTransactionAsync: async work => { db.exec('BEGIN'); try { await work(); db.exec('COMMIT'); } catch(error) { db.exec('ROLLBACK'); throw error; } },
       };
-    }}})('src/storage/choices.ts');
+    }}});
+  }
+  function storeFrom(load) {
+    const choices = load('src/storage/choices.ts'), name = 'test-choices-main.db';
+    return {
+      getChoices: kind => choices.getChoices(kind, name),
+      addChoice: choice => choices.addChoice(choice, name),
+      renameChoice: (id, kind, label) => choices.renameChoice(id, kind, label, name),
+      removeChoice: (id, kind) => choices.removeChoice(id, kind, name),
+    };
   }
   try {
-    const moneyPath = path.join(folder,'bulsa.db');
-    const money = new DatabaseSync(moneyPath);
-    money.exec('CREATE TABLE transactions(id TEXT PRIMARY KEY, category TEXT, amountCentavos INTEGER, date TEXT);');
-    money.prepare('INSERT INTO transactions VALUES(?,?,?,?)').run('old','my lunch',18050,'2026-11-11'); money.close();
-    const before = fs.readFileSync(moneyPath);
-    let store = fresh();
+    let load = fresh();
+    const moneyName = 'test-choices-main.db';
+    const wallets = load('src/storage/wallets.ts');
+    await load('src/storage/transactions.ts').saveTransaction({ id: 'old', type: 'expense', category: 'my lunch', amountCentavos: 18050, date: '2026-11-11', paymentMethod: 'Not specified' }, moneyName);
+    const before = await wallets.getLedger(moneyName);
+    let store = storeFrom(load);
     assert.deepEqual(await store.getChoices('expense'),[]);
     const draft = {id:'snapshot',kind:'expense',name:'Safe choice'};
     const saving = store.addChoice(draft);
@@ -43,7 +53,7 @@ async function main() {
     assert.equal((await store.getChoices('expense'))[0].name,'school snacks');
     await assert.rejects(store.renameChoice('lunch','expense','Other'), /already/i);
     await assert.rejects(store.renameChoice('lunch','income','wrong kind'), /no longer/i);
-    store = fresh();
+    store = storeFrom(fresh());
     assert.equal((await store.getChoices('expense'))[0].name,'school snacks');
     await store.removeChoice('lunch','expense');
     assert.deepEqual(await store.getChoices('expense'),[]);
@@ -60,10 +70,8 @@ async function main() {
     const many = Array.from({length:40},(_,i)=>store.addChoice({id:'many'+i,kind:'expense',name:'choice '+i}));
     await Promise.all(many);
     assert.equal((await store.getChoices('expense')).length,41);
-    assert.deepEqual(fs.readFileSync(moneyPath),before);
-    const inspect = new DatabaseSync(moneyPath);
-    assert.deepEqual({...inspect.prepare('SELECT * FROM transactions').get()}, {id:'old',category:'my lunch',amountCentavos:18050,date:'2026-11-11'}); inspect.close();
-    console.log('Custom choices CRUD, persistence, validation and financial data isolation passed.');
+    assert.deepEqual(await wallets.getLedger(moneyName), before, 'Choice CRUD keeps every financial record and balance source unchanged');
+    console.log('Custom choices CRUD, persistence, validation and shared queue and unchanged financial data passed.');
   } finally { for (const db of connections) db.close(); fs.rmSync(folder,{recursive:true,force:true}); }
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});

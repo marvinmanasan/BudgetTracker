@@ -4,6 +4,7 @@ import type { Ledger } from '../types/wallet';
 
 export const BACKUP_MAX_BYTES = 10 * 1024 * 1024;
 export const backupColumns = {
+  custom_choices: ['id', 'kind', 'name', 'nameKey'],
   wallets: ['id', 'name', 'nameKey', 'included', 'hidden', 'createdAt', 'updatedAt'],
   transactions: ['id', 'type', 'amountCentavos', 'category', 'date', 'paymentMethod', 'note', 'walletId'],
   balance_changes: ['id', 'walletId', 'kind', 'deltaCentavos', 'date', 'reason', 'targetCentavos', 'createdAt'],
@@ -84,6 +85,15 @@ export function validateBackup(value: unknown): FinancialBackup {
       unique.add(key);
       return row;
     });
+  }
+  const choiceNames = new Set<string>();
+  for (const row of tables.custom_choices) {
+    if (!['expense', 'income'].includes(row.kind as string)) fail();
+    // Preserve stored historical labels and name keys exactly. New-choice rules
+    // (including reserved names) apply at entry, not to an existing backup.
+    const key = JSON.stringify([row.kind, row.nameKey]);
+    if (choiceNames.has(key)) fail();
+    choiceNames.add(key);
   }
   const walletIds = new Set(tables.wallets.map(row => row.id));
   const names = new Set<string>();

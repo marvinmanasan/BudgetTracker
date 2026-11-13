@@ -40,6 +40,10 @@ export default function AdjustBalance() {
       setReview(adjustmentPreview(data, walletId, amount)); setValidation('');
     } catch (cause) { setValidation(cause instanceof Error ? cause.message : 'Check the balance.'); }
   }
+  function refreshBalance() {
+    setReview(null);
+    void reload();
+  }
   async function confirm() {
     if (!review || !walletId) return;
     const saved = await run(() => adjustWallet({ id, walletId, targetCentavos: parseBalance(target)!, reason, date: localDate(), expectedBalanceCentavos: review.currentCentavos, expectedPreviewSignature: balanceEffectsSignature(review) }));
@@ -53,7 +57,7 @@ export default function AdjustBalance() {
         <View style={ui.card}><Text style={ui.body}>Recorded: {formatCentavos(review.currentCentavos)}</Text><Text style={ui.body}>Actual: {formatCentavos(parseBalance(target)!)}</Text><Text style={ui.body}>Change: {formatCentavos(review.deltaCentavos)}</Text><Text style={ui.body}>Total Budget: {formatCentavos(review.before.totalCentavos)} → {formatCentavos(review.after.totalCentavos)}</Text><Text style={ui.body}>Reason: {reason}</Text></View>
         <Text style={ui.caption}>The fixed difference is recorded in history. It is not income or spending.</Text>
         {review.deltaCentavos === 0 ? <Text style={ui.body}>Balance already matches. No adjustment will be recorded.</Text> : <BulsaButton disabled={busy} title={busy ? 'Saving…' : 'Confirm Adjustment'} onPress={() => void confirm()} />}
-        {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
+        {!!error && <><Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text><BulsaButton secondary title="Refresh Balance" disabled={busy} onPress={refreshBalance} /></>}
         <BulsaButton secondary disabled={busy} title="Keep Editing" onPress={() => setReview(null)} />
       </CenteredPopup>}
       <>
@@ -65,6 +69,6 @@ export default function AdjustBalance() {
       </>
     </>}
     {!!validation && <Text style={ui.error}>{validation}</Text>}
-    {!!error && <><Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text><BulsaButton secondary title="Refresh Balance" disabled={busy} onPress={() => { setReview(null); void reload(); }} /></>}
+    {!!error && !review && <><Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text><BulsaButton secondary title="Refresh Balance" disabled={busy} onPress={refreshBalance} /></>}
   </BulsaScreen>;
 }

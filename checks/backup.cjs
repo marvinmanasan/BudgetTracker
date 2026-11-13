@@ -11,6 +11,7 @@ const stamp = '2026-11-13 12:00:00';
 const fixture = {
   format: 'bulsa-financial-backup', version: 1, createdAt: '2026-11-13T04:00:00.000Z',
   tables: {
+    custom_choices: [{ id: 'custom-expense', kind: 'expense', name: 'Everything Else', nameKey: 'everything else' }, { id: 'custom-income', kind: 'income', name: '  Weekend Pay  ', nameKey: 'weekend pay' }],
     wallets: [{ id: 'cash', name: 'Cash', nameKey: 'cash', included: 1, hidden: 0, createdAt: stamp, updatedAt: stamp }, { id: 'bank', name: 'Bank', nameKey: 'bank', included: 0, hidden: 1, createdAt: stamp, updatedAt: stamp }],
     transactions: [{ id: 'expense', type: 'expense', amountCentavos: 100, category: 'Food', date: '2026-11-12', paymentMethod: 'Cash', note: null, walletId: 'cash' }, { id: 'income', type: 'income', amountCentavos: 500, category: 'Pay', date: '2026-11-12', paymentMethod: 'Not specified', note: 'General', walletId: null }],
     balance_changes: [{ id: 'opening', walletId: 'cash', kind: 'opening', deltaCentavos: 10000, date: '2026-11-01', reason: 'Starting balance', targetCentavos: null, createdAt: stamp }, { id: 'bank-opening', walletId: 'bank', kind: 'opening', deltaCentavos: -50, date: '2026-11-01', reason: 'Starting balance', targetCentavos: null, createdAt: stamp }, { id: 'adjust', walletId: 'cash', kind: 'adjustment', deltaCentavos: 20, date: '2026-11-02', reason: 'Correction', targetCentavos: 10020, createdAt: stamp }],
@@ -52,6 +53,8 @@ copied.tables.wallets[0].name = 'Changed';
 assert.equal(fixture.tables.wallets[0].name, 'Cash');
 const badCases = [
   b => b.version = 2,
+  b => b.tables.custom_choices[0].kind = 'payment',
+  b => b.tables.custom_choices.push({ ...b.tables.custom_choices[0], id: 'duplicate-name' }),
   b => b.tables.evil = [],
   b => delete b.tables.transfers,
   b => b.tables.transactions[0].extra = 'SQL',
@@ -131,6 +134,8 @@ async function storageChecks() {
     const name = 'test-backup.db';
     const db = await loader('src/storage/database.ts').openDatabase(name);
     const { createFinancialBackup, restoreFinancialBackup, financialSignature } = loader('src/storage/backup.ts');
+    const { deriveBalances, monthlyTotalsByMonth } = loader('src/lib/ledger.ts');
+    const { readLedger } = loader('src/storage/wallets.ts');
     let before = await createFinancialBackup(name);
     const read = () => createFinancialBackup(name);
     const signature = async () => financialSignature(await read());
@@ -142,7 +147,16 @@ async function storageChecks() {
     assert.equal(await signature(), beforeSignature, 'Late failure rolls back all deletions and previous inserts');
     failInsert = false;
     await restoreFinancialBackup(fixture, beforeSignature, () => true, name);
-    assert.equal(await signature(), financialSignature(validateBackup(fixture)), 'All financial tables survive exact round trip');
+    assert.equal(await signature(), financialSignature(validateBackup(fixture)), 'All financial and choice tables survive exact round trip');
+    const restoredBalances = deriveBalances(await readLedger(db));
+    const restoredMonthly = [...monthlyTotalsByMonth(await readLedger(db))];
+    await restoreFinancialBackup(await read(), await signature(), () => true, name);
+    assert.deepEqual(deriveBalances(await readLedger(db)), restoredBalances, 'Every wallet and Total Budget remain identical after a full restore');
+    assert.deepEqual([...monthlyTotalsByMonth(await readLedger(db))], restoredMonthly, 'All monthly income and expenses remain identical');
+    before = await read();
+    await db.runAsync('UPDATE custom_choices SET name=? WHERE id=?', 'Changed custom label', 'custom-income');
+    await assert.rejects(() => restoreFinancialBackup(fixture, financialSignature(before), () => true, name), /changed/);
+    await restoreFinancialBackup(fixture, await signature(), () => true, name);
     before = await read();
     await db.runAsync('UPDATE savings_goals SET title=? WHERE id=?', 'Changed', 'goal');
     await assert.rejects(() => restoreFinancialBackup(fixture, financialSignature(before), () => true, name), /changed/);

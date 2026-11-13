@@ -36,8 +36,12 @@ async function main() {
   };
   const fresh = () => createLoader({ "expo-sqlite": {
     openDatabaseAsync: async (name) => {
-      openCalls++;
+      if (name !== "bulsa-choices.db") openCalls++;
       if (failOpen) throw new Error("open failed");
+      if (name === "bulsa-choices.db") {
+        const legacy = new DatabaseSync(path.join(folder, "test-legacy-choices.db"));
+        return { getFirstAsync: async (sql, ...params) => legacy.prepare(sql).get(...params) ?? null, closeAsync: async () => legacy.close() };
+      }
       native = new DatabaseSync(name === "bulsa.db" ? filename : path.join(folder, name));
       return adapter();
     },
@@ -92,12 +96,12 @@ async function main() {
     const storedDraft = (await storeAgain.getTransactions()).find((row) => row.id === "snapshot-check");
     assert.equal(storedDraft.amountCentavos, 2500);
     assert.equal(storedDraft.note, record.note);
-    await reopened.execAsync("PRAGMA user_version = 5");
+    await reopened.execAsync("PRAGMA user_version = 6");
     await reopened.closeAsync();
     await assert.rejects(fresh()("src/storage/database.ts").openDatabase(), /newer|version/i);
     if (native) { native.close(); native = undefined; }
     native = new DatabaseSync(filename);
-    assert.equal(native.prepare("PRAGMA user_version").get().user_version, 5);
+    assert.equal(native.prepare("PRAGMA user_version").get().user_version, 6);
     native.exec("PRAGMA user_version = 0; DROP TABLE transfers; DROP TABLE balance_changes; DROP TABLE transactions; DROP TABLE wallets;");
     native.close(); native = undefined;
     failSetup = true;
@@ -110,7 +114,7 @@ async function main() {
     native.close(); native = undefined;
     failSetup = false;
     const retried = await database.openDatabase();
-    assert.equal((await retried.getFirstAsync("PRAGMA user_version")).user_version, 4);
+    assert.equal((await retried.getFirstAsync("PRAGMA user_version")).user_version, 5);
     console.log("Storage checks passed: real SQLite persistence, parameter binding, validation, duplicate protection, read failure, initialization retry, concurrency, schema rollback/newer-version protection.");
   } finally {
     if (native) native.close();

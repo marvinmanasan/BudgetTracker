@@ -54,7 +54,7 @@ async function main() {
     assert.equal(inspect.prepare("SELECT name FROM sqlite_master WHERE name='category_allocations'").get(), undefined);
     assert.equal(snapshot(inspect), before); inspect.close(); failMigration = false;
     const db = await database.openDatabase(filename);
-    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 4);
+    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 5);
     let categories = load('src/storage/categories.ts'), savings = load('src/storage/savings.ts');
     const budgets = load('src/storage/budgets.ts');
     assert.deepEqual(await categories.getCategoryPlan('2026-12', filename), { limitCentavos: null, allocations: [], signature: '[null,[]]' });

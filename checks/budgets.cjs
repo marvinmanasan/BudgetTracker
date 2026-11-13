@@ -67,7 +67,7 @@ async function main() {
     let load = fresh();
     let database = load('src/storage/database.ts');
     const migrated = await database.openDatabase('legacy.db');
-    assert.equal((await migrated.getFirstAsync('PRAGMA user_version')).user_version, 4, 'v2 financial database upgrades to month-limit schema');
+    assert.equal((await migrated.getFirstAsync('PRAGMA user_version')).user_version, 5, 'v2 financial database upgrades to month-limit schema');
     assert.deepEqual(await migrated.getAllAsync('SELECT * FROM monthly_limits'), [], 'migration never invents a budget');
     let inspect = new DatabaseSync(filename);
     assert.equal(legacySnapshot(inspect), before, 'v2 money, renamed/hidden/excluded wallets, choices and deleted defaults remain exact');

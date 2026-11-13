@@ -25,9 +25,9 @@ export function restoreFinancialBackup(input: FinancialBackup, expectedSignature
   return withDatabase(name, async db => {
     if (!canRestore()) throw new Error('Finish or dismiss the pending Undo before restoring.');
     if (financialSignature(await readBackup(db)) !== expectedSignature) throw new Error('Your records changed. Choose the backup again and review a fresh preview.');
-    const deletionOrder: BackupTable[] = ['savings_contributions', 'category_allocations', 'transactions', 'transfers', 'balance_changes', 'savings_goals', 'monthly_limits', 'wallets'];
+    const deletionOrder: BackupTable[] = ['custom_choices', 'savings_contributions', 'category_allocations', 'transactions', 'transfers', 'balance_changes', 'savings_goals', 'monthly_limits', 'wallets'];
     for (const table of deletionOrder) await db.runAsync(`DELETE FROM ${table}`);
-    const insertionOrder: BackupTable[] = ['wallets', 'monthly_limits', 'savings_goals', 'balance_changes', 'transactions', 'transfers', 'category_allocations', 'savings_contributions'];
+    const insertionOrder: BackupTable[] = ['wallets', 'monthly_limits', 'savings_goals', 'balance_changes', 'transactions', 'transfers', 'category_allocations', 'savings_contributions', 'custom_choices'];
     for (const table of insertionOrder) {
       const columns = backupColumns[table];
       for (const row of backup.tables[table]) {
