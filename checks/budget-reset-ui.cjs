@@ -12,7 +12,7 @@ const common={
  'react-native-reanimated':{default:{View:'AnimatedView'},FadeIn:fade,ReduceMotion:{System:'system'}},
  'react':react,'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',BackHandler:{addEventListener:()=>({remove(){}})}},
  'expo-router':{router:{push(){},replace(){},back(){}},useFocusEffect(){}},
- '../components/pocket-screen':{PocketScreen:'Screen'},'../components/pocket-button':{PocketButton:'Button'},'./pocket-button':{PocketButton:'Button'},
+ '../components/bulsa-screen':{BulsaScreen:'Screen'},'../components/bulsa-button':{BulsaButton:'Button'},'./bulsa-button':{BulsaButton:'Button'},
  '../components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'ReadState',useUI:()=>({})},'./bulsa-form':{useUI:()=>({})},
  '../components/money-review':{MoneyReview:'MoneyReview'},'../components/undo-notice':{UndoNotice:'UndoNotice'},
  '../hooks/use-ledger':{useLedger:()=>({data:ledger,loading:false,error:'',reload:async()=>{}}),useSaveAction:()=>({busy:false,error:'',run:async work=>{try{return await work()!==false;}catch{return false;}}})},
@@ -21,7 +21,7 @@ const common={
  '../lib/selective-reset':load('src/lib/selective-reset.ts'),
  '../storage/selective-reset':{applyReset:async()=>{commits++;}},
  '../lib/money':load('src/lib/money.ts'),'../lib/display-date':load('src/lib/display-date.ts'),
- '../constants/pocket':{PocketColors:{}}, '../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{}})},
+ '../constants/bulsa':{LightColors:{}}, '../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{}})},
 };
 function component(path){const module={exports:{}};const code=ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+code+'})')(name=>common[name]??require(name),module,module.exports);return module.exports;}
 function nodes(tree){if(!tree)return[];if(Array.isArray(tree))return tree.flatMap(nodes);if(typeof tree!=='object')return[];return[tree,...nodes(tree.props?.children)];}

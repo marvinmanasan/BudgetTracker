@@ -1,9 +1,9 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
-import { PocketScreen } from './pocket-screen';
+import { BulsaScreen } from './bulsa-screen';
 import { BackButton, Field, useUI } from './bulsa-form';
-import { PocketButton } from './pocket-button';
+import { BulsaButton } from './bulsa-button';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { setMonthlyLimit } from '../storage/budgets';
 import { centavosInput } from '../lib/editing';
@@ -28,16 +28,16 @@ export function MonthlyLimitForm({ month, initial, sourceError, sourceLoading, r
     });
     if (saved) { if (router.canGoBack()) router.back(); else router.replace('/budgets'); }
   }
-  return <PocketScreen header={<BackButton disabled={busy} />}>
+  return <BulsaScreen header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>Monthly Spending Limit</Text>
-    {!!sourceError && <><Text style={ui.error}>{sourceError}</Text><PocketButton secondary disabled={busy} title="Try Again" onPress={retry} /></>}
+    {!!sourceError && <><Text style={ui.error}>{sourceError}</Text><BulsaButton secondary disabled={busy} title="Try Again" onPress={retry} /></>}
     {sourceLoading && <Text style={ui.caption}>Refreshing monthly limit…</Text>}
     <Text style={ui.body}>Month: {monthName(month)}</Text>
     <Field label="Spending Limit (PHP)" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" editable={!busy} />
-    {readError ? <><Text style={ui.error}>{readError}</Text><PocketButton secondary disabled={busy} title="Refresh Spending" onPress={() => void reload()} /></> : spent !== null && <View style={ui.card}><Text style={ui.body}>Spent: {formatCentavos(spent)}</Text>{draftLimit !== null && draftLimit >= 0 && <Text style={ui.body}>Remaining With This Limit: {formatCentavos(draftLimit - spent)}</Text>}</View>}
+    {readError ? <><Text style={ui.error}>{readError}</Text><BulsaButton secondary disabled={busy} title="Refresh Spending" onPress={() => void reload()} /></> : spent !== null && <View style={ui.card}><Text style={ui.body}>Spent: {formatCentavos(spent)}</Text>{draftLimit !== null && draftLimit >= 0 && <Text style={ui.body}>Remaining With This Limit: {formatCentavos(draftLimit - spent)}</Text>}</View>}
     <Text style={ui.caption}>Zero is a valid spending limit. This does not change any wallet balance or Total Budget. Choose a different month from Budgets.</Text>
     {!!error && <Text style={ui.error}>{error}</Text>}
-    <PocketButton title={busy ? 'Saving…' : 'Save Monthly Limit'} disabled={busy || sourceLoading || !!sourceError} onPress={() => void save()} />
-    <PocketButton secondary title="Cancel" disabled={busy} onPress={() => router.back()} />
-  </PocketScreen>;
+    <BulsaButton title={busy ? 'Saving…' : 'Save Monthly Limit'} disabled={busy || sourceLoading || !!sourceError} onPress={() => void save()} />
+    <BulsaButton secondary title="Cancel" disabled={busy} onPress={() => router.back()} />
+  </BulsaScreen>;
 }

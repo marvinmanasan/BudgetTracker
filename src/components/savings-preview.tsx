@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { useSavings } from '../hooks/use-savings';
 import { savingsSummary } from '../lib/savings-summary';
 import { formatCentavos } from '../lib/money';
-import { PocketButton } from './pocket-button';
+import { BulsaButton } from './bulsa-button';
 import { ReadState, useUI } from './bulsa-form';
 
 export function SavingsPreview() {
@@ -21,7 +21,7 @@ export function SavingsPreview() {
       {!!calculationError && <Text style={ui.error}>{calculationError}</Text>}
       <Text style={ui.body}>{goal && summary ? `${goal.title}: ${formatCentavos(summary.savedCentavos)} of ${formatCentavos(goal.targetCentavos)}` : 'Set a goal and record what you have saved.'}</Text>
       {goal && summary && <View accessible accessibilityRole="progressbar" accessibilityLabel={goal.title} accessibilityValue={{ min: 0, max: 100, now: Math.round(summary.progress * 100), text: `${formatCentavos(summary.savedCentavos)} saved of ${formatCentavos(goal.targetCentavos)}` }} style={{ height: 8, borderRadius: 4, overflow: 'hidden', backgroundColor: colors.track }}><View accessible={false} style={{ height: 8, backgroundColor: colors.accent, width: `${summary.progress * 100}%` }} /></View>}
-      <PocketButton secondary title={goal ? 'View Savings' : 'Set Savings Goal'} onPress={() => router.push(goal ? '/savings' : '/savings-goal')} />
+      <BulsaButton secondary title={goal ? 'View Savings' : 'Set Savings Goal'} onPress={() => router.push(goal ? '/savings' : '/savings-goal')} />
     </>}
     <Text style={ui.caption}>Savings records are separate. They do not move money or reduce Total Budget.</Text>
   </View>;

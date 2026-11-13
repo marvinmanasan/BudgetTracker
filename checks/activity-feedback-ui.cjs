@@ -14,7 +14,7 @@ const mocks={
  'expo-router':{useFocusEffect(){},useLocalSearchParams:()=>params,router:{setParams:p=>Object.assign(params,p),push:r=>routes.push(r)}},
  '@/hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{}})},'@/hooks/use-ledger':{useSaveAction:()=>({busy:false,error:'',run:async fn=>{await fn();return true;}}),useLedger:()=>({data,loading:false,error:'',reload(){}})},
  '@/hooks/use-transaction-undo':{useTransactionUndo:()=>({busy:false,record:pending,snapshot:()=>({busy:false,record:pending})})},
- '@/components/pocket-screen':{PocketScreen:'Screen'},'@/components/pocket-button':{PocketButton:'Button'},
+ '@/components/bulsa-screen':{BulsaScreen:'Screen'},'@/components/bulsa-button':{BulsaButton:'Button'},
  '@/components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'ReadState',useUI:()=>({})},'@/components/activity-amount':{ActivityAmount:'Amount'},
  '@/components/activity-filters':{ActivityFilterPanel:'Filters'},'@/components/undo-notice':{UndoNotice:'Undo'},
  '@/lib/activity':load('src/lib/activity.ts'),'@/lib/validation':{localDate:()=> '2026-11-12'},'@/lib/money':load('src/lib/money.ts'),'@/lib/display-date':load('src/lib/display-date.ts'),

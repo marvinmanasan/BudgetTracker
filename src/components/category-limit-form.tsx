@@ -9,8 +9,8 @@ import { parseBalance } from '../lib/form-money';
 import { formatCentavos } from '../lib/money';
 import { monthName } from '../lib/display-date';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
-import { PocketScreen } from './pocket-screen';
-import { PocketButton } from './pocket-button';
+import { BulsaScreen } from './bulsa-screen';
+import { BulsaButton } from './bulsa-button';
 import { BackButton, Field, useUI } from './bulsa-form';
 
 export function CategoryLimitForm({ month, initial, sourceError, sourceLoading, retry }: { month: string; initial: CategoryPlan; sourceError: string; sourceLoading: boolean; retry: () => void }) {
@@ -42,23 +42,23 @@ export function CategoryLimitForm({ month, initial, sourceError, sourceLoading, 
     const saved = await run(() => saveCategoryAllocations(month, rows.map(row => ({ category: row.category, limitCentavos: parseBalance(row.amount)! })), 'bulsa.db', original.signature));
     if (saved) router.back();
   }
-  return <PocketScreen header={<BackButton disabled={busy} />}>
+  return <BulsaScreen header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>Category Limits</Text><Text style={ui.body}>{monthName(month)}</Text>
-    {!!sourceError && <><Text style={ui.error}>{sourceError}</Text><PocketButton secondary title="Try Again" disabled={busy} onPress={retry} /></>}
-    {cap === null ? <><Text style={ui.body}>Set a monthly limit first.</Text><PocketButton title="Set Monthly Limit" onPress={() => router.push({ pathname: '/monthly-limit', params: { month } })} /></> : <>
+    {!!sourceError && <><Text style={ui.error}>{sourceError}</Text><BulsaButton secondary title="Try Again" disabled={busy} onPress={retry} /></>}
+    {cap === null ? <><Text style={ui.body}>Set a monthly limit first.</Text><BulsaButton title="Set Monthly Limit" onPress={() => router.push({ pathname: '/monthly-limit', params: { month } })} /></> : <>
       <Text style={ui.body}>Monthly Limit: {formatCentavos(cap)}</Text>
-      {rows.map(row => <View key={row.category} style={ui.card}><Text style={ui.heading}>{row.category}</Text><Text style={ui.body}>{row.amount} PHP</Text><PocketButton secondary title="Edit Allocation" disabled={blocked} onPress={() => { setCategory(row.category); setAmount(row.amount); }} /><PocketButton secondary title="Remove Allocation" disabled={blocked} onPress={() => setRows(previous => previous.filter(r => r.category !== row.category))} /></View>)}
+      {rows.map(row => <View key={row.category} style={ui.card}><Text style={ui.heading}>{row.category}</Text><Text style={ui.body}>{row.amount} PHP</Text><BulsaButton secondary title="Edit Allocation" disabled={blocked} onPress={() => { setCategory(row.category); setAmount(row.amount); }} /><BulsaButton secondary title="Remove Allocation" disabled={blocked} onPress={() => setRows(previous => previous.filter(r => r.category !== row.category))} /></View>)}
       <Text style={ui.heading}>Choose Category</Text>
-      <View style={ui.row}>{options.map(name => <PocketButton key={name} secondary={category !== name} title={name} disabled={blocked} onPress={() => setCategory(name)} />)}</View>
-      {!!choicesError && <><Text style={ui.error}>{choicesError}</Text><PocketButton secondary title="Reload Choices" disabled={blocked} onPress={() => void readChoices()} /></>}
+      <View style={ui.row}>{options.map(name => <BulsaButton key={name} secondary={category !== name} title={name} disabled={blocked} onPress={() => setCategory(name)} />)}</View>
+      {!!choicesError && <><Text style={ui.error}>{choicesError}</Text><BulsaButton secondary title="Reload Choices" disabled={blocked} onPress={() => void readChoices()} /></>}
       <Field label="Category Limit (PHP)" value={amount} onChangeText={setAmount} editable={!blocked} keyboardType="decimal-pad" placeholder="0.00" />
-      <PocketButton secondary title="Add or Update Allocation" disabled={blocked} onPress={add} />
+      <BulsaButton secondary title="Add or Update Allocation" disabled={blocked} onPress={add} />
       <Text style={ui.body}>Everything Else: {allocated <= BigInt(cap) ? formatCentavos(Number(BigInt(cap) - allocated)) : 'Allocations exceed monthly limit'}</Text>
       <Text style={ui.caption}>Saving applies the list above. Add or update your current input first. Historical category names and all recorded money stay unchanged.</Text>
       {!!draftError && <Text style={ui.error}>{draftError}</Text>}{!!error && <Text style={ui.error}>{error}</Text>}
-      <PocketButton title={busy ? 'Saving…' : 'Save Category Limits'} disabled={blocked || allocated > BigInt(cap) || !!category || !!amount} onPress={() => void save()} />
-      {(!!category || !!amount) && <PocketButton secondary title="Clear Current Input" disabled={blocked} onPress={() => { setCategory(''); setAmount(''); }} />}
+      <BulsaButton title={busy ? 'Saving…' : 'Save Category Limits'} disabled={blocked || allocated > BigInt(cap) || !!category || !!amount} onPress={() => void save()} />
+      {(!!category || !!amount) && <BulsaButton secondary title="Clear Current Input" disabled={blocked} onPress={() => { setCategory(''); setAmount(''); }} />}
     </>}
-    <PocketButton secondary title="Cancel" disabled={busy} onPress={() => router.back()} />
-  </PocketScreen>;
+    <BulsaButton secondary title="Cancel" disabled={busy} onPress={() => router.back()} />
+  </BulsaScreen>;
 }

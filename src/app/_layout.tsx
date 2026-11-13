@@ -3,17 +3,17 @@ import { StatusBar } from 'expo-status-bar';
 import { BulsaThemeProvider, useBulsaTheme } from '@/hooks/use-bulsa-theme';
 
 function Navigation() {
-  const { colors: PocketColors, dark } = useBulsaTheme();
+  const { colors: LightColors, dark } = useBulsaTheme();
   const base = dark ? DarkTheme : DefaultTheme;
   const navigationTheme = {
     ...base,
     colors: {
       ...base.colors,
-      background: PocketColors.background,
-      card: PocketColors.surface,
-      text: PocketColors.text,
-      primary: PocketColors.accent,
-      border: PocketColors.track,
+      background: LightColors.background,
+      card: LightColors.surface,
+      text: LightColors.text,
+      primary: LightColors.accent,
+      border: LightColors.track,
     },
   };
   return (

@@ -1,11 +1,11 @@
-import type { BulsaColors } from '@/constants/pocket';
+import type { BulsaColors } from '@/constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '@/hooks/use-bulsa-theme';
 import { FirstUse } from '@/components/first-use';
 import { needsIntroduction } from '@/lib/preferences';
 import { router } from 'expo-router';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
-import { PocketScreen } from '@/components/pocket-screen';
-import { PocketButton } from '@/components/pocket-button';
+import { BulsaScreen } from '@/components/bulsa-screen';
+import { BulsaButton } from '@/components/bulsa-button';
 import { SummaryCard } from '@/components/summary-card';
 import { StorageCheck } from '@/components/storage-check';
 import { MonthlyLimitNotice } from '@/components/monthly-limit-notice';
@@ -25,7 +25,7 @@ export default function Index() {
   const { data, balances, loading, error, reload } = useLedger();
   const totals = data ? monthlyTotals(data, localDate().slice(0, 7)) : null;
   if (data && !loading && !error && needsIntroduction(preferences.onboardingComplete, data)) return <FirstUse />;
-  return <PocketScreen>
+  return <BulsaScreen>
     <View style={styles.topBar}><Text style={styles.brand}>bulsa</Text><Pressable accessibilityRole="button" accessibilityLabel="Open Settings" onPress={() => router.push('/settings')} style={styles.avatar}><Text style={styles.avatarText}>{Array.from(preferences.displayName.trim())[0]?.toLocaleUpperCase() || 'B'}</Text></Pressable></View>
     <Text style={ui.title}>{preferences.displayName ? `Hello, ${preferences.displayName}.` : 'Welcome to Bulsa'}</Text>
     <Text style={ui.caption}>A little room for what matters.</Text>
@@ -37,15 +37,15 @@ export default function Index() {
         <Text style={styles.label}>Included Wallets + General</Text>
         <View style={ui.row}><Pressable accessibilityRole="button" onPress={() => router.push('/wallets')} style={styles.heroAction}><Text style={styles.heroLink}>View Wallets ›</Text></Pressable></View>
       </View>
-      {!balances.wallets.some(w => w.configured) && <View style={ui.soft}><Text style={ui.heading}>Start With Your Wallets</Text><Text style={ui.body}>Add the money you have before recording its transactions. Not specified entries go to General.</Text><PocketButton title="Set Up Wallets" onPress={() => router.push('/wallets')} /></View>}
+      {!balances.wallets.some(w => w.configured) && <View style={ui.soft}><Text style={ui.heading}>Start With Your Wallets</Text><Text style={ui.body}>Add the money you have before recording its transactions. Not specified entries go to General.</Text><BulsaButton title="Set Up Wallets" onPress={() => router.push('/wallets')} /></View>}
       <MonthlyLimitNotice compact month={localDate().slice(0, 7)} spent={totals.expenseCentavos} />
-      <PocketButton title="+ Add Expense" onPress={() => router.push('/entry')} />
+      <BulsaButton title="+ Add Expense" onPress={() => router.push('/entry')} />
       <Text style={ui.heading}>This Month · {monthName(localDate().slice(0, 7))}</Text>
       <View style={styles.summary}><SummaryCard label="Income" tone="income" amountCentavos={totals.incomeCentavos} /><SummaryCard label="Expenses" tone="expense" amountCentavos={totals.expenseCentavos} /></View>
       <SavingsPreview />
     </>}
     {__DEV__ && <StorageCheck />}
-  </PocketScreen>;
+  </BulsaScreen>;
 }
 const createStyles = (C: BulsaColors) => StyleSheet.create({
   brand: { color: C.accent, fontSize: 20, fontWeight: '600' },

@@ -1,8 +1,8 @@
 import { useBulsaStyles } from '@/hooks/use-bulsa-theme';
-import type { BulsaColors } from '@/constants/pocket';
+import type { BulsaColors } from '@/constants/bulsa';
 import { Pressable, StyleSheet, Text } from "react-native";
 
-type PocketButtonProps = {
+type BulsaButtonProps = {
   title: string;
   onPress: () => void;
   secondary?: boolean;
@@ -10,13 +10,13 @@ type PocketButtonProps = {
   selected?: boolean;
 };
 
-export function PocketButton({
+export function BulsaButton({
   title,
   onPress,
   secondary = false,
   disabled = false,
   selected,
-}: PocketButtonProps) {
+}: BulsaButtonProps) {
   const styles = useBulsaStyles(createStyles);
   return (
     <Pressable
@@ -38,17 +38,17 @@ export function PocketButton({
   );
 }
 
-const createStyles = (PocketColors: BulsaColors) => StyleSheet.create({
+const createStyles = (LightColors: BulsaColors) => StyleSheet.create({
   button: {
     minHeight: 48,
     padding: 16,
     borderRadius: 16,
-    backgroundColor: PocketColors.accent,
+    backgroundColor: LightColors.accent,
     alignItems: "center",
     justifyContent: "center",
   },
-  secondary: { backgroundColor: PocketColors.surface },
+  secondary: { backgroundColor: LightColors.surface },
   pressed: { opacity: 0.75 },
-  label: { fontSize: 16, fontWeight: "600", color: PocketColors.onAccent },
-  secondaryLabel: { color: PocketColors.text },
+  label: { fontSize: 16, fontWeight: "600", color: LightColors.onAccent },
+  secondaryLabel: { color: LightColors.text },
 });

@@ -1,9 +1,9 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text } from 'react-native';
-import { PocketScreen } from './pocket-screen';
+import { BulsaScreen } from './bulsa-screen';
 import { BackButton, Field, ReadState, useUI } from './bulsa-form';
-import { PocketButton } from './pocket-button';
+import { BulsaButton } from './bulsa-button';
 import { useSaveAction } from '../hooks/use-ledger';
 import { newRecordId } from '../lib/form-money';
 import { parseAmountToCentavos } from '../lib/money';
@@ -36,7 +36,7 @@ export function SavingsForm({ initial, contribution = false, loading, readError,
       : saveSavingsGoal({ id: original?.id ?? 'main', title: title.trim(), targetCentavos: cents }));
     if (saved) router.back();
   }
-  return <PocketScreen header={<BackButton disabled={busy} />}>
+  return <BulsaScreen header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>{contribution ? 'Record Savings' : original ? 'Edit Savings Goal' : 'Set Savings Goal'}</Text>
     {(loading || !!readError) && <ReadState loading={loading} error={readError} retry={retry} />}
     {contribution && !original ? <Text style={ui.body}>Set a savings goal first.</Text> : <>
@@ -45,8 +45,8 @@ export function SavingsForm({ initial, contribution = false, loading, readError,
       {contribution && <><Field label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} placeholder="MM-DD-YYYY" maxLength={10} editable={!blocked} /><Field label="Note (Optional)" value={note} onChangeText={setNote} multiline editable={!blocked} /></>}
       <Text style={ui.caption}>{contribution ? 'This records money already saved. It does not deduct money from a wallet or Total Budget. Recording more than your target is allowed.' : 'Changing your goal keeps all previous savings records. This target is separate from wallet money and monthly spending limits.'}</Text>
       {!!validation && <Text style={ui.error}>{validation}</Text>}{!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
-      <PocketButton title={busy ? 'Saving…' : contribution ? 'Save Savings Record' : 'Save Savings Goal'} disabled={blocked} onPress={() => void save()} />
+      <BulsaButton title={busy ? 'Saving…' : contribution ? 'Save Savings Record' : 'Save Savings Goal'} disabled={blocked} onPress={() => void save()} />
     </>}
-    <PocketButton secondary title="Cancel" disabled={busy} onPress={() => router.back()} />
-  </PocketScreen>;
+    <BulsaButton secondary title="Cancel" disabled={busy} onPress={() => router.back()} />
+  </BulsaScreen>;
 }

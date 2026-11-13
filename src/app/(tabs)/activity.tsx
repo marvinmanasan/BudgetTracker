@@ -6,8 +6,8 @@ import { useBulsaTheme } from '@/hooks/use-bulsa-theme';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { BackHandler, Pressable, SectionList, Text, View } from 'react-native';
-import { PocketScreen } from '@/components/pocket-screen';
-import { PocketButton } from '@/components/pocket-button';
+import { BulsaScreen } from '@/components/bulsa-screen';
+import { BulsaButton } from '@/components/bulsa-button';
 import { Field, ReadState, useUI } from '@/components/bulsa-form';
 import { ActivityAmount } from '@/components/activity-amount';
 import { useLedger, useSaveAction } from '@/hooks/use-ledger';
@@ -86,11 +86,11 @@ export default function Activity() {
     if (saved) { setDeleteReview(null); setSelectedIds([]); setSelecting(false); router.setParams({ message: `${approved.ids.length} selected transactions deleted. Other records were kept.` }); await reload(true); }
   }
   const selectionToolbar = <View style={{ gap: 8 }}>
-    <View style={[ui.row, { justifyContent: 'space-between' }]}><Text accessibilityLiveRegion="polite" style={ui.heading}>{chosenIds.length} Selected</Text><PocketButton secondary title="Done" disabled={blocked} onPress={finishSelection} /></View>
+    <View style={[ui.row, { justifyContent: 'space-between' }]}><Text accessibilityLiveRegion="polite" style={ui.heading}>{chosenIds.length} Selected</Text><BulsaButton secondary title="Done" disabled={blocked} onPress={finishSelection} /></View>
     <View style={ui.row}>
-      <PocketButton secondary title="Select All Matching" disabled={blocked || !matchingIds.length} onPress={() => setSelectedIds([...matchingIds])} />
-      {chosenIds.length === 1 && <PocketButton secondary title="Edit" disabled={blocked || !!error} onPress={() => router.push({ pathname: '/edit-entry', params: { id: chosenIds[0] } })} />}
-      <PocketButton title="Delete Selected" disabled={blocked || !!undo.record || !chosenIds.length || !!error} onPress={prepareDeletion} />
+      <BulsaButton secondary title="Select All Matching" disabled={blocked || !matchingIds.length} onPress={() => setSelectedIds([...matchingIds])} />
+      {chosenIds.length === 1 && <BulsaButton secondary title="Edit" disabled={blocked || !!error} onPress={() => router.push({ pathname: '/edit-entry', params: { id: chosenIds[0] } })} />}
+      <BulsaButton title="Delete Selected" disabled={blocked || !!undo.record || !chosenIds.length || !!error} onPress={prepareDeletion} />
     </View>
     <Text style={ui.caption}>Only expenses and income matching your current filters can be selected.</Text>
     {!!undo.record && <Text style={ui.caption}>Undo or dismiss the previous deletion before deleting more records.</Text>}
@@ -107,19 +107,19 @@ export default function Activity() {
     <Text style={ui.title}>Activity</Text>
     <Text style={ui.caption}>Your money, one moment at a time.</Text>
     <Field label="Search Activity" value={query} onChangeText={setQuery} placeholder="Category, wallet or note" autoCorrect={false} />
-    <View style={ui.row}><PocketButton secondary title="Filters" onPress={openFilters} /><PocketButton secondary title="Select" disabled={!matchingIds.length || blocked} onPress={() => { setSelecting(true); setSelectedIds([]); }} /></View>
+    <View style={ui.row}><BulsaButton secondary title="Filters" onPress={openFilters} /><BulsaButton secondary title="Select" disabled={!matchingIds.length || blocked} onPress={() => { setSelecting(true); setSelectedIds([]); }} /></View>
     <Text style={ui.caption}>Tap a record for details. Touch and hold an expense or income to select it.</Text>
-    {filtering && <View><Text style={ui.caption}>Filtered records only. Your money totals are unchanged.</Text><PocketButton secondary title="Clear All Filters" onPress={clear} /></View>}
-    {wallet && <><Text style={ui.caption}>{walletName} Records</Text><PocketButton secondary title="Show All Activity" onPress={() => router.setParams({ wallet: undefined })} /></>}
+    {filtering && <View><Text style={ui.caption}>Filtered records only. Your money totals are unchanged.</Text><BulsaButton secondary title="Clear All Filters" onPress={clear} /></View>}
+    {wallet && <><Text style={ui.caption}>{walletName} Records</Text><BulsaButton secondary title="Show All Activity" onPress={() => router.setParams({ wallet: undefined })} /></>}
     {summary && !monthError && <View style={[ui.card, { backgroundColor: C.summary, borderRadius: 22, padding: 20, gap: 12 }]}>
       <Text style={[ui.body, { color: C.summaryMuted }]}>{monthKey ? `All Wallets · ${monthName(monthKey)}` : 'All Wallets This Month'}</Text>
       <Text style={[ui.money, { color: C.onSummary, fontSize: 36 }]}>{formatCentavos(summary.expenseCentavos)}</Text>
       <Text style={[ui.caption, { color: C.summaryMuted }]}>Across {summary.count} recorded expense{summary.count === 1 ? '' : 's'} · All wallets, before Activity filters.</Text>
     </View>}
-    <PocketButton secondary title="Reset Selected Data" onPress={() => router.push('/reset-data')} />
-    {message && <View style={ui.soft}><Text style={ui.body} accessibilityLiveRegion="polite">{message}</Text><PocketButton secondary title="Dismiss" onPress={() => router.setParams({ message: undefined })} /></View>}
+    <BulsaButton secondary title="Reset Selected Data" onPress={() => router.push('/reset-data')} />
+    {message && <View style={ui.soft}><Text style={ui.body} accessibilityLiveRegion="polite">{message}</Text><BulsaButton secondary title="Dismiss" onPress={() => router.setParams({ message: undefined })} /></View>}
   </View>;
-  return <PocketScreen scrollable={false} header={selecting ? selectionToolbar : undefined}>
+  return <BulsaScreen scrollable={false} header={selecting ? selectionToolbar : undefined}>
     {(!data && loading) || error ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : <SectionList
       style={{ flex: 1 }}
       ListHeaderComponent={header}
@@ -132,7 +132,7 @@ export default function Activity() {
       contentContainerStyle={{ paddingBottom: 24 }}
       ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       renderSectionHeader={({ section }) => <Text accessibilityRole="header" style={[ui.caption, { paddingVertical: 12 }]}>{displayDate(section.date)}</Text>}
-      ListEmptyComponent={<View style={[ui.card, { marginTop: 20, gap: 16 }]}><Text style={ui.heading}>{filtering ? 'No Matching Records' : 'Your Story Starts Here'}</Text><Text style={ui.body}>{filtering ? 'Change or clear your filters to see more records.' : 'Record an expense, income or starting balance to see it here.'}</Text><PocketButton title={filtering ? "Clear Filters" : "Add Expense or Income"} onPress={filtering ? clear : () => router.push('/entry')} /></View>}
+      ListEmptyComponent={<View style={[ui.card, { marginTop: 20, gap: 16 }]}><Text style={ui.heading}>{filtering ? 'No Matching Records' : 'Your Story Starts Here'}</Text><Text style={ui.body}>{filtering ? 'Change or clear your filters to see more records.' : 'Record an expense, income or starting balance to see it here.'}</Text><BulsaButton title={filtering ? "Clear Filters" : "Add Expense or Income"} onPress={filtering ? clear : () => router.push('/entry')} /></View>}
       renderItem={({ item }) => {
         const eligible = item.type === 'expense' || item.type === 'income';
         const selected = eligible && chosenSet.has(item.key.slice('transaction-'.length));
@@ -156,7 +156,7 @@ export default function Activity() {
         <Text style={ui.title}>Filter Activity</Text>
         {wallet && !clearWallet && <Text style={ui.caption}>Wallet: {walletName}</Text>}
         <ActivityFilterPanel filters={draftFilters} month={draftMonth} monthError="" categories={categories} payments={payments} onChange={setDraftFilters} onMonth={setDraftMonth} onClear={() => { setDraftFilters({}); setDraftMonth(''); setClearWallet(true); }} />
-        <PocketButton title="Apply Filters" onPress={() => { setFilters(draftFilters); setMonth(draftMonth); if (clearWallet) router.setParams({ wallet: undefined }); setExpanded(false); }} />
+        <BulsaButton title="Apply Filters" onPress={() => { setFilters(draftFilters); setMonth(draftMonth); if (clearWallet) router.setParams({ wallet: undefined }); setExpanded(false); }} />
     </CenteredPopup>}
     {deleteReview && <CenteredPopup onClose={finishSelection} busy={blocked}>
       <Text style={ui.title}>Delete {deleteReview.ids.length} Transactions?</Text>
@@ -165,10 +165,10 @@ export default function Activity() {
       <MoneyReview before={deleteReview.before} after={deleteReview.after} walletIds={deleteReview.walletIds} />
       <Text style={ui.error}>Deleting multiple transactions is permanent. Undo is not available for this group deletion. Starting balances, transfers, adjustments and unselected transactions stay saved.</Text>
       {!!saveAction.error && <Text accessibilityLiveRegion="polite" style={ui.error}>{saveAction.error}</Text>}
-      <PocketButton title={saveAction.busy ? 'Deleting…' : `Delete ${deleteReview.ids.length} Transactions`} disabled={blocked || !!undo.record} onPress={() => void confirmSelectedDeletion()} />
-      <PocketButton secondary title="Refresh and Review Again" disabled={blocked} onPress={() => { setDeleteReview(null); void reload(true); }} />
-      <PocketButton secondary title="Keep Records" disabled={blocked} onPress={() => setDeleteReview(null)} />
+      <BulsaButton title={saveAction.busy ? 'Deleting…' : `Delete ${deleteReview.ids.length} Transactions`} disabled={blocked || !!undo.record} onPress={() => void confirmSelectedDeletion()} />
+      <BulsaButton secondary title="Refresh and Review Again" disabled={blocked} onPress={() => { setDeleteReview(null); void reload(true); }} />
+      <BulsaButton secondary title="Keep Records" disabled={blocked} onPress={() => setDeleteReview(null)} />
     </CenteredPopup>}
     <UndoNotice onRestored={() => void reload(true)} />
-  </PocketScreen>;
+  </BulsaScreen>;
 }

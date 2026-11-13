@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Text } from 'react-native';
 import { CenteredPopup } from './centered-popup';
 import { Field, useUI } from './bulsa-form';
-import { PocketButton } from './pocket-button';
+import { BulsaButton } from './bulsa-button';
 import { useSaveAction } from '../hooks/use-ledger';
 import { centavosInput } from '../lib/editing';
 import { displayDate, parseDisplayDate } from '../lib/display-date';
@@ -53,8 +53,8 @@ export function SavingsCorrectionPopup({ record, mode, onClose, onSaved }: { rec
     <Text style={ui.caption}>This does not move wallet money or change income, spending, or Total Budget.</Text>
     {!!validation && <Text accessibilityLiveRegion="polite" style={ui.error}>{validation}</Text>}
     {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
-    {deleting || review ? <PocketButton title={busy ? 'Saving…' : deleting ? 'Confirm Delete' : 'Confirm Correction'} disabled={busy} onPress={() => void confirm()} /> : <PocketButton title="Review Correction" onPress={prepareReview} disabled={busy} />}
-    {!!review && <PocketButton secondary title="Back To Editing" disabled={busy} onPress={() => setReview(null)} />}
-    <PocketButton secondary title="Cancel" disabled={busy} onPress={onClose} />
+    {deleting || review ? <BulsaButton title={busy ? 'Saving…' : deleting ? 'Confirm Delete' : 'Confirm Correction'} disabled={busy} onPress={() => void confirm()} /> : <BulsaButton title="Review Correction" onPress={prepareReview} disabled={busy} />}
+    {!!review && <BulsaButton secondary title="Back To Editing" disabled={busy} onPress={() => setReview(null)} />}
+    <BulsaButton secondary title="Cancel" disabled={busy} onPress={onClose} />
   </CenteredPopup>;
 }

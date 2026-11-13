@@ -1,4 +1,4 @@
-import type { BulsaColors } from '../constants/pocket';
+import type { BulsaColors } from '../constants/bulsa';
 import { useBulsaStyles } from '../hooks/use-bulsa-theme';
 import { useRef, useState } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
@@ -7,7 +7,7 @@ import { formatCentavos } from "../lib/money";
 import { displayDate } from "../lib/display-date";
 import { getTransactions, saveTransaction } from "../storage/transactions";
 import type { Transaction } from "../types/transaction";
-import { PocketButton } from "./pocket-button";
+import { BulsaButton } from "./bulsa-button";
 
 // Dedicated database: fictional checks cannot pollute future real transaction totals.
 const CHECK_DATABASE = "bulsa-day3-check.db";
@@ -54,16 +54,16 @@ export function StorageCheck() {
       {records?.map((record) => <Text key={record.id} style={styles.body}>{record.id} · {formatCentavos(record.amountCentavos)} · {displayDate(record.date)}</Text>)}
       {error && <Text accessibilityLiveRegion="polite" style={styles.error}>Check failed: {error}. Previous results, if shown, may be stale. Use Read / Retry.</Text>}
       {!busy && <>
-        <PocketButton title="Save Example Once" onPress={() => void run(true)} />
-        <PocketButton title="Read / Retry" secondary onPress={() => void run(false)} />
+        <BulsaButton title="Save Example Once" onPress={() => void run(true)} />
+        <BulsaButton title="Read / Retry" secondary onPress={() => void run(false)} />
       </>}
     </View>
   );
 }
 
-const createStyles = (PocketColors: BulsaColors) => StyleSheet.create({
-  panel: { padding: 16, borderRadius: 16, backgroundColor: PocketColors.surface, gap: 12 },
-  heading: { color: PocketColors.text, fontSize: 18, fontWeight: "600" },
-  body: { color: PocketColors.muted, fontSize: 14, lineHeight: 21 },
-  error: { color: PocketColors.warning, fontSize: 14, lineHeight: 21 },
+const createStyles = (LightColors: BulsaColors) => StyleSheet.create({
+  panel: { padding: 16, borderRadius: 16, backgroundColor: LightColors.surface, gap: 12 },
+  heading: { color: LightColors.text, fontSize: 18, fontWeight: "600" },
+  body: { color: LightColors.muted, fontSize: 14, lineHeight: 21 },
+  error: { color: LightColors.warning, fontSize: 14, lineHeight: 21 },
 });

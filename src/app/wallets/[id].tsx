@@ -3,8 +3,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Switch, Text, View } from "react-native";
 import { BackButton, Field, ReadState, useUI } from "../../components/bulsa-form";
-import { PocketButton } from "../../components/pocket-button";
-import { PocketScreen } from "../../components/pocket-screen";
+import { BulsaButton } from "../../components/bulsa-button";
+import { BulsaScreen } from "../../components/bulsa-screen";
 import { useLedger, useSaveAction } from "../../hooks/use-ledger";
 import { parseBalance } from "../../lib/form-money";
 import { formatCentavos } from "../../lib/money";
@@ -87,7 +87,7 @@ export default function WalletDetails() {
     );
   }
   return (
-    <PocketScreen header={<BackButton disabled={busy} />}>
+    <BulsaScreen header={<BackButton disabled={busy} />}>
       {loading || readError ? (
         <ReadState
           loading={loading}
@@ -99,7 +99,7 @@ export default function WalletDetails() {
       ) : (
         <>
           <Text style={ui.title}>{wallet.name}</Text>
-          <PocketButton
+          <BulsaButton
             secondary
             title="Rename Wallet"
             disabled={busy}
@@ -113,12 +113,12 @@ export default function WalletDetails() {
                 onChangeText={setDraftName}
                 editable={!busy}
               />
-              <PocketButton
+              <BulsaButton
                 title={busy ? "Saving…" : "Save Name"}
                 disabled={busy}
                 onPress={() => void saveName()}
               />
-              <PocketButton
+              <BulsaButton
                 secondary
                 title="Cancel"
                 disabled={busy}
@@ -160,7 +160,7 @@ export default function WalletDetails() {
                 ₱1,000, record a ₱100 expense, and ₱900 remains. Starting
                 balance is not income.
               </Text>
-              <PocketButton
+              <BulsaButton
                 title={busy ? "Saving…" : "Save Starting Balance"}
                 disabled={busy}
                 onPress={() => void opening()}
@@ -182,8 +182,8 @@ export default function WalletDetails() {
           <Text style={ui.caption}>
             Inclusion changes the total shown. Your records stay unchanged.
           </Text>
-          {wallet.configured && <PocketButton secondary disabled={busy} title="Adjust Balance" onPress={() => router.push({ pathname: "/adjust-balance", params: { wallet: id } })} />}
-          <PocketButton
+          {wallet.configured && <BulsaButton secondary disabled={busy} title="Adjust Balance" onPress={() => router.push({ pathname: "/adjust-balance", params: { wallet: id } })} />}
+          <BulsaButton
             secondary
             title="View Wallet Activity"
             onPress={() =>
@@ -191,7 +191,7 @@ export default function WalletDetails() {
             }
             disabled={busy}
           />
-          <PocketButton
+          <BulsaButton
             secondary
             title={wallet.hidden ? "Restore Wallet" : "Hide Wallet"}
             disabled={busy}
@@ -205,7 +205,7 @@ export default function WalletDetails() {
               ? "Its balance still counts in Total Budget when hidden."
               : "Its balance is not included in Total Budget."}
           </Text>
-          <PocketButton
+          <BulsaButton
             secondary
             title={secondary ? "Fewer Options" : "More Wallet Options"}
             disabled={busy}
@@ -217,7 +217,7 @@ export default function WalletDetails() {
                 Only a zero-balance wallet with no history, including a starting
                 balance, can be deleted. Otherwise, use Hide.
               </Text>
-              <PocketButton
+              <BulsaButton
                 title="Delete Unused Wallet"
                 disabled={busy || !!used}
                 onPress={confirmDelete}
@@ -231,6 +231,6 @@ export default function WalletDetails() {
           {error}
         </Text>
       )}
-    </PocketScreen>
+    </BulsaScreen>
   );
 }

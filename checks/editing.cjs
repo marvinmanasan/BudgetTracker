@@ -49,7 +49,7 @@ const stubs = {
   'expo-router': { useLocalSearchParams: () => ({ id: original.id }) },
   'react-native': { Text: 'Text' },
   '../components/entry-form': { EntryForm, EntryFields: EntryForm },
-  '../components/pocket-screen': { PocketScreen: 'Screen' },
+  '../components/bulsa-screen': { BulsaScreen: 'Screen' },
   '../components/bulsa-form': { BackButton: 'Back', ReadState: 'ReadState', useUI: () => ({}) },
   '../hooks/use-ledger': { useLedger: () => screenState },
   'react/jsx-runtime': { jsx: (type, props, key) => ({type, props, key}), jsxs: (type, props, key) => ({type, props, key}) },

@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import type { BulsaColors } from '../constants/pocket';
+import type { BulsaColors } from '../constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '../hooks/use-bulsa-theme';
-import { PocketButton } from './pocket-button';
+import { BulsaButton } from './bulsa-button';
 
 export function Field({ label, ...props }: TextInputProps & { label: string }) {
   const ui = useUI();
@@ -15,7 +15,7 @@ export function BackButton({ disabled = false, onPress, title = '‹ Back' }: { 
 }
 export function ReadState({ loading, error, retry }: { loading: boolean; error: string; retry: () => void }) {
   const ui = useUI();
-  return <View style={ui.card}><Text accessibilityLiveRegion="polite" style={error ? ui.error : ui.body}>{loading ? 'Reading your records…' : error}</Text>{!loading && error ? <PocketButton title="Try Again" onPress={retry} /> : null}</View>;
+  return <View style={ui.card}><Text accessibilityLiveRegion="polite" style={error ? ui.error : ui.body}>{loading ? 'Reading your records…' : error}</Text>{!loading && error ? <BulsaButton title="Try Again" onPress={retry} /> : null}</View>;
 }
 export function useUI() { return useBulsaStyles(createStyles); }
 const createStyles = (C: BulsaColors) => StyleSheet.create({

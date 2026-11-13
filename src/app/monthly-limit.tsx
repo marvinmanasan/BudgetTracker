@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { PocketScreen } from '../components/pocket-screen';
+import { BulsaScreen } from '../components/bulsa-screen';
 import { BackButton, ReadState } from '../components/bulsa-form';
 import { MonthlyLimitForm } from '../components/monthly-limit-form';
 import { useMonthlyLimit } from '../hooks/use-monthly-limit';
@@ -10,5 +10,5 @@ export default function MonthlyLimit() {
   const limit = useMonthlyLimit(month);
   // Once loaded, keep the editor mounted during focus refresh so drafts survive.
   return limit.resolvedMonth === month ? <MonthlyLimitForm month={month} initial={limit.value} sourceError={limit.error} sourceLoading={limit.loading} retry={() => void limit.reload()} /> :
-    <PocketScreen header={<BackButton />}><ReadState loading={limit.loading} error={limit.error} retry={() => void limit.reload()} /></PocketScreen>;
+    <BulsaScreen header={<BackButton />}><ReadState loading={limit.loading} error={limit.error} retry={() => void limit.reload()} /></BulsaScreen>;
 }

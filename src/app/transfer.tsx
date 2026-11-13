@@ -2,8 +2,8 @@ import { CenteredPopup } from '../components/centered-popup';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text, View } from 'react-native';
-import { PocketScreen } from '../components/pocket-screen';
-import { PocketButton } from '../components/pocket-button';
+import { BulsaScreen } from '../components/bulsa-screen';
+import { BulsaButton } from '../components/bulsa-button';
 import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { MoneyReview } from '../components/money-review';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
@@ -48,12 +48,12 @@ export default function TransferScreen() {
     const saved = await run(() => recordTransfer(review.record, 'bulsa.db', review.effects.signature));
     if (saved) router.replace({ pathname: '/activity', params: { message: 'Transfer recorded. Income and spending are unchanged.' } });
   }
-  if (picker) return <PocketScreen header={<BackButton onPress={() => setPicker(null)} />}>
+  if (picker) return <BulsaScreen header={<BackButton onPress={() => setPicker(null)} />}>
     <Text style={ui.title}>{picker === 'from' ? 'Transfer From' : 'Transfer To'}</Text>
-    {eligible.filter(w => w.id !== (picker === 'from' ? to : from)).map(w => <View key={w.id} style={ui.card}><PocketButton secondary title={w.name} onPress={() => { if (picker === 'from') setFrom(w.id); else setTo(w.id); setPicker(null); }} /><Text style={ui.body}>{formatCentavos(w.balanceCentavos)} · {w.included ? 'Included' : 'Excluded'}</Text></View>)}
+    {eligible.filter(w => w.id !== (picker === 'from' ? to : from)).map(w => <View key={w.id} style={ui.card}><BulsaButton secondary title={w.name} onPress={() => { if (picker === 'from') setFrom(w.id); else setTo(w.id); setPicker(null); }} /><Text style={ui.body}>{formatCentavos(w.balanceCentavos)} · {w.included ? 'Included' : 'Excluded'}</Text></View>)}
     <Text style={ui.caption}>Only visible wallets with starting balances are eligible. General cannot be transferred.</Text>
-  </PocketScreen>;
-  return <PocketScreen header={<BackButton disabled={busy} />}>
+  </BulsaScreen>;
+  return <BulsaScreen header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>{'Transfer Between Wallets'}</Text>
     {(!data && loading) || readError ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
     {review && <CenteredPopup onClose={() => setReview(null)} busy={busy}><Text style={ui.title}>Review Transfer</Text>
@@ -61,22 +61,22 @@ export default function TransferScreen() {
       {!!review.record.note && <Text style={ui.body}>{review.record.note}</Text>}
       <MoneyReview {...review.effects} walletIds={[from, to]} />
       <Text style={ui.caption}>This records a transfer, not income or spending. Crossing included/excluded wallets can change Total Budget. Bulsa does not move real money.</Text>
-      <PocketButton title={busy ? 'Saving…' : 'Confirm Transfer'} disabled={busy} onPress={() => void save()} />
+      <BulsaButton title={busy ? 'Saving…' : 'Confirm Transfer'} disabled={busy} onPress={() => void save()} />
       {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
-      <PocketButton secondary title="Keep Editing" disabled={busy} onPress={() => setReview(null)} />
+      <BulsaButton secondary title="Keep Editing" disabled={busy} onPress={() => setReview(null)} />
     </CenteredPopup>}
     {eligible.length < 2 ? <>
-      <Text style={ui.body}>Set starting balances for at least two visible wallets first.</Text><PocketButton title="Manage Wallets" onPress={() => router.push('/wallets')} />
+      <Text style={ui.body}>Set starting balances for at least two visible wallets first.</Text><BulsaButton title="Manage Wallets" onPress={() => router.push('/wallets')} />
     </> : <>
-      <PocketButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} onPress={() => setPicker('from')} />
-      <PocketButton secondary title={`To: ${names.get(to) ?? 'Choose Wallet'}`} onPress={() => setPicker('to')} />
+      <BulsaButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} onPress={() => setPicker('from')} />
+      <BulsaButton secondary title={`To: ${names.get(to) ?? 'Choose Wallet'}`} onPress={() => setPicker('to')} />
       <Field label="Amount (PHP)" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
       <Field label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} />
       <Field label="Note · Optional" value={note} onChangeText={setNote} multiline />
-      <PocketButton title="Review Transfer" onPress={prepare} />
+      <BulsaButton title="Review Transfer" onPress={prepare} />
     </>}
     </>}
     {!!validation && <Text style={ui.error}>{validation}</Text>}
-    {!!error && <><Text style={ui.error}>{error}</Text><PocketButton secondary title="Refresh and Review Again" disabled={busy} onPress={() => { setReview(null); void reload(); }} /></>}
-  </PocketScreen>;
+    {!!error && <><Text style={ui.error}>{error}</Text><BulsaButton secondary title="Refresh and Review Again" disabled={busy} onPress={() => { setReview(null); void reload(); }} /></>}
+  </BulsaScreen>;
 }

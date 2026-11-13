@@ -1,1 +1,1 @@
-export { default } from '../../components/pocket-tabs';
+export { default } from '../../components/bulsa-tabs';

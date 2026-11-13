@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Text } from 'react-native';
-import { PocketScreen } from '@/components/pocket-screen';
-import { PocketButton } from '@/components/pocket-button';
+import { BulsaScreen } from '@/components/bulsa-screen';
+import { BulsaButton } from '@/components/bulsa-button';
 import { ReadState, useUI } from '@/components/bulsa-form';
 import { CategoryBudgetPanel } from '@/components/category-budget-panel';
 import { SavingsPreview } from '@/components/savings-preview';
@@ -17,14 +17,14 @@ export default function Budgets() {
   const [history, setHistory] = useState(false);
   const [month, setMonth] = useState(() => localDate().slice(0, 7));
   const { data, loading, error, reload } = useLedger();
-  return <PocketScreen>
+  return <BulsaScreen>
     <Text style={ui.title}>Budgets</Text><Text style={ui.caption}>Plan your spending separately from your recorded money.</Text>
     <MonthPicker value={month} onChange={setMonth} />
     {loading || error || !data ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : month && <MonthlyLimitNotice month={month} spent={monthlyTotals(data, month).expenseCentavos} />}
 
-    <PocketButton secondary title={history ? "Hide Monthly History" : "Monthly Limit History"} onPress={() => setHistory(value => !value)} />
+    <BulsaButton secondary title={history ? "Hide Monthly History" : "Monthly Limit History"} onPress={() => setHistory(value => !value)} />
     {history && <MonthlyLimitHistory />}
     {data && month && !loading && !error && <CategoryBudgetPanel data={data} month={month} />}
     <SavingsPreview />
-  </PocketScreen>;
+  </BulsaScreen>;
 }

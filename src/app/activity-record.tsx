@@ -2,9 +2,9 @@ import { CenteredPopup } from '../components/centered-popup';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState, useCallback } from 'react';
 import { BackHandler, Text, View } from 'react-native';
-import { PocketScreen } from '../components/pocket-screen';
+import { BulsaScreen } from '../components/bulsa-screen';
 import { BackButton, ReadState, useUI } from '../components/bulsa-form';
-import { PocketButton } from '../components/pocket-button';
+import { BulsaButton } from '../components/bulsa-button';
 import { ActivityAmount } from '../components/activity-amount';
 import { UndoNotice } from '../components/undo-notice';
 import { MoneyReview } from '../components/money-review';
@@ -50,7 +50,7 @@ export default function ActivityRecord() {
     }
   }
 
-  return <PocketScreen header={<BackButton />}>
+  return <BulsaScreen header={<BackButton />}>
     <Text style={ui.title}>Record Details</Text>
     <UndoNotice onRestored={() => void reload(true)} />
     {loading || error ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : !item ?
@@ -62,8 +62,8 @@ export default function ActivityRecord() {
           <ActivityAmount item={item} />
           <Text style={ui.caption}>{displayDate(item.date)}</Text>
         </View>
-        {transaction && <PocketButton title="Edit Transaction" onPress={() => router.push({ pathname: '/edit-entry', params: { id: transaction.id } })} />}
-        {transaction && <PocketButton secondary title="Delete Transaction" disabled={undo.busy || !!undo.record} onPress={() => setDeleting({ ...transaction })} />}
+        {transaction && <BulsaButton title="Edit Transaction" onPress={() => router.push({ pathname: '/edit-entry', params: { id: transaction.id } })} />}
+        {transaction && <BulsaButton secondary title="Delete Transaction" disabled={undo.busy || !!undo.record} onPress={() => setDeleting({ ...transaction })} />}
         {transaction && undo.record && <Text style={ui.caption}>Undo or dismiss the previous deletion before deleting another record.</Text>}
         {item.fields.map(field => <View key={field.label} style={ui.card}>
           <Text style={ui.caption}>{field.label}</Text>
@@ -75,9 +75,9 @@ export default function ActivityRecord() {
     <Text style={ui.body}>{deleting.category} · {displayDate(deleting.date)}</Text>
     {preview ? <MoneyReview {...preview} walletIds={[deleting.walletId]} /> : <Text style={ui.error}>Could not preview this deletion. Return to Activity and try again.</Text>}
     <Text style={ui.caption}>The original record will be removed. Undo is available in Activity until dismissed or the app closes. Existing transfers and adjustments stay unchanged.</Text>
-    {!!undo.error && <><Text style={ui.error}>{undo.error}</Text><PocketButton secondary title="Refresh Balances" disabled={undo.busy} onPress={() => { setDeleting(null); void reload(); }} /></>}
-    <PocketButton title={undo.busy ? 'Deleting…' : 'Confirm Delete'} disabled={undo.busy || !preview || !!undo.record} onPress={() => void confirmDelete()} />
-    <PocketButton secondary title="Keep Record" disabled={undo.busy} onPress={() => setDeleting(null)} />
+    {!!undo.error && <><Text style={ui.error}>{undo.error}</Text><BulsaButton secondary title="Refresh Balances" disabled={undo.busy} onPress={() => { setDeleting(null); void reload(); }} /></>}
+    <BulsaButton title={undo.busy ? 'Deleting…' : 'Confirm Delete'} disabled={undo.busy || !preview || !!undo.record} onPress={() => void confirmDelete()} />
+    <BulsaButton secondary title="Keep Record" disabled={undo.busy} onPress={() => setDeleting(null)} />
   </CenteredPopup>}
-  </PocketScreen>;
+  </BulsaScreen>;
 }
