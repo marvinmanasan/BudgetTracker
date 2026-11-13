@@ -27,7 +27,7 @@ const render=()=>{cursor=0;return moduleObject.exports.default();};
 const find=(t,type)=>nodes(t).find(n=>n.type===type);
 const button=(t,title)=>nodes(t).find(n=>n.type==='Button'&&n.props.title===title);
 const header=t=>find(t,'List').props.ListHeaderComponent;
-let tree=render();button(header(tree),'Filters').props.onPress();tree=render();
+let tree=render();button(header(tree),'Filters').props.onPress();tree=render();assert.equal(find(tree,'Popup').props.dismissOnBackdropPress,true,'Filters opt in to outside dismissal');
 find(tree,'Filters').props.onMonth('2026-10');tree=render();assert.equal(find(tree,'List').props.sections.length,2,'Draft month does not alter Activity');
 find(tree,'Popup').props.onClose();tree=render();assert.equal(find(tree,'Popup'),undefined);
 button(header(tree),'Filters').props.onPress();tree=render();assert.equal(find(tree,'Filters').props.month,'','Cancel discards draft month');

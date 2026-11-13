@@ -152,7 +152,7 @@ export default function Activity() {
         </Pressable>;
       }}
     />}
-    {expanded && <CenteredPopup onClose={() => setExpanded(false)}>
+    {expanded && <CenteredPopup dismissOnBackdropPress onClose={() => setExpanded(false)}>
         <Text style={ui.title}>Filter Activity</Text>
         {wallet && !clearWallet && <Text style={ui.caption}>Wallet: {walletName}</Text>}
         <ActivityFilterPanel filters={draftFilters} month={draftMonth} monthError="" categories={categories} payments={payments} onChange={setDraftFilters} onMonth={setDraftMonth} onClear={() => { setDraftFilters({}); setDraftMonth(''); setClearWallet(true); }} />
