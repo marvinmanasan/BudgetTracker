@@ -9,6 +9,7 @@ import { useLedger, useSaveAction } from "../../hooks/use-ledger";
 import { parseBalance } from "../../lib/form-money";
 import { formatCentavos } from "../../lib/money";
 import {
+  duplicateWalletName,
   removeWallet,
   renameWallet,
   setOpening,
@@ -18,10 +19,10 @@ import {
 export default function WalletDetails() {
   const router = useRouter();
   const ui = useUI();
-  const { colors: C } = useBulsaTheme();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { colors: C, save: savePreferences } = useBulsaTheme();
+  const { id, setup } = useLocalSearchParams<{ id: string; setup?: string }>();
   const { balances, data, loading, error: readError, reload } = useLedger();
-  const { busy, error, run } = useSaveAction();
+  const { busy, error, run, clearError } = useSaveAction();
   const [amount, setAmount] = useState("");
   const [pendingIncluded, setPendingIncluded] = useState<boolean | null>(null);
   const [secondary, setSecondary] = useState(false);
@@ -52,13 +53,15 @@ export default function WalletDetails() {
   }
 
   async function opening() {
-    await run(async () => {
+    const saved = await run(async () => {
       const value = parseBalance(amount);
       if (value === null)
         throw new Error("Enter a starting balance. Zero is allowed.");
       await setOpening(id, value);
-      await reload();
+      if (setup === 'intro') await savePreferences({ onboardingComplete: true });
+      else if (setup !== 'entry') await reload();
     });
+    if (saved && (setup === 'intro' || setup === 'entry')) router.back();
   }
   async function flags(value: { included?: boolean; hidden?: boolean }) {
     if (busy) return;
@@ -87,6 +90,15 @@ export default function WalletDetails() {
       ],
     );
   }
+  if ((setup === 'intro' || setup === 'entry') && wallet && !wallet.configured && !loading && !readError) {
+    return <BulsaScreen header={<BackButton disabled={busy} />}>
+      <Text style={ui.title}>{wallet.name}</Text>
+      <Field label="Starting Balance (PHP)" value={amount} onChangeText={setAmount} editable={!busy} keyboardType="numbers-and-punctuation" placeholder="0.00" />
+      <Text style={ui.caption}>If you have ₱500 today, enter 500. You can also start at zero.</Text>
+      {!!error && <Text style={ui.error} accessibilityLiveRegion="polite">{error}</Text>}
+      <BulsaButton title={busy ? 'Saving…' : 'Save Starting Balance'} disabled={busy} onPress={() => void opening()} />
+    </BulsaScreen>;
+  }
   return (
     <BulsaScreen header={<BackButton disabled={busy} />}>
       {loading || readError ? (
@@ -111,9 +123,10 @@ export default function WalletDetails() {
               <Field
                 label="Wallet Name"
                 value={draftName}
-                onChangeText={setDraftName}
+                onChangeText={value => { setDraftName(value); if (error === duplicateWalletName) clearError(); }}
                 editable={!busy}
               />
+              {error === duplicateWalletName && <Text style={ui.error} accessibilityLiveRegion="polite">{error}</Text>}
               <BulsaButton
                 title={busy ? "Saving…" : "Save Name"}
                 disabled={busy}
@@ -123,7 +136,7 @@ export default function WalletDetails() {
                 secondary
                 title="Cancel"
                 disabled={busy}
-                onPress={() => setEditingName(false)}
+                onPress={() => { setEditingName(false); if (error === duplicateWalletName) clearError(); }}
               />
             </View>
           )}
@@ -227,7 +240,7 @@ export default function WalletDetails() {
           )}
         </>
       )}
-      {!!error && (
+      {!!error && error !== duplicateWalletName && (
         <Text style={ui.error} accessibilityLiveRegion="polite">
           {error}
         </Text>

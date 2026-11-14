@@ -65,6 +65,13 @@ export default function Wallets() {
     {loading || error || !balances ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : <>
       <View style={ui.soft}><Text style={ui.body}>Total Budget</Text><Text style={ui.money}>{formatCentavos(balances.totalCentavos)}</Text><Text style={ui.caption}>Included wallets + General. Separate from your monthly spending limit.</Text></View>
       {!showHidden && <View style={ui.card}><Text style={ui.heading}>General · Always Included</Text><Text style={ui.money}>{formatCentavos(balances.generalCentavos)}</Text><Text style={ui.caption}>Transactions without a wallet. General can be negative and always counts in Total Budget.</Text></View>}
+      {!showHidden && <View style={styles.titleRow}>
+        <Text accessibilityRole="header" style={ui.heading}>Your Wallets</Text>
+        {balances.wallets.filter(w => !w.hidden && w.id !== 'wallet-cash').length > 1 &&
+          <Pressable accessibilityRole="button" accessibilityLabel="Arrange Wallets" onPress={() => router.push('/arrange-wallets')} style={styles.addWallet}>
+            <Text style={styles.addWalletLabel}>Arrange</Text>
+          </Pressable>}
+      </View>}
       {!!saveError && <Text style={ui.error} accessibilityLiveRegion="polite">{saveError}</Text>}
       {balances.wallets.filter(w => w.hidden === showHidden).map(wallet => <View key={wallet.id} style={[styles.wallet, !wallet.included && styles.excluded]}>
         <Pressable disabled={busy} accessibilityRole="button" accessibilityLabel={`Open ${wallet.name}`} onPress={() => router.push({ pathname: '/wallets/[id]', params: { id: wallet.id } })} style={({ pressed }) => [styles.details, pressed && { opacity: 0.75 }]}>

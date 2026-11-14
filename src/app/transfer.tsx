@@ -31,8 +31,7 @@ export default function TransferScreen() {
   const [validation, setValidation] = useState('');
   const visibleWallets = balances?.wallets.filter(w => !w.hidden) ?? [];
   const requiredAmount = parseAmountToCentavos(amount) ?? 1;
-  const priority = (wallet: (typeof visibleWallets)[number]) => !wallet.configured ? 1 : picker === 'from' && wallet.balanceCentavos < requiredAmount ? 2 : 0;
-  const choices = visibleWallets.filter(w => w.id !== (picker === 'from' ? to : from)).sort((a, b) => priority(a) - priority(b));
+  const choices = visibleWallets.filter(w => w.id !== (picker === 'from' ? to : from));
   const names = new Map(balances?.wallets.map(w => [w.id, w.name]));
   useFocusEffect(useCallback(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -72,18 +71,13 @@ export default function TransferScreen() {
       <Text accessible={false} style={[ui.body, { color: C.accent }]}>›</Text>
     </Pressable>;
   }
-  const configuredChoices = choices.filter(wallet => wallet.configured);
-  const setupChoices = choices.filter(wallet => !wallet.configured);
   if (picker) return <BulsaScreen key={picker} header={<BackButton disabled={busy} onPress={() => setPicker(null)} />}>
     <Text style={ui.title}>{picker === 'from' ? 'Transfer From' : 'Transfer To'}</Text>
     {loading || readError || !data || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
       <Text style={ui.caption}>{picker === 'from' ? 'Choose the wallet the money came from.' : 'Choose the wallet that received the money. Its balance can be ₱0.'}</Text>
       {!choices.length && <Text style={ui.body}>No other visible wallet is available. Add a wallet to record this transfer.</Text>}
-      {!!configuredChoices.length && <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{configuredChoices.map(walletRow)}</View>}
-      {!!setupChoices.length && <>
-        <View style={{ gap: 4 }}><Text style={ui.heading}>Set Up Another Wallet</Text><Text style={ui.caption}>Enter its balance before this transfer, then return to select it. If it was empty, use ₱0.</Text></View>
-        <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{setupChoices.map(walletRow)}</View>
-      </>}
+      {choices.length > 0 && <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{choices.map(walletRow)}</View>}
+      {choices.some(w => !w.configured) && <Text style={ui.caption}>To use a new wallet, set its starting balance first. If it was empty, use ₱0.</Text>}
       <BulsaButton secondary title="Add Wallet" disabled={busy} onPress={() => router.push('/wallets/add')} />
     </>}
   </BulsaScreen>;

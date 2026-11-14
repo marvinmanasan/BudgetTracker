@@ -28,6 +28,8 @@ export function getLedger(name = 'bulsa.db'): Promise<Ledger> {
   return withDatabase(name, readLedger);
 }
 
+export const duplicateWalletName = 'A wallet already uses this name.';
+
 function walletName(name: string) {
   if (typeof name !== 'string') throw new Error('Enter a wallet name.');
   name = name.trim().normalize('NFC');
@@ -58,7 +60,7 @@ export function createWallet(input: { id: string; name: string; openingCentavos:
     validId(input.id); validateCentavos(input.openingCentavos);
     if (typeof input.included !== 'boolean') throw new Error('Choose whether to include this wallet.');
     const label = walletName(input.name);
-    if (await db.getFirstAsync('SELECT id FROM wallets WHERE nameKey=?', label.key)) throw new Error('A wallet already uses this name.');
+    if (await db.getFirstAsync('SELECT id FROM wallets WHERE nameKey=?', label.key)) throw new Error(duplicateWalletName);
     await db.runAsync('INSERT INTO wallets(id,name,nameKey,included,hidden) VALUES(?,?,?,?,0)', input.id, label.name, label.key, input.included ? 1 : 0);
     await insertOpening(db, input.id, input.openingCentavos);
     await readLedger(db);
@@ -80,7 +82,7 @@ export function setOpening(id: string, amount: number, name = 'bulsa.db') {
 export function renameWallet(id: string, value: string, name = 'bulsa.db') {
   return withDatabase(name, async db => {
     const label = walletName(value);
-    if (await db.getFirstAsync('SELECT id FROM wallets WHERE nameKey=? AND id<>?', label.key, id)) throw new Error('A wallet already uses this name.');
+    if (await db.getFirstAsync('SELECT id FROM wallets WHERE nameKey=? AND id<>?', label.key, id)) throw new Error(duplicateWalletName);
     const result = await db.runAsync('UPDATE wallets SET name=?,nameKey=?,updatedAt=CURRENT_TIMESTAMP WHERE id=?', label.name, label.key, id);
     if (!result.changes) throw new Error('Wallet not found.');
   }, true);

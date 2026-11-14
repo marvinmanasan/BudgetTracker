@@ -39,7 +39,7 @@ async function read(db: SQLite.SQLiteDatabase): Promise<Preferences> {
 export function getPreferences(name = 'bulsa-settings.db') { return queued(name, read); }
 
 export async function updatePreferences(patch: Partial<Preferences>, name = 'bulsa-settings.db'): Promise<Preferences> {
-  if (!patch || typeof patch !== 'object' || Object.keys(patch).some(key => !Object.hasOwn(DEFAULT_PREFERENCES, key))) throw new Error('Invalid settings update.');
+  if (!patch || typeof patch !== 'object' || Object.keys(patch).some(key => key !== 'walletOrder' && !Object.hasOwn(DEFAULT_PREFERENCES, key))) throw new Error('Invalid settings update.');
   patch = { ...patch };
   return queued(name, async db => {
     let next!: Preferences;

@@ -6,6 +6,5 @@ export function expenseAvailable(wallet: Wallet, original?: Pick<Transaction, 't
   return Number(available > max ? max : available < -max ? -max : available);
 }
 export function expenseWalletChoices<T extends Wallet>(wallets: T[], original?: Transaction): T[] {
-  return wallets.filter(w => w.id === original?.walletId || (!w.hidden && w.configured && w.balanceCentavos > 0))
-    .sort((a,b) => Number(b.name.toLowerCase() === 'cash') - Number(a.name.toLowerCase() === 'cash'));
+  return wallets.filter(w => w.id === original?.walletId || (!w.hidden && w.configured && w.balanceCentavos > 0));
 }

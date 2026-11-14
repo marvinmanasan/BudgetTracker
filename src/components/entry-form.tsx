@@ -19,12 +19,12 @@ import { saveTransaction, updateTransaction } from '../storage/transactions';
 import { transactionDraft, editedTransaction, editPreview, balanceEffectsSignature } from '../lib/editing';
 import type { Transaction } from '../types/transaction';
 
-export function EntryForm({ original }: { original?: Transaction }) {
+export function EntryForm({ original, initialType }: { original?: Transaction; initialType?: Transaction['type'] }) {
   const ledger = useLedger();
-  return <EntryFields original={original} ledger={ledger} />;
+  return <EntryFields original={original} ledger={ledger} initialType={initialType} />;
 }
 
-export function EntryFields({ original: incoming, ledger }: { original?: Transaction; ledger: ReturnType<typeof useLedger> }) {
+export function EntryFields({ original: incoming, ledger, initialType = 'expense' }: { original?: Transaction; initialType?: Transaction['type']; ledger: ReturnType<typeof useLedger> }) {
   const router = useRouter();
   const ui = useUI();
   const [original] = useState(incoming);
@@ -32,13 +32,14 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
   const [reviewing, setReviewing] = useState(false);
   const [previewError, setPreviewError] = useState('');
   const [id] = useState(() => original?.id ?? newRecordId('entry'));
-  const [type, setType] = useState<Transaction['type']>(original?.type ?? 'expense');
+  const [type, setType] = useState<Transaction['type']>(original?.type ?? initialType);
   const [amount, setAmount] = useState(initial?.amount ?? '');
-  const [category, setCategory] = useState(initial?.category ?? 'Food');
+  const [category, setCategory] = useState(initial?.category ?? (type === 'income' ? 'Salary' : 'Food'));
   const [date, setDate] = useState(() => initial?.date ?? displayDate(localDate()));
   const [choicesBusy, setChoicesBusy] = useState(false);
   const [walletId, setWalletId] = useState<string | null>(initial?.walletId ?? null);
   const [picker, setPicker] = useState(false);
+  const [setupWallet, setSetupWallet] = useState<{ id: string; previous: typeof ledger.data } | null>(null);
   const [details, setDetails] = useState(false);
   const [payment] = useState(initial?.payment ?? '');
   const [note, setNote] = useState(initial?.note ?? '');
@@ -55,6 +56,15 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
     });
     return () => listener.remove();
   }, [blocked, picker, reviewing]));
+
+  // Resolve the pending choice once, against the ledger refreshed on return.
+  if (setupWallet && !loading && balances && data !== setupWallet.previous) {
+    if (balances.wallets.some(w => w.id === setupWallet.id && w.configured)) {
+      setWalletId(setupWallet.id);
+      setPicker(false);
+    }
+    setSetupWallet(null);
+  }
 
   const draft = { amount, category, date, walletId, payment, note };
   let preview: ReturnType<typeof editPreview> | undefined;
@@ -93,12 +103,15 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
   if (picker) return <BulsaScreen header={<BackButton title="‹ Back to Transaction" onPress={() => setPicker(false)} />}>
     <Text style={ui.title}>Choose Wallet</Text>
     {loading || readError || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
-      <Pressable style={[ui.card, walletId === null && ui.selected]} accessibilityRole="radio" accessibilityState={{ checked: walletId === null }} onPress={() => { setWalletId(null); setPicker(false); }}><Text style={ui.heading}>General</Text><Text style={ui.caption}>No specific wallet · Always Included</Text></Pressable>
+      <Pressable style={[ui.card, walletId === null && ui.selected]} accessibilityRole="radio" accessibilityState={{ checked: walletId === null }} onPress={() => { setWalletId(null); setPicker(false); }}><Text style={ui.heading}>General</Text><Text style={ui.caption}>Always included in Total Budget. Can go below zero.</Text></Pressable>
       {(type === 'expense' ? expenseWalletChoices(balances.wallets, original) : balances.wallets.filter(w => !w.hidden || w.id === original?.walletId)).map(w => {
         const available = expenseAvailable(w, original);
         const insufficient = type === 'expense' && draftAmount !== null && draftAmount > available && !(original?.walletId === w.id && draftAmount <= original.amountCentavos);
-        return <Pressable key={w.id} disabled={insufficient} style={[ui.card, walletId === w.id && ui.selected, insufficient && { opacity: 0.55 }]} accessibilityRole="radio" accessibilityState={{ checked: walletId === w.id, disabled: insufficient }} onPress={() => { if (!w.configured) router.push({ pathname: '/wallets/[id]', params: { id: w.id } }); else { setWalletId(w.id); setPicker(false); } }}>
-          <Text style={ui.heading}>{w.name}  ›</Text><Text style={ui.body}>{w.configured ? formatCentavos(available) : 'Starting Balance Not Set'}</Text><Text style={ui.caption}>{insufficient ? 'Not Enough for This Expense' : w.included ? 'Included in Total Budget' : 'Not Included'}</Text>
+        return <Pressable key={w.id} disabled={insufficient} style={[ui.card, walletId === w.id && ui.selected, insufficient && { opacity: 0.55 }]} accessibilityRole="radio" accessibilityState={{ checked: walletId === w.id, disabled: insufficient }} onPress={() => { if (!w.configured) {
+          setSetupWallet({ id: w.id, previous: data });
+          router.push({ pathname: '/wallets/[id]', params: { id: w.id, setup: 'entry' } });
+        } else { setWalletId(w.id); setPicker(false); } }}>
+          <Text style={ui.heading}>{w.configured ? w.name : `Set Up ${w.name}`}  ›</Text><Text style={ui.body}>{w.configured ? formatCentavos(available) : 'Starting Balance Not Set'}</Text><Text style={ui.caption}>{insufficient ? 'Not Enough for This Expense' : w.included ? 'Included in Total Budget' : 'Not Included'}</Text>
         </Pressable>;
       })}
       {type === 'expense' && <Text style={ui.caption}>Only funded wallets are shown. Enter an amount to check which can cover it. Manage starting balances in Wallets.</Text>}
@@ -112,10 +125,10 @@ export function EntryFields({ original: incoming, ledger }: { original?: Transac
     {!original && <View style={ui.row}>{(['expense', 'income'] as const).map(value => <Pressable disabled={blocked} key={value} accessibilityRole="radio" accessibilityState={{ checked: type === value, disabled: blocked }} style={[ui.choice, type === value && ui.selected]} onPress={() => { setType(value); setCategory(value === 'expense' ? 'Food' : 'Salary'); }}><Text style={ui.body}>{value === 'expense' ? 'Expense' : 'Income'}</Text></Pressable>)}</View>}
     {loading || readError || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
       <Field label="Amount (PHP)" placeholder="0.00" keyboardType="decimal-pad" value={amount} onChangeText={setAmount} editable={!blocked} />
+      <BulsaButton secondary disabled={blocked} title={`Wallet: ${selected?.name ?? 'General'}  ›`} onPress={() => setPicker(true)} />
+      <Text style={ui.caption}>{walletId === null ? 'Use General when you don’t want to choose a wallet. It counts in Total Budget and can go below zero.' : selected?.included ? 'This entry affects the wallet and Total Budget.' : 'This entry affects this wallet only. Expenses still count in monthly spending.'}</Text>
       {original && <Text style={ui.caption}>Current {type === 'income' ? 'source' : 'category'}: {category}. Older labels stay available on this record.</Text>}
       <CategoryPicker retainedValue={original?.category} key={type} kind={type} value={category} onChange={setCategory} disabled={busy} onBusyChange={setChoicesBusy} />
-      <BulsaButton secondary disabled={blocked} title={`Wallet: ${selected?.name ?? 'General'}  ›`} onPress={() => setPicker(true)} />
-      <Text style={ui.caption}>{walletId === null ? 'No specific wallet selected. This entry goes to General, which always counts in Total Budget and can be negative.' : selected?.included ? 'This entry affects the wallet and Total Budget.' : 'This entry affects this wallet only. Expenses still count in monthly spending.'}</Text>
       <Field label="Date (MM-DD-YYYY)" placeholder="MM-DD-YYYY" value={date} onChangeText={setDate} editable={!blocked} autoCapitalize="none" autoCorrect={false} maxLength={10} />
       <BulsaButton secondary disabled={blocked} title={details ? 'Fewer Details' : 'More Details · Optional'} onPress={() => setDetails(value => !value)} />
       {details && <><Field label="Note · Optional" value={note} onChangeText={setNote} editable={!blocked} multiline /></>}

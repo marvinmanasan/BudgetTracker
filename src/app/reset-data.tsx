@@ -21,7 +21,7 @@ export default function ResetSelectedData() {
   const router = useRouter();
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
-  const { data, loading, error: readError, reload } = useLedger();
+  const { data, balances, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
   const undo = useTransactionUndo();
   const [scope, setScope] = useState<ResetSelection['scope'] | null>(null);
@@ -95,7 +95,7 @@ export default function ResetSelectedData() {
       <BulsaButton secondary title="Manage Wallet Balances" disabled={blocked} onPress={() => router.push('/wallets')} />
       <Text style={ui.heading}>Choose Where</Text>
       {(['wallet', 'general', 'all'] as const).map(value => <BulsaButton key={value} secondary={scope !== value} title={value === 'wallet' ? 'One Wallet' : value === 'general' ? 'General' : 'All Wallets'} disabled={blocked} onPress={() => chooseScope(value)} />)}
-      {scope === 'wallet' && data.wallets.map(w => <BulsaButton key={w.id} secondary={walletId !== w.id} title={w.name + (w.hidden ? ' · Hidden' : '') + (!w.included ? ' · Excluded' : '') + (walletId === w.id ? ' · Selected' : '')} disabled={blocked} onPress={() => { setWalletId(previous => previous === w.id ? '' : w.id); setKinds(emptyKinds()); setStarting(false); }} />)}
+      {scope === 'wallet' && balances?.wallets.map(w => <BulsaButton key={w.id} secondary={walletId !== w.id} title={w.name + (w.hidden ? ' · Hidden' : '') + (!w.included ? ' · Excluded' : '') + (walletId === w.id ? ' · Selected' : '')} disabled={blocked} onPress={() => { setWalletId(previous => previous === w.id ? '' : w.id); setKinds(emptyKinds()); setStarting(false); }} />)}
       {scope === 'all' && <Text style={ui.body}>Includes General and every hidden or excluded wallet.</Text>}
       {scope && <>
         <Text style={ui.heading}>Choose What to Remove</Text>

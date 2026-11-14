@@ -9,7 +9,7 @@ const react={
   useCallback(fn){cursor++;return fn;},
   useMemo(fn){cursor++;return fn();},
 };
-const {useSaveAction}=createLoader({'react':react,'expo-router':{useFocusEffect(fn){effect=fn;}},'../storage/wallets':{getLedger:async()=>{}}})('src/hooks/use-ledger.ts');
+const {useSaveAction}=createLoader({'./use-bulsa-theme':{},'react':react,'expo-router':{useFocusEffect(fn){effect=fn;}},'../storage/wallets':{getLedger:async()=>{}}})('src/hooks/use-ledger.ts');
 const render=()=>{cursor=0;return useSaveAction();};
 const focus=()=>{cleanup=effect?.();};
 const blur=()=>{cleanup?.();};
