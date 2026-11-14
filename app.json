@@ -16,7 +16,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.marvinmanasan.bulsa",
-      "versionCode": 3
+      "versionCode": 4
     },
     "web": {
       "output": "server",

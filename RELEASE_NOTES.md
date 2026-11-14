@@ -1,6 +1,15 @@
 # Bulsa 1.1.0 Update Notes
 
-Updated November 15, 2026. These notes cover the source changes since v1.0.0. Version 1.1.0 is being prepared for Android release. The latest published APK remains v1.0.0.
+Updated November 15, 2026. These notes cover all implemented changes since v1.0.0 across Batches 1–8 and the verification work in Batch 9. The Android download is version 1.1.0, build 4. Unfinished acceptance checks are listed explicitly below.
+
+## Android Release
+
+- APK: `Bulsa-1.1.0.apk`, package `com.marvinmanasan.bulsa`, version 1.1.0, version code 4.
+- Built by EAS from source commit `3e52a2f0b4777b96b4010c52edbafff783fb7e2b`; subsequent release documentation does not change app code.
+- Build: [984e4fec-c034-4d56-816a-3001bb0b5eb6](https://expo.dev/accounts/marvinmanasan/projects/BudgetTracker/builds/984e4fec-c034-4d56-816a-3001bb0b5eb6).
+- SHA-256: `3525c1acef890e717cdea0a2d311ca9a03bb857fe33631198ae8780e5acd50ac`.
+- APK signature verifies and matches the published v1.0.0 release key. ZIP integrity passed.
+- Testing uses the Bulsa Android 16 emulator. Physical-device and spoken accessibility acceptance remain separate checks.
 
 ## Overview and First Use
 
@@ -93,11 +102,17 @@ Updated November 15, 2026. These notes cover the source changes since v1.0.0. Ve
 - The optimized Activity search and Clear Filters passed an Expo Go smoke test without writing financial records.
 - The navigation crash was reproduced on the original signed 1.1.0 build 3. A locally signed QA APK passed repeated 100%–200% changes, rapid presses, Back and cold-launch checks with all 58 fictional fixture rows preserved.
 
+## Release APK Verification
+
+- Release build 4 compiled successfully, including the standalone backup adapter. The published v1.0.0 APK upgraded in place without clearing data; every legacy financial row, wallet identifier, custom choice and preference matched, with the expected ₱941.67 Total Budget.
+- In airplane mode, the signed APK saved a populated backup to Downloads through the one-step file picker, showed success after writing, and cancelled a second export without success feedback. The saved JSON matched every financial table, custom choice and activity position.
+- Offline force-stop/relaunch and Android reboot retained the fixture's ₱941.67 Total Budget, income, spending and savings. These checks do not measure physical-phone performance.
+- At 320 layout units, two running 100% → 200% → 100% font-change cycles opened Transfer Money and returned with Android Back, retaining the expected total without a fatal/router error. Six native tab captures cover 320/411 units and 100%/150%/200% text.
+- The saved Downloads file restored through the picker and typed confirmation into a clean test app. All financial tables, custom choices and activity positions matched the file exactly.
+- The emulator's original records, wallet identifiers and preferences were restored and compared after QA. The latest release APK remains installed on Bulsa Android 16.
+
 ## Remaining Android Release Checks
 
-- Build and identify the final release-signed APK, including compilation and operation of the standalone backup adapter.
-- Verify in-place upgrade, offline force-stop/relaunch and Android reboot on that APK.
-- Restore a populated saved file into a clean Android installation and compare all financial tables and balances.
 - Complete large-text transfer-review checks and the final native category-error check. Earlier automation was interrupted or could not establish the result.
 - Listen to TalkBack errors, labels and selected-state announcements; finish large-text field focus and last-row scroll reachability.
 - Complete the native Cash setup/double-save/duplicate-name trials and the Activity transfer → adjustment → delete → tab change → Undo journey.
