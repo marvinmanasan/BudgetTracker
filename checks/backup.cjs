@@ -98,6 +98,7 @@ async function storageChecks() {
   let picked = { canceled: false, result: { size: 100, text: async () => JSON.stringify(fixture), delete: () => assert.fail('Never delete the selected original') } };
   let pickerCalls = 0;
   const pickerLoader = createLoader({
+    expo: { requireOptionalNativeModule: () => null }, 'expo-file-system/legacy': {},
     'expo-file-system': { File: class { static async pickFileAsync(options) { pickerCalls++; assert.equal(options.multipleFiles, false); return picked; } }, Paths: {} },
     'expo-document-picker': { getDocumentAsync: () => assert.fail('Use the scoped FileSystem picker') },
     'expo-sharing': {},
@@ -112,6 +113,7 @@ async function storageChecks() {
   assert.equal(pickerCalls, 3);
   let exportFilesCreated = 0;
   const serviceLoader = createLoader({
+    expo: { requireOptionalNativeModule: () => null }, 'expo-file-system/legacy': {},
     'expo-file-system': { File: class { constructor() { exportFilesCreated++; } }, Paths: { cache: 'test-cache' } },
     'expo-document-picker': {},
     'expo-sharing': { isAvailableAsync: async () => true },
@@ -190,3 +192,24 @@ async function storageChecks() {
   }
 }
 storageChecks().catch(error => { console.error(error); process.exitCode = 1; });
+async function testDeviceExport() {
+  const uri = 'content://test/doc/1';
+  let selected = uri, writes = [], failWrite = false;
+  const picker = { chooseFile: async name => {
+    assert.match(name, /^Bulsa-Backup-\d{2}-\d{2}-\d{4}\.json$/);
+    return selected;
+  }};
+  const service = createLoader({
+    expo: { requireOptionalNativeModule: () => picker },
+    'expo-file-system': { File: class {
+      constructor(path) { assert.equal(path,uri); }
+      async write(json) { if (failWrite) throw Error('Disk full'); writes.push(json); }
+    }},
+    'expo-file-system/legacy': {}, 'expo-sharing': {}, 'react-native': {Platform:{OS:'android'}},
+  })('src/services/backup-files.ts');
+  selected=null;assert.equal(await service.saveFinancialBackup(fixture),false);assert.equal(writes.length,0);
+  selected=uri;failWrite=true;await assert.rejects(service.saveFinancialBackup(fixture),/Disk full/);
+  failWrite=false;assert.equal(await service.saveFinancialBackup(fixture),true);
+  assert.deepEqual(parseBackup(writes[0]),fixture);
+}
+testDeviceExport().catch(error=>{console.error(error);process.exitCode=1;});

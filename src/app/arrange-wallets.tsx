@@ -80,9 +80,10 @@ export default function ArrangeWallets() {
     frame.current = requestAnimationFrame(trackEdge);
   }
   return <BulsaScreen scrollable={false} header={<View style={styles.header}>
-    <Text accessibilityRole="header" style={[ui.heading, styles.title]}>Arrange Wallets</Text>
+    <BackButton disabled={saving} />
     <BackButton title="Done" disabled={saving} />
   </View>}>
+    <Text accessibilityRole="header" style={ui.title}>Arrange Wallets</Text>
     <Text style={ui.body}>Drag the handle beside a wallet up or down. Lift your finger to save its place.</Text>
     {loading || error ? <ReadState loading={loading} error={error} retry={() => void reload()} /> :
       <View ref={viewport} collapsable={false} style={{ flex: 1 }}>
@@ -142,7 +143,6 @@ export default function ArrangeWallets() {
 
 const createStyles = (c: BulsaColors) => StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', columnGap: 16 },
-  title: { flexShrink: 1, paddingVertical: 6 },
   list: { borderRadius: 16, paddingHorizontal: 12, backgroundColor: c.surface },
   row: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', paddingVertical: 8, columnGap: 8, rowGap: 4, minHeight: 68 },
   divider: { borderTopWidth: StyleSheet.hairlineWidth, borderColor: c.track },

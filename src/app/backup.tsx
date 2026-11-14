@@ -6,7 +6,7 @@ import { BulsaButton } from '../components/bulsa-button';
 import { BulsaScreen } from '../components/bulsa-screen';
 import { useTransactionUndo } from '../hooks/use-transaction-undo';
 import { backupCounts, type FinancialBackup } from '../lib/backup';
-import { pickFinancialBackup, shareFinancialBackup } from '../services/backup-files';
+import { pickFinancialBackup, saveFinancialBackup, savesToFolder, shareFinancialBackup } from '../services/backup-files';
 import { latestRestoreSafetyCopy, readRestoreSafetyCopy, saveRestoreSafetyCopy } from '../services/restore-safety';
 import { createFinancialBackup, financialSignature, restoreFinancialBackup } from '../storage/backup';
 
@@ -48,9 +48,13 @@ export default function BackupScreen() {
       <Text style={ui.body}>Includes all wallets, income, expenses, starting balances, adjustments, transfers, monthly limits, category allocations, savings goals, savings records, custom expense categories and income source lists.</Text>
       <Text style={ui.caption}>Display name, appearance and introduction status are not included. Your display settings stay as they are.</Text>
       <Text style={ui.caption}>The JSON file is readable and unencrypted. Save it somewhere private. Bulsa does not upload it; the destination you choose may use cloud storage. Keep a copy outside Bulsa.</Text>
-      <Text style={ui.caption}>An export copy stays in the app cache for sharing and may be cleared by your device. Backups support up to 10 MB and 50,000 financial rows.</Text>
+      <Text style={ui.caption}>Sharing uses a temporary copy. Backups support up to 10 MB and 50,000 financial rows.</Text>
     </View>
-    <BulsaButton title={busy ? 'Please Wait…' : 'Export Financial Backup'} disabled={busy || Platform.OS === 'web'} onPress={() => void run(async () => {
+    {savesToFolder && <Text style={ui.caption}>Choose or create a folder inside Downloads, then tap Use This Folder.</Text>}
+    {Platform.OS === 'android' && <BulsaButton title="Save Backup to Device" disabled={busy} onPress={() => void run(async () => {
+      if (await saveFinancialBackup(await createFinancialBackup())) setMessage('Backup saved to the file you chose.');
+    })} />}
+    <BulsaButton secondary title="Share Backup" disabled={busy || Platform.OS === 'web'} onPress={() => void run(async () => {
       await shareFinancialBackup(await createFinancialBackup());
       setMessage('Share sheet closed. Check your chosen destination to confirm the backup was saved.');
     })} />

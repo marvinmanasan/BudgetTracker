@@ -6,7 +6,10 @@ for (const [stored, shown] of [['2026-11-11','11-11-2026'], ['2024-02-29','02-29
   assert.equal(displayDate(stored), shown);
   assert.equal(parseDisplayDate(shown), stored);
 }
-for (const bad of ['13-45-2026','02-29-2026','04-31-2026','00-01-2026','11-00-2026','11-11-0000','2026-11-11','1-2-2026','11-11-2026x']) {
+for (const bad of ['13-45-2026','02-29-2026','04-31-2026','00-01-2026','11-00-2026','11-11-0000']) {
+  assert.throws(() => parseDisplayDate(bad), /date doesn’t exist/i);
+}
+for (const bad of ['2026-11-11','1-2-2026','11-11-2026x']) {
   assert.throws(() => parseDisplayDate(bad), /valid date.*MM-DD-YYYY/i);
 }
 assert.equal(displayMonth('2026-11'), '11-2026');

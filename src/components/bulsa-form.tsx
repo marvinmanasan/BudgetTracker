@@ -4,10 +4,10 @@ import type { BulsaColors } from '../constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { BulsaButton } from './bulsa-button';
 
-export function Field({ label, ...props }: TextInputProps & { label: string }) {
+export function Field({ label, inputRef, issue, ...props }: TextInputProps & { label: string; inputRef?: React.Ref<React.ComponentRef<typeof TextInput>>; issue?: string }) {
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
-  return <View style={ui.card}><Text style={ui.caption}>{label}</Text><TextInput accessibilityLabel={label} placeholderTextColor={C.muted} {...props} style={[ui.input, props.style]} /></View>;
+  return <View style={ui.card}><Text style={ui.caption}>{label}</Text><TextInput ref={inputRef} accessibilityLabel={label} placeholderTextColor={C.muted} {...props} style={[ui.input, props.style]} />{!!issue && <Text style={ui.error}>{issue}</Text>}</View>;
 }
 export function BackButton({ disabled = false, onPress, title = '‹ Back' }: { disabled?: boolean; onPress?: () => void; title?: string }) {
   const router = useRouter();

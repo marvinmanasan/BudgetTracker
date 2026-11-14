@@ -26,3 +26,10 @@ export function formatCentavos(centavos: number): string {
   const fraction = String(absolute % 100).padStart(2, "0");
   return `${centavos < 0 ? "-" : ""}₱${whole}.${fraction}`;
 }
+
+export function spendingLimitStatus(remaining: number): string {
+  if (remaining === 0) return 'At Your Limit';
+  return remaining < 0
+    ? `${formatCentavos(-remaining)} Over Limit`
+    : `${formatCentavos(remaining)} Left to Spend`;
+}

@@ -1,7 +1,7 @@
 import { CenteredPopup } from './centered-popup';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { BackHandler, Pressable, Text, View } from 'react-native';
+import { type ComponentRef, useCallback, useRef, useState } from 'react';
+import { AccessibilityInfo, Alert, BackHandler, Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { BackButton, Field, ReadState, useUI } from './bulsa-form';
 import { CategoryPicker } from './category-picker';
 import { BulsaButton } from './bulsa-button';
@@ -9,6 +9,7 @@ import { MonthlyLimitNotice } from './monthly-limit-notice';
 import { monthlyTotals } from '../lib/ledger';
 import { MoneyReview } from './money-review';
 import { BulsaScreen } from './bulsa-screen';
+import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { newRecordId } from '../lib/form-money';
 import { formatCentavos, parseAmountToCentavos } from '../lib/money';
@@ -47,15 +48,52 @@ export function EntryFields({ original: incoming, ledger, initialType = 'expense
   const { busy, error, run } = useSaveAction();
   const blocked = busy || choicesBusy;
   const selected = balances?.wallets.find(w => w.id === walletId);
+  const { dark, colors } = useBulsaTheme();
+  const [baseline] = useState(() => ({ amount, category, date, walletId, payment, note, type }));
+  const dirty = amount !== baseline.amount || category !== baseline.category || date !== baseline.date ||
+    walletId !== baseline.walletId || payment !== baseline.payment || note !== baseline.note || type !== baseline.type;
+  const leave = useCallback(() => {
+    const exit = () => router.canGoBack() ? router.back() : router.replace('/');
+    if (!dirty) { exit(); return; }
+    Alert.alert('Discard Entry?', 'Your changes haven’t been saved.', [
+      { text: 'Keep Editing', style: 'cancel' },
+      { text: 'Discard Entry', style: 'destructive', onPress: exit },
+    ]);
+  }, [dirty, router]);
+  const amountRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const dateRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const scroll = useRef<ComponentRef<typeof ScrollView>>(null);
+  const positions = useRef({ amount: 0, date: 0 });
+  const [issue, setIssue] = useState<{ field: 'amount' | 'date'; message: string } | null>(null);
+  function report(field: 'amount' | 'date', message: string) {
+    setIssue({ field, message });
+    (field === 'amount' ? amountRef : dateRef).current?.focus();
+    scroll.current?.scrollTo({ y: Math.max(0, positions.current[field] - 12), animated: false });
+    AccessibilityInfo.announceForAccessibility(message);
+  }
+  function validateFields() {
+    if (parseAmountToCentavos(amount) === null) {
+      const message = /^\d+\.\d{3,}$/.test(amount.trim()) ? 'Use up to two decimal places.' :
+        !amount.trim() || Number(amount) <= 0 ? 'Enter an amount above ₱0.' : 'Enter a valid amount in pesos.';
+      report('amount', message);
+      return false;
+    }
+    try { parseDisplayDate(date); }
+    catch (cause) { report('date', cause instanceof Error ? cause.message : 'Check the date.'); return false; }
+    setIssue(null);
+    return true;
+  }
   useFocusEffect(useCallback(() => {
     const listener = BackHandler.addEventListener('hardwareBackPress', () => {
       if (blocked) return true;
+      if (Keyboard.isVisible()) { Keyboard.dismiss(); return true; }
       if (picker) { setPicker(false); return true; }
       if (reviewing) { setReviewing(false); return true; }
+      if (dirty) { leave(); return true; }
       return false;
     });
     return () => listener.remove();
-  }, [blocked, picker, reviewing]));
+  }, [blocked, dirty, leave, picker, reviewing]));
 
   // Resolve the pending choice once, against the ledger refreshed on return.
   if (setupWallet && !loading && balances && data !== setupWallet.previous) {
@@ -97,7 +135,7 @@ export function EntryFields({ original: incoming, ledger, initialType = 'expense
       await saveTransaction({ id, type, amountCentavos, category, date: storedDate, walletId, paymentMethod: payment.trim() || 'Not specified', note: note.trim() || undefined });
     });
     if (saved && original) { router.back(); return; }
-    if (saved) router.replace({ pathname: '/activity', params: { message: `${type === 'expense' ? 'Expense saved' : 'Income saved'} · ${selected?.name ?? 'General'}` } });
+    if (saved) router.replace({ pathname: '/activity', params: { message: `${type === 'expense' ? 'Expense saved' : 'Income saved'} to ${selected?.name ?? 'General'}.` } });
   }
 
   if (picker) return <BulsaScreen header={<BackButton title="‹ Back to Transaction" onPress={() => setPicker(false)} />}>
@@ -107,11 +145,11 @@ export function EntryFields({ original: incoming, ledger, initialType = 'expense
       {(type === 'expense' ? expenseWalletChoices(balances.wallets, original) : balances.wallets.filter(w => !w.hidden || w.id === original?.walletId)).map(w => {
         const available = expenseAvailable(w, original);
         const insufficient = type === 'expense' && draftAmount !== null && draftAmount > available && !(original?.walletId === w.id && draftAmount <= original.amountCentavos);
-        return <Pressable key={w.id} disabled={insufficient} style={[ui.card, walletId === w.id && ui.selected, insufficient && { opacity: 0.55 }]} accessibilityRole="radio" accessibilityState={{ checked: walletId === w.id, disabled: insufficient }} onPress={() => { if (!w.configured) {
+        return <Pressable key={w.id} disabled={insufficient} style={[ui.card, walletId === w.id && ui.selected, insufficient && { backgroundColor: dark ? colors.surface : '#FCFAF8' }]} accessibilityRole="radio" accessibilityState={{ checked: walletId === w.id, disabled: insufficient }} onPress={() => { if (!w.configured) {
           setSetupWallet({ id: w.id, previous: data });
           router.push({ pathname: '/wallets/[id]', params: { id: w.id, setup: 'entry' } });
         } else { setWalletId(w.id); setPicker(false); } }}>
-          <Text style={ui.heading}>{w.configured ? w.name : `Set Up ${w.name}`}  ›</Text><Text style={ui.body}>{w.configured ? formatCentavos(available) : 'Starting Balance Not Set'}</Text><Text style={ui.caption}>{insufficient ? 'Not Enough for This Expense' : w.included ? 'Included in Total Budget' : 'Not Included'}</Text>
+          <Text style={ui.heading}>{w.configured ? w.name : `Set Up ${w.name}`}{insufficient ? '' : '  ›'}</Text><Text style={ui.body}>{w.configured ? formatCentavos(available) : 'Starting Balance Not Set'}</Text><Text style={[ui.caption, insufficient && { color: dark ? colors.muted : '#5E4B43' }]}>{insufficient ? 'Not Enough for This Expense' : w.included ? 'Included in Total Budget' : 'Not Included'}</Text>
         </Pressable>;
       })}
       {type === 'expense' && <Text style={ui.caption}>Only funded wallets are shown. Enter an amount to check which can cover it. Manage starting balances in Wallets.</Text>}
@@ -120,23 +158,27 @@ export function EntryFields({ original: incoming, ledger, initialType = 'expense
 
 
 
-  return <BulsaScreen header={<BackButton disabled={blocked} />}>
+  return <BulsaScreen scrollRef={scroll} header={<BackButton disabled={blocked} onPress={leave} />}>
     <Text style={ui.title}>{original ? (type === 'expense' ? 'Edit Expense' : 'Edit Income') : type === 'expense' ? 'Add Expense' : 'Add Income'}</Text>
     {!original && <View style={ui.row}>{(['expense', 'income'] as const).map(value => <Pressable disabled={blocked} key={value} accessibilityRole="radio" accessibilityState={{ checked: type === value, disabled: blocked }} style={[ui.choice, type === value && ui.selected]} onPress={() => { setType(value); setCategory(value === 'expense' ? 'Food' : 'Salary'); }}><Text style={ui.body}>{value === 'expense' ? 'Expense' : 'Income'}</Text></Pressable>)}</View>}
     {loading || readError || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
-      <Field label="Amount (PHP)" placeholder="0.00" keyboardType="decimal-pad" value={amount} onChangeText={setAmount} editable={!blocked} />
+      <View onLayout={e => { positions.current.amount = e.nativeEvent.layout.y; }}>
+        <Field inputRef={amountRef} issue={issue?.field === 'amount' ? issue.message : undefined} label="Amount (PHP)" placeholder="0.00" keyboardType="decimal-pad" value={amount} onChangeText={value => { setAmount(value); if (issue?.field === 'amount') setIssue(null); }} editable={!blocked} />
+      </View>
       <BulsaButton secondary disabled={blocked} title={`Wallet: ${selected?.name ?? 'General'}  ›`} onPress={() => setPicker(true)} />
       <Text style={ui.caption}>{walletId === null ? 'Use General when you don’t want to choose a wallet. It counts in Total Budget and can go below zero.' : selected?.included ? 'This entry affects the wallet and Total Budget.' : 'This entry affects this wallet only. Expenses still count in monthly spending.'}</Text>
       {original && <Text style={ui.caption}>Current {type === 'income' ? 'source' : 'category'}: {category}. Older labels stay available on this record.</Text>}
       <CategoryPicker retainedValue={original?.category} key={type} kind={type} value={category} onChange={setCategory} disabled={busy} onBusyChange={setChoicesBusy} />
-      <Field label="Date (MM-DD-YYYY)" placeholder="MM-DD-YYYY" value={date} onChangeText={setDate} editable={!blocked} autoCapitalize="none" autoCorrect={false} maxLength={10} />
+      <View onLayout={e => { positions.current.date = e.nativeEvent.layout.y; }}>
+        <Field inputRef={dateRef} issue={issue?.field === 'date' ? issue.message : undefined} label="Date (MM-DD-YYYY)" placeholder="MM-DD-YYYY" value={date} onChangeText={value => { setDate(value); if (issue?.field === 'date') setIssue(null); }} editable={!blocked} autoCapitalize="none" autoCorrect={false} maxLength={10} />
+      </View>
       <BulsaButton secondary disabled={blocked} title={details ? 'Fewer Details' : 'More Details · Optional'} onPress={() => setDetails(value => !value)} />
       {details && <><Field label="Note · Optional" value={note} onChangeText={setNote} editable={!blocked} multiline /></>}
       {type === 'expense' && entryMonth && <MonthlyLimitNotice disabled={blocked} month={entryMonth} spent={monthSpent} projected={projected} />}
       {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       {!!previewError && <Text style={ui.error}>{previewError}</Text>}
-      <BulsaButton title={busy ? 'Saving…' : original ? 'Review Changes' : type === 'expense' ? 'Save Expense' : 'Save Income'} disabled={blocked} onPress={() => { if (original && data) { try { editPreview(data, editedTransaction(original, draft)); setPreviewError(''); setReviewing(true); } catch (cause) { setPreviewError(cause instanceof Error ? cause.message : 'Check your fields.'); } } else void save(); }} />
-      {original && <BulsaButton secondary title="Cancel" disabled={blocked} onPress={() => router.back()} />}
+      <BulsaButton title={busy ? 'Saving…' : original ? 'Review Changes' : type === 'expense' ? 'Save Expense' : 'Save Income'} disabled={blocked} onPress={() => { if (!validateFields()) return; if (original && data) { try { editPreview(data, editedTransaction(original, draft)); setPreviewError(''); setReviewing(true); } catch (cause) { setPreviewError(cause instanceof Error ? cause.message : 'Check your fields.'); } } else void save(); }} />
+      {original && <BulsaButton secondary title="Cancel" disabled={blocked} onPress={leave} />}
     </>}
     {reviewing && original && <CenteredPopup onClose={() => setReviewing(false)} busy={blocked}><Text style={ui.title}>Review Changes</Text>{!preview ? <Text style={ui.error}>{validation || 'Could not preview changes.'}</Text> : <><MoneyReview before={preview.before} after={preview.after} walletIds={[original.walletId, walletId]} /><Text style={ui.caption}>This updates the original record once. Income and spending totals follow the corrected amount and date. Transfers and adjustments stay unchanged.</Text><BulsaButton title={busy ? 'Saving…' : 'Save Changes'} disabled={blocked} onPress={() => void save()} /></>}{!!error && <><Text style={ui.error}>{error}</Text><BulsaButton secondary title="Refresh Balances" disabled={blocked} onPress={() => { setReviewing(false); void reload(); }} /></>}<BulsaButton secondary title="Keep Editing" disabled={blocked} onPress={() => setReviewing(false)} /></CenteredPopup>}
   </BulsaScreen>;

@@ -9,7 +9,7 @@ export function parseDisplayDate(input: string): string {
   if (!/^\d{2}-\d{2}-\d{4}$/.test(input)) throw new Error('Enter a valid date in MM-DD-YYYY format.');
   const iso = `${input.slice(6, 10)}-${input.slice(0, 2)}-${input.slice(3, 5)}`;
   try { validateDate(iso); }
-  catch { throw new Error('Enter a valid date in MM-DD-YYYY format.'); }
+  catch { throw new Error('That date doesn’t exist. Check the month and day.'); }
   return iso;
 }
 

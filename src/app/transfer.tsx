@@ -6,7 +6,6 @@ import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { BulsaScreen } from '../components/bulsa-screen';
 import { BulsaButton } from '../components/bulsa-button';
 import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
-import { MoneyReview } from '../components/money-review';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { transferPreview } from '../lib/transfers';
 import { newRecordId } from '../lib/form-money';
@@ -85,14 +84,27 @@ export default function TransferScreen() {
     <Text style={ui.title}>{'Transfer Money Between Wallets'}</Text>
     <Text style={ui.caption}>Record money you already moved from one account to another. Bulsa updates your records only.</Text>
     {loading || readError || !data || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
-    {review && <CenteredPopup onClose={() => setReview(null)} busy={busy}><Text style={ui.title}>Review Transfer</Text>
-      <Text style={ui.heading}>{names.get(from)} → {names.get(to)}</Text><Text style={ui.body}>{formatCentavos(review.record.amountCentavos)} · {displayDate(review.record.date)}</Text>
-      {!!review.record.note && <Text style={ui.body}>{review.record.note}</Text>}
-      <MoneyReview {...review.effects} walletIds={[from, to]} />
-      <Text style={ui.caption}>This records a transfer, not income or spending. Crossing included/excluded wallets can change Total Budget. Bulsa does not move real money.</Text>
+    {review && <CenteredPopup onClose={() => setReview(null)} busy={busy} footer={<>
       <BulsaButton title={busy ? 'Saving…' : 'Confirm Transfer'} disabled={busy} onPress={() => void save()} />
-      {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       <BulsaButton secondary title="Keep Editing" disabled={busy} onPress={() => setReview(null)} />
+    </>}><Text style={ui.title}>Review Transfer</Text>
+      <Text style={ui.heading}>{formatCentavos(review.record.amountCentavos)} from {names.get(from)} to {names.get(to)}.</Text>
+      {([['From', from], ['To', to]] as const).map(([label, id]) => <View key={id} style={ui.card}>
+        <Text style={ui.caption}>{label}</Text><Text style={ui.heading}>{names.get(id)}</Text>
+        <Text style={ui.body}>{formatCentavos(review.effects.before.wallets.find(w => w.id === id)!.balanceCentavos)} → {formatCentavos(review.effects.after.wallets.find(w => w.id === id)!.balanceCentavos)}</Text>
+      </View>)}
+      <Text style={ui.heading}>Total Budget</Text>
+      <Text style={ui.body}>{review.effects.before.totalCentavos === review.effects.after.totalCentavos
+        ? `Total Budget stays at ${formatCentavos(review.effects.after.totalCentavos)}.`
+        : `${formatCentavos(review.effects.before.totalCentavos)} → ${formatCentavos(review.effects.after.totalCentavos)}`}</Text>
+      {review.effects.before.totalCentavos !== review.effects.after.totalCentavos && <Text style={ui.caption}>
+        {review.effects.after.totalCentavos > review.effects.before.totalCentavos
+          ? 'Total Budget increases because money moves from an excluded wallet into an included wallet.'
+          : 'Total Budget decreases because money moves from an included wallet into an excluded wallet.'}
+      </Text>}
+      <Text style={ui.caption}>{displayDate(review.record.date)}</Text>
+      {!!review.record.note && <Text style={ui.body}>{review.record.note}</Text>}
+      {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
     </CenteredPopup>}
       <BulsaButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('from')} />
       <BulsaButton secondary title={`To: ${names.get(to) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('to')} />

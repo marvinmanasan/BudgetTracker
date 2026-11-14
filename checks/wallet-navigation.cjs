@@ -7,14 +7,14 @@ const Tabs=Object.assign(()=>{}, {Screen:'Tab'}),Stack=Object.assign(()=>{}, {Sc
 const mocks={
  'react/jsx-runtime':jsx,react:{useCallback:fn=>fn,useRef(value){const i=cursor++;return slots[i]??={current:value};},useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return [slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v;}];}},
  'expo-router':{Tabs,Stack,router:{push(){throw Error('The imperative router is unavailable before the first render has finished.');}},useRouter:()=>scopedRouter,useFocusEffect(fn){onFocus=fn;},useLocalSearchParams:()=>({})},
- 'react-native':{Platform:{OS:'android'},Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',StyleSheet:{create:x=>x}},
+ 'react-native':{Platform:{OS:'android'},Image:'Image',Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',StyleSheet:{create:x=>x}},
  'expo-image':{Image:'Image'},'react-native-safe-area-context':{useSafeAreaInsets:()=>({bottom:0})},
  'hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{},dark:false}),useBulsaStyles:()=>({})},
  'components/bulsa-form':{BackButton:'Back',ReadState:'Read',useUI:()=>({})},'components/bulsa-button':{BulsaButton:'Button'},'components/bulsa-screen':{BulsaScreen:'Screen'},
  'hooks/use-ledger':{useLedger:()=>({balances:{wallets:[],totalCentavos:0,generalCentavos:0},loading:false,reload:async()=>{}}),useSaveAction:()=>({busy:false,run:fn=>fn()})},
  'lib/money':{formatCentavos:()=> '₱0.00'},'storage/wallets':{setWalletFlags:async()=>{}},
 };
-function load(p){let m={exports:{}};let c=ts.transpileModule(fs.readFileSync(p,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+c+'})')(n=>{if(n.endsWith('.svg'))return n;const key=n.replace(/^(@\/|(\.\.\/)+|\.\/)/,'');assert(n in mocks||key in mocks,n);return mocks[n]??mocks[key]},m,m.exports);return m.exports;}
+function load(p){let m={exports:{}};let c=ts.transpileModule(fs.readFileSync(p,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+c+'})')(n=>{if(n.endsWith('.png'))return n;const key=n.replace(/^(@\/|(\.\.\/)+|\.\/)/,'');assert(n in mocks||key in mocks,n);return mocks[n]??mocks[key]},m,m.exports);return m.exports;}
 const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children)]:[];
 const tabs=load('src/components/bulsa-tabs.tsx').default();
 assert.deepEqual(nodes(tabs).filter(n=>n.type==='Tab').map(n=>n.props.options.title),['Overview','Wallets','Budgets','Activity']);

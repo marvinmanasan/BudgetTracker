@@ -1,16 +1,15 @@
-import { Image } from 'expo-image';
 import { Tabs } from 'expo-router';
 import { useEffect, useState, type ComponentProps } from 'react';
-import { Keyboard, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Image, Keyboard, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useBulsaTheme } from '@/hooks/use-bulsa-theme';
 
 type BarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0];
 
 const destinations = [
-  { name: 'index', title: 'Overview', icon: require('../../assets/icons/overview.svg') },
-  { name: 'wallets', title: 'Wallets', icon: require('../../assets/icons/wallets.svg') },
-  { name: 'budgets', title: 'Budgets', icon: require('../../assets/icons/budgets.svg') },
-  { name: 'activity', title: 'Activity', icon: require('../../assets/icons/activity.svg') },
+  { name: 'index', title: 'Overview', icon: require('../../assets/icons/overview.png') },
+  { name: 'wallets', title: 'Wallets', icon: require('../../assets/icons/wallets.png') },
+  { name: 'budgets', title: 'Budgets', icon: require('../../assets/icons/budgets.png') },
+  { name: 'activity', title: 'Activity', icon: require('../../assets/icons/activity.png') },
 ] as const;
 
 function AdaptiveTabBar({ state, descriptors, emitter, navigateToTab, insets }: BarProps) {
@@ -64,7 +63,7 @@ export default function BulsaTabs() {
       tabBarActiveTintColor: dark ? colors.onAccent : colors.text, tabBarInactiveTintColor: colors.muted,
       tabBarActiveBackgroundColor: dark ? colors.accent : colors.selected, tabBarStyle: { backgroundColor: colors.surface } }}>
     {destinations.map(({ name, title, icon }) => <Tabs.Screen key={name} name={name} options={{ title,
-      tabBarIcon: ({ focused, size }) => <Image source={icon} tintColor={focused ? (dark ? colors.onAccent : colors.text) : colors.muted} contentFit="contain" style={{ width: size, height: size }} accessible={false} />,
+      tabBarIcon: ({ focused, size }) => <Image source={icon} resizeMode="contain" style={{ width: size, height: size, tintColor: focused ? (dark ? colors.onAccent : colors.text) : colors.muted }} accessible={false} />,
     }} />)}
   </Tabs>;
 }
