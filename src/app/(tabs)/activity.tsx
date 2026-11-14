@@ -4,21 +4,20 @@ import { deleteSelectedTransactions } from '@/storage/selected-deletion';
 import { CenteredPopup } from '@/components/centered-popup';
 import { useBulsaTheme } from '@/hooks/use-bulsa-theme';
 import { useRouter, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { BackHandler, Pressable, SectionList, Text, View } from 'react-native';
 import { BulsaScreen } from '@/components/bulsa-screen';
 import { BulsaButton } from '@/components/bulsa-button';
 import { Field, ReadState, useUI } from '@/components/bulsa-form';
 import { ActivityAmount } from '@/components/activity-amount';
 import { useLedger, useSaveAction } from '@/hooks/use-ledger';
-import { filterActivitySections, spendingSummary, type ActivityFilters } from '@/lib/activity';
+import { activitySections, filterActivityList, type ActivityFilters, type ActivityRow } from '@/lib/activity';
 import { ActivityFilterPanel } from '@/components/activity-filters';
 import { useTransactionUndo } from '@/hooks/use-transaction-undo';
 import { UndoNotice } from '@/components/undo-notice';
 
 import { formatCentavos } from '@/lib/money';
-import { localDate } from '@/lib/validation';
-import { displayDate, monthName } from '@/lib/display-date';
+import { displayDate } from '@/lib/display-date';
 
 export default function Activity() {
   const router = useRouter();
@@ -32,8 +31,16 @@ export default function Activity() {
   const [month, setMonth] = useState('');
   const [expanded, setExpanded] = useState(false);
   const monthKey = month || undefined;
-  const monthError = '';
   const undo = useTransactionUndo();
+  const list = useRef<SectionList<ActivityRow>>(null);
+  const [notice, setNotice] = useState('');
+  useFocusEffect(useCallback(() => {
+    if (!message) return;
+    list.current?.getScrollResponder()?.scrollTo({ y: 0, animated: false });
+    setNotice(undo.record || undo.error ? '' : message);
+    setFilters({}); setMonth(''); setQuery('');
+    navigation.setParams({ message: undefined, wallet: undefined });
+  }, [message, navigation, undo.record, undo.error]));
   const saveAction = useSaveAction();
   const [selecting, setSelecting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -41,7 +48,7 @@ export default function Activity() {
   const [selectionError, setSelectionError] = useState('');
   const blocked = saveAction.busy || undo.busy;
   const finishSelection = useCallback(() => { if (blocked) return; setSelecting(false); setSelectedIds([]); setDeleteReview(null); setSelectionError(''); }, [blocked]);
-  useFocusEffect(useCallback(() => () => { setSelecting(false); setSelectedIds([]); setDeleteReview(null); setSelectionError(''); }, []));
+  useFocusEffect(useCallback(() => () => { setNotice(''); setExpanded(false); setSelecting(false); setSelectedIds([]); setDeleteReview(null); setSelectionError(''); }, []));
   useFocusEffect(useCallback(() => {
     const listener = BackHandler.addEventListener('hardwareBackPress', () => {
       if (blocked) return true;
@@ -54,8 +61,9 @@ export default function Activity() {
   const [draftFilters, setDraftFilters] = useState<ActivityFilters>({});
   const [draftMonth, setDraftMonth] = useState('');
   const [clearWallet, setClearWallet] = useState(false);
-  function openFilters() { setDraftFilters({ ...filters }); setDraftMonth(month); setClearWallet(false); setExpanded(true); }
-  const sections = useMemo(() => data && !monthError ? filterActivitySections(data, { ...filters, query, wallet, month: monthKey }) : [], [data, filters, query, wallet, monthKey, monthError]);
+  function openFilters() { setNotice(''); setDraftFilters({ ...filters }); setDraftMonth(month); setClearWallet(false); setExpanded(true); }
+  const records = useMemo(() => data ? activitySections(data, wallet) : [], [data, wallet]);
+  const sections = useMemo(() => filterActivityList(records, { ...filters, query, month: monthKey }), [records, filters, query, monthKey]);
 
   const matchingIds = useMemo(() => sections.flatMap(section => section.data.filter(item => item.type === 'expense' || item.type === 'income').map(item => item.key.slice('transaction-'.length))), [sections]);
   const matchingSet = useMemo(() => new Set(matchingIds), [matchingIds]);
@@ -64,7 +72,7 @@ export default function Activity() {
   function toggleSelection(key: string) {
     const id = key.slice('transaction-'.length);
     if (blocked || !matchingSet.has(id)) return;
-    setSelecting(true); setSelectionError('');
+    setNotice(''); setSelecting(true); setSelectionError('');
     setSelectedIds(previous => previous.includes(id) ? previous.filter(value => value !== id) : [...previous, id]);
   }
   function prepareDeletion() {
@@ -85,7 +93,7 @@ export default function Activity() {
       if (pending.busy || pending.record) throw new Error('Undo or dismiss the previous deletion first.');
       await deleteSelectedTransactions(approved.ids, approved.signature);
     });
-    if (saved) { setDeleteReview(null); setSelectedIds([]); setSelecting(false); navigation.setParams({ message: `${approved.ids.length} selected transactions deleted. Other records were kept.` }); await reload(true); }
+    if (saved) { setDeleteReview(null); setSelectedIds([]); setSelecting(false); setNotice(`${approved.ids.length} transactions deleted.`); await reload(true); }
   }
   const selectionToolbar = <View style={{ gap: 8 }}>
     <View style={[ui.row, { justifyContent: 'space-between' }]}><Text accessibilityLiveRegion="polite" style={ui.heading}>{chosenIds.length} Selected</Text><BulsaButton secondary title="Done" disabled={blocked} onPress={finishSelection} /></View>
@@ -101,29 +109,20 @@ export default function Activity() {
   const categories = useMemo(() => [...new Set(data?.transactions.map(t => t.category))].sort(), [data]);
   const payments = useMemo(() => [...new Set(data?.transactions.map(t => t.paymentMethod))].sort(), [data]);
   const filtering = !!(wallet || query.trim() || month || filters.type || filters.category || filters.payment);
-  function clear() { setFilters({}); setQuery(''); setMonth(''); navigation.setParams({ wallet: undefined }); }
+  function clear() { setNotice(''); setFilters({}); setQuery(''); setMonth(''); navigation.setParams({ wallet: undefined }); }
   const walletName = data?.wallets.find(w => w.id === wallet)?.name ?? 'Unknown Wallet';
-  const summaryMonth = monthKey ?? localDate().slice(0, 7);
-  const summary = useMemo(() => data ? spendingSummary(data, summaryMonth) : null, [data, summaryMonth]);
   const header = selecting ? undefined : <View style={{ gap: 12 }}>
     <Text style={ui.title}>Activity</Text>
-    <Text style={ui.caption}>Your money, one moment at a time.</Text>
-    <Field label="Search Activity" value={query} onChangeText={setQuery} placeholder="Category, wallet or note" autoCorrect={false} />
-    <View style={ui.row}><BulsaButton secondary title="Filters" onPress={openFilters} /><BulsaButton secondary title="Select" disabled={!matchingIds.length || blocked} onPress={() => { setSelecting(true); setSelectedIds([]); }} /></View>
-    <Text style={ui.caption}>Tap a record for details. Touch and hold an expense or income to select it.</Text>
-    {filtering && <View><Text style={ui.caption}>Filtered records only. Your money totals are unchanged.</Text><BulsaButton secondary title="Clear All Filters" onPress={clear} /></View>}
-    {wallet && <><Text style={ui.caption}>{walletName} Records</Text><BulsaButton secondary title="Show All Activity" onPress={() => navigation.setParams({ wallet: undefined })} /></>}
-    {summary && !monthError && <View style={[ui.card, { backgroundColor: C.summary, borderRadius: 22, padding: 20, gap: 12 }]}>
-      <Text style={[ui.body, { color: C.summaryMuted }]}>{monthKey ? `All Wallets · ${monthName(monthKey)}` : 'All Wallets This Month'}</Text>
-      <Text style={[ui.money, { color: C.onSummary, fontSize: 36 }]}>{formatCentavos(summary.expenseCentavos)}</Text>
-      <Text style={[ui.caption, { color: C.summaryMuted }]}>Across {summary.count} recorded expense{summary.count === 1 ? '' : 's'} · All wallets, before Activity filters.</Text>
-    </View>}
-    <BulsaButton secondary title="Reset Selected Data" onPress={() => router.push('/reset-data')} />
-    {message && <View style={ui.soft}><Text style={ui.body} accessibilityLiveRegion="polite">{message}</Text><BulsaButton secondary title="Dismiss" onPress={() => navigation.setParams({ message: undefined })} /></View>}
+    <Field label="Search Activity" value={query} onFocus={() => setNotice('')} onChangeText={value => { setNotice(''); setQuery(value); }} placeholder="Category, wallet or note" autoCorrect={false} />
+    <View style={ui.row}><BulsaButton secondary title="Filters" onPress={openFilters} /><BulsaButton secondary title="Select" disabled={!matchingIds.length || blocked} onPress={() => { setNotice(''); setSelecting(true); setSelectedIds([]); }} /></View>
+    {wallet && <Text style={ui.caption}>{walletName} Records</Text>}
+    {filtering && sections.length > 0 && <BulsaButton secondary title="Clear Filters" onPress={clear} />}
+    {!!notice && !undo.record && !undo.error && <Text style={ui.caption} accessibilityLiveRegion="polite">{notice}</Text>}
   </View>;
   return <BulsaScreen scrollable={false} header={selecting ? selectionToolbar : undefined}>
     {(!data && loading) || error ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : <SectionList
       style={{ flex: 1 }}
+      ref={list}
       ListHeaderComponent={header}
       keyboardShouldPersistTaps="handled"
       sections={sections}
@@ -134,7 +133,7 @@ export default function Activity() {
       contentContainerStyle={{ paddingBottom: 24 }}
       ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       renderSectionHeader={({ section }) => <Text accessibilityRole="header" style={[ui.caption, { paddingVertical: 12 }]}>{displayDate(section.date)}</Text>}
-      ListEmptyComponent={<View style={[ui.card, { marginTop: 20, gap: 16 }]}><Text style={ui.heading}>{filtering ? 'No Matching Records' : 'Your Story Starts Here'}</Text><Text style={ui.body}>{filtering ? 'Change or clear your filters to see more records.' : 'Record an expense, income or starting balance to see it here.'}</Text><BulsaButton title={filtering ? "Clear Filters" : "Add Expense or Income"} onPress={filtering ? clear : () => router.push('/entry')} /></View>}
+      ListEmptyComponent={<View style={[ui.card, { marginTop: 20, gap: 16 }]}><Text style={ui.heading}>{filtering ? 'No Matching Records' : 'No Records Yet'}</Text><Text style={ui.body}>{filtering ? 'Change or clear your filters to see more records.' : 'Record an expense, income or starting balance to see it here.'}</Text><BulsaButton title={filtering ? "Clear Filters" : "Add Expense"} onPress={filtering ? clear : () => router.push('/entry')} /></View>}
       renderItem={({ item }) => {
         const eligible = item.type === 'expense' || item.type === 'income';
         const selected = eligible && chosenSet.has(item.key.slice('transaction-'.length));
@@ -145,7 +144,7 @@ export default function Activity() {
           accessibilityHint={selecting ? (eligible ? 'Select or deselect this record' : 'Only expenses and income can be selected') : 'Opens record details. Touch and hold expenses or income to select.'}
           disabled={blocked || (selecting && !eligible)}
           onLongPress={eligible ? () => toggleSelection(item.key) : undefined}
-          onPress={() => selecting ? toggleSelection(item.key) : router.push({ pathname: '/activity-record', params: { record: item.key } })}
+          onPress={() => { setNotice(''); if (selecting) toggleSelection(item.key); else router.push({ pathname: '/activity-record', params: { record: item.key } }); }}
           style={({ pressed }) => [{ minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 12, borderRadius: 16, backgroundColor: selected ? C.soft : 'transparent', borderWidth: 1, borderColor: selected ? C.accent : 'transparent', opacity: pressed || (selecting && !eligible) ? 0.65 : 1 }]}
         >
           {selecting && eligible ? <View style={{ width: 32, height: 32, borderRadius: 8, borderWidth: 2, borderColor: C.accent, backgroundColor: selected ? C.accent : 'transparent', alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: C.onAccent, fontSize: 22 }}>{selected ? '✓' : ''}</Text></View> : <View style={{ width: 44, minHeight: 44, borderRadius: 14, backgroundColor: C.soft, alignItems: 'center', justifyContent: 'center' }}><Text style={ui.heading}>{Array.from(item.title)[0]}</Text></View>}

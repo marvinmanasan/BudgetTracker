@@ -13,12 +13,13 @@ Bulsa is a mobile budget tracker for recording money, managing wallets and plann
 - Transfers between wallets and balance corrections.
 - Monthly spending limits, category limits and Everything Else.
 - One savings goal, editable savings records and progress.
-- Local backup and restore for financial records and custom category and income source lists, with a replacement preview.
+- Save financial backups to a chosen device location, share them, and restore with a replacement preview and safety copy.
+- Cash-first wallet ordering with drag-to-reorder and a shared order across wallet pickers.
 - Display name and Light, Dark or System appearance.
 
 ## Download
 
-Version **1.1.0** is being prepared. The latest published APK is still **1.0.0**.
+Version **1.1.0** is being prepared. The latest published APK is still **1.0.0**. Read the [update notes and remaining Android checks](RELEASE_NOTES.md).
 
 [Download Bulsa 1.0.0 for Android](https://github.com/marvinmanasan/BudgetTracker/releases/download/v1.0.0/Bulsa-1.0.0.apk).
 
@@ -28,10 +29,11 @@ Open the APK on your Android phone and follow the installation prompts. If Bulsa
 
 1. Tap **Set Up Wallets**, or tap the **Wallets** tab. Set starting balances for the wallets you use. **Add Wallet** and **Transfer Money Between Wallets** are at the top of the wallet list.
 2. Choose which wallets have **Include in Total Budget** switched on.
-3. On **Overview**, tap **+ Add Expense**. Enter the amount, category, wallet and date, then tap **Save Expense**. Choose **Income** in the same form to record income.
+3. On **Overview**, tap **Add Expense** or **Add Income**. Enter the amount, wallet, category/source and date, then save the entry.
 4. Open **Activity** to search, filter or correct saved transactions.
 5. Open **Budgets** to set spending limits. Use **Set Savings Goal** to start tracking savings separately. Open **Savings History** to edit or delete a contribution.
-6. Find balance corrections under **Wallets**. Open **Settings → Backup and Restore** to export or restore financial records. Keep backup files private because they contain your financial records.
+6. Use **Wallets → Arrange** to drag wallets into your preferred order. Cash stays first. Balance corrections are also available under Wallets.
+7. Open **Settings → Your Records → Backup and Restore** to save, share or restore financial records. Expo Go asks for a folder inside Downloads. Keep backup files private because they contain your financial records.
 
 Dates use **MM-DD-YYYY**. Months use full names, such as **November 2026**.
 

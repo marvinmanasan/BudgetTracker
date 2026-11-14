@@ -20,8 +20,17 @@ const render=()=>{cursor=0;return form();};const tick=()=>new Promise(r=>setImme
  tree=render();assert.equal(button(tree,'Dark').props.selected,true,'Selected appearance must be exposed to accessibility');saved=false;button(tree,'Save Settings').props.onPress();await tick();assert.deepEqual(writes[0],{displayName:'Mika',appearance:'dark'});
  theme.preferences={...theme.preferences,displayName:'Other'};tree=render();assert.equal(nodes(tree).find(n=>n.type==='Field').props.value,'Mika','Refresh preserves draft after failed write');
  saving=true;tree=render();assert(tree.props.header.props.disabled);assert(nodes(tree).filter(n=>n.type==='Button').every(n=>n.props.disabled));
- saving=false;saved=false;slots=[];cursor=0;tree=intro();button(tree,'Set Up Wallets').props.onPress();await tick();assert.equal(navigation.length,0,'Failed intro save must not navigate');
- saved=true;cursor=0;tree=intro();button(tree,'Set Up Wallets').props.onPress();await tick();assert.equal(navigation[0],'/wallets');assert.deepEqual(writes.at(-1),{onboardingComplete:true});
- let release;theme.save=()=>new Promise(resolve=>{release=resolve;});cursor=0;tree=intro();button(tree,'Set Up Wallets').props.onPress();focused=false;release(true);await tick();assert.equal(navigation.length,1,'Changing tabs while saving must not push Wallets over another tab');
+ saving=false;slots=[];cursor=0;
+ const wallets=[{id:'cash',name:'Cash'},{id:'gcash',name:'GCash'},{id:'gotyme',name:'GoTyme'}];
+ tree=intro({wallets});
+ for (const wallet of wallets) {
+   button(tree,wallet.name).props.onPress();
+   assert.deepEqual(navigation.at(-1),{pathname:'/wallets/[id]',params:{id:wallet.id,setup:'intro'}});
+ }
+ button(tree,'Add Another Wallet').props.onPress();
+ assert.deepEqual(navigation.at(-1),{pathname:'/wallets/add',params:{setup:'intro'}});
+ assert.equal(writes.length,1,'Choosing a wallet must leave introduction available on Back');
+ button(tree,'Skip for Now').props.onPress();await tick();
+ assert.deepEqual(writes.at(-1),{onboardingComplete:true});
  console.log('Settings/first-use checks passed: drafts, saved payload, disabled controls and navigation only after persisted introduction. Native rendering not covered.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

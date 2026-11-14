@@ -10,7 +10,7 @@ export type ActivitySection = { date: string; data: ActivityRow[] };
 
 // A detail view needs one record, not a rebuilt/sorted copy of the whole feed.
 export function activityRecord(data: Ledger, key: string): ActivityRow | undefined {
-  const selected: Ledger = { wallets: data.wallets, transactions: [], transfers: [], changes: [], activityOrder: data.activityOrder };
+  const selected: Ledger = { wallets: data.wallets, transactions: [], transfers: [], changes: [] };
   if (key.startsWith('transaction-')) {
     const row = data.transactions.find(t => t.id === key.slice('transaction-'.length));
     if (row) selected.transactions = [row];
@@ -43,8 +43,13 @@ export function parseActivityMonth(input: string): string | undefined {
   return `${input.slice(3)}-${input.slice(0, 2)}`;
 }
 export function filterActivitySections(data: Ledger, filters: ActivityFilters): ActivitySection[] {
+  return filterActivityList(activitySections(data, filters.wallet), filters);
+}
+
+// Reuse the displayed record list while search text or non-wallet filters change.
+export function filterActivityList(sections: ActivitySection[], filters: Omit<ActivityFilters, 'wallet'>): ActivitySection[] {
   const query = filters.query?.trim().toLocaleLowerCase();
-  return activitySections(data, filters.wallet).map(section => ({ ...section, data: section.data.filter(row => {
+  return sections.map(section => ({ ...section, data: section.data.filter(row => {
     if (filters.month && row.date.slice(0, 7) !== filters.month) return false;
     if (filters.type && row.type !== filters.type) return false;
     if (filters.category && (!['expense', 'income'].includes(row.type) || row.title !== filters.category)) return false;

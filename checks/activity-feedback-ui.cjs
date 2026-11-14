@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
 const load=require('./load-typescript.cjs').createLoader();
+let focusEffects=[];
 let slots=[],cursor=0,params={wallet:'cash'},routes=[],alertButtons=[],pending=null;
 const data={wallets:[{id:'cash',name:'Cash',hidden:false,included:true}],changes:[],transfers:[],transactions:[
  {id:'one',type:'expense',amountCentavos:100,category:'Food',walletId:'cash',date:'2026-11-12',paymentMethod:'Not specified'},
@@ -9,9 +10,9 @@ const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};
 const mocks={
  '@/components/centered-popup':{CenteredPopup:'Popup'},
  '@/components/money-review':{MoneyReview:'MoneyReview'},'@/lib/selected-deletion':load('src/lib/selected-deletion.ts'),'@/storage/selected-deletion':{deleteSelectedTransactions:async()=>{}},
- react:{useCallback:fn=>fn,useMemo:fn=>fn(),useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},
+ react:{useRef:()=>({current:null}),useCallback:fn=>fn,useMemo:fn=>fn(),useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},
  'expo-image':{Image:'Image'},'react/jsx-runtime':jsx,'react-native':{BackHandler:{addEventListener:()=>({remove(){}})},Text:'Text',View:'View',Pressable:'Pressable',SectionList:'List',Modal:'Modal',Alert:{alert:(title,message,buttons)=>alertButtons=buttons}},
- 'expo-router':{useFocusEffect(){},useLocalSearchParams:()=>params,useNavigation:()=>({setParams:p=>Object.assign(params,p)}),useRouter:()=>({push:r=>routes.push(r)})},
+ 'expo-router':{useFocusEffect(fn){focusEffects.push(fn);},useLocalSearchParams:()=>params,useNavigation:()=>({setParams:p=>Object.assign(params,p)}),useRouter:()=>({push:r=>routes.push(r)})},
  '@/hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{}})},'@/hooks/use-ledger':{useSaveAction:()=>({busy:false,error:'',run:async fn=>{await fn();return true;}}),useLedger:()=>({data,loading:false,error:'',reload(){}})},
  '@/hooks/use-transaction-undo':{useTransactionUndo:()=>({busy:false,record:pending,snapshot:()=>({busy:false,record:pending})})},
  '@/components/bulsa-screen':{BulsaScreen:'Screen'},'@/components/bulsa-button':{BulsaButton:'Button'},
@@ -23,11 +24,11 @@ const moduleObject={exports:{}};
 const code=ts.transpileModule(fs.readFileSync('src/app/(tabs)/activity.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
 vm.runInThisContext('(function(require,module,exports){'+code+'})')(n=>n.endsWith('.svg')?n:mocks[n]??require(n),moduleObject,moduleObject.exports);
 const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children),...nodes(t.props?.header)]:[];
-const render=()=>{cursor=0;return moduleObject.exports.default();};
+const render=()=>{focusEffects=[];cursor=0;return moduleObject.exports.default();};
 const find=(t,type)=>nodes(t).find(n=>n.type===type);
 const button=(t,title)=>nodes(t).find(n=>n.type==='Button'&&n.props.title===title);
 const header=t=>find(t,'List').props.ListHeaderComponent;
-let tree=render();button(header(tree),'Filters').props.onPress();tree=render();assert.equal(find(tree,'Popup').props.dismissOnBackdropPress,true,'Filters opt in to outside dismissal');
+let tree=render();assert(!button(header(tree),"Reset Selected Data"), "Bulk reset belongs in Settings");button(header(tree),'Filters').props.onPress();tree=render();assert.equal(find(tree,'Popup').props.dismissOnBackdropPress,true,'Filters opt in to outside dismissal');
 find(tree,'Filters').props.onMonth('2026-10');tree=render();assert.equal(find(tree,'List').props.sections.length,2,'Draft month does not alter Activity');
 find(tree,'Popup').props.onClose();tree=render();assert.equal(find(tree,'Popup'),undefined);
 button(header(tree),'Filters').props.onPress();tree=render();assert.equal(find(tree,'Filters').props.month,'','Cancel discards draft month');
@@ -47,4 +48,25 @@ button(tree,'Delete Selected').props.onPress();tree=render();assert(find(tree,'M
 find(tree,'Popup').props.onClose();tree=render();assert(button(header(tree),'Select'),'Back from deletion review clears selection');button(header(tree),'Select').props.onPress();tree=render();button(tree,'Select All Matching').props.onPress();pending={id:'pending'};tree=render();assert.equal(button(tree,'Delete Selected').props.disabled,true);
 button(tree,'Done').props.onPress();tree=render();assert(button(header(tree),'Select'));
 assert.equal(list.props.showsVerticalScrollIndicator,false);
+const noticeText = (t,text) => nodes(header(t)).some(n=>n.type==='Text' && n.props.children===text);
+pending=null;
+params.message='Transfer recorded.';
+tree=render();
+const cleanups=focusEffects.map(effect=>effect());
+tree=render();
+assert.equal(params.message,undefined);
+assert(noticeText(tree,'Transfer recorded.'));
+cleanups.forEach(cleanup=>cleanup?.());
+tree=render();assert(!noticeText(tree,'Transfer recorded.'));
+params.message='Expense saved to Cash.';tree=render();focusEffects.forEach(effect=>effect());
+tree=render();assert(noticeText(tree,'Expense saved to Cash.'));
+find(header(tree),'Field').props.onChangeText('no matching amount');
+tree=render();
+assert(!noticeText(tree,'Expense saved to Cash.'));
+assert.equal(find(tree,'List').props.sections.length,0);
+assert(button(find(tree,'List').props.ListEmptyComponent,'Clear Filters'));
+button(find(tree,'List').props.ListEmptyComponent,'Clear Filters').props.onPress();
+pending={id:'pending'};params.message='Transfer recorded.';tree=render();focusEffects.forEach(effect=>effect());
+tree=render();assert(find(tree,'Undo'));assert(!noticeText(tree,'Transfer recorded.'));
+pending=null;tree=render();assert(!noticeText(tree,'Transfer recorded.'));
 console.log('Activity feedback UI passed: staged filters, Cancel/Apply/Clear, wallet scope and guarded delete review. Native layout not covered.');

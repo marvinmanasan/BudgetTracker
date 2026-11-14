@@ -28,6 +28,14 @@ async function main() {
     failRead=true;await assert.rejects(prefs.getPreferences(name),/read failed/);failRead=false;
     for(const db of opened)db.close();opened.clear();load=fresh();prefs=load('src/storage/preferences.ts');
     assert.deepEqual(await prefs.getPreferences(name),{displayName:'Ana',appearance:'dark',onboardingComplete:true});
+    const savedOrder = ['wallet-maya', 'wallet-gcash', 'missing'];
+    await prefs.updatePreferences({walletOrder:savedOrder},name);
+    for(const db of opened)db.close();opened.clear();load=fresh();prefs=load('src/storage/preferences.ts');
+    const {orderWallets} = load('src/lib/wallet-order.ts');
+    const wallets = ['wallet-gcash','new','wallet-cash','wallet-maya'].map(id => ({id}));
+    const reopened = await prefs.getPreferences(name);
+    assert.deepEqual(reopened.walletOrder,savedOrder);
+    assert.deepEqual(orderWallets(wallets,reopened.walletOrder).map(w=>w.id),['wallet-cash','wallet-maya','wallet-gcash','new']);
     await prefs.updatePreferences({appearance:'system'},name);
     assert.equal((await prefs.getPreferences(name)).appearance,'system');
     console.log('Preferences SQLite checks passed: defaults, independent database, validation, bound values, concurrent patches, rollback/read errors and reopen.');

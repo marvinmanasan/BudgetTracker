@@ -51,3 +51,18 @@ formattedRecords=0;
 activitySections(large).flatMap(section=>section.data).find(row=>row.key==='transaction-999');
 assert.equal(formattedRecords,1000,'old whole-feed path formats every record');
 console.log('Detail formatting work: old path 1000 records; targeted path 1 record.');
+
+const {filterActivityList,filterActivitySections}=createLoader()('src/lib/activity.ts');
+for(const wallet of [undefined,'cash','missing']){
+  const cached=activitySections(ledger,wallet);
+  const saved=JSON.stringify(cached);
+  for(const filters of [{},{query:'salary'},{month:'2027-01',type:'expense'},{query:'recounted',type:'adjustment'},{payment:'Cash'},{category:'Old category'}]){
+    assert.deepEqual(filterActivityList(cached,filters),filterActivitySections(ledger,{...filters,wallet}));
+    assert.equal(JSON.stringify(cached),saved,'Searching must preserve the reusable list');
+  }
+}
+let orderReads=0;
+Object.defineProperty(large,'activityOrder',{get(){orderReads++;return [];}});
+activityRecord(large,'transaction-999');
+assert.equal(orderReads,0,'Single-record detail skips global ordering metadata');
+console.log('Reusable Activity filters match ledger filtering across wallet scopes and preserve the cached list.');

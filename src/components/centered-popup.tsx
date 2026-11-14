@@ -1,11 +1,11 @@
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { BackButton } from './bulsa-form';
 
-export function CenteredPopup({ children, onClose, busy = false, stepKey = 'content', dismissOnBackdropPress = false }: PropsWithChildren<{ onClose: () => void; busy?: boolean; stepKey?: string; dismissOnBackdropPress?: boolean }>) {
+export function CenteredPopup({ children, onClose, busy = false, stepKey = 'content', dismissOnBackdropPress = false, footer }: PropsWithChildren<{ onClose: () => void; busy?: boolean; stepKey?: string; footer?: ReactNode; dismissOnBackdropPress?: boolean }>) {
   const { colors: C } = useBulsaTheme();
   const reducedMotion = useReducedMotion();
   const close = () => { if (!busy) onClose(); };
@@ -18,6 +18,7 @@ export function CenteredPopup({ children, onClose, busy = false, stepKey = 'cont
           <ScrollView key={stepKey} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator contentContainerStyle={{ padding: 20, paddingTop: 8, gap: 16 }}>
             {children}
           </ScrollView>
+          {!!footer && <View style={{ padding: 16, gap: 8, borderTopWidth: 1, borderColor: C.track }}>{footer}</View>}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

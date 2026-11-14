@@ -7,7 +7,7 @@ const wallets = [
  {id:'empty',name:'Empty',configured:true,hidden:false,balanceCentavos:0},
  {id:'hidden',name:'Hidden',configured:true,hidden:true,balanceCentavos:1000},
 ];
-assert.deepEqual(expenseWalletChoices(wallets).map(w=>w.id),['cash','bank']);
+assert.deepEqual(expenseWalletChoices(wallets).map(w=>w.id),['bank','cash']);
 assert.equal(expenseAvailable(wallets[0],{type:'expense',walletId:'bank',amountCentavos:200}),1200);
 assert.equal(expenseAvailable(wallets[0],{type:'income',walletId:'bank',amountCentavos:200}),800);
 assert.equal(expenseAvailable(wallets[0],{type:'expense',walletId:'cash',amountCentavos:200}),1000);

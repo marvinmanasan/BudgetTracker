@@ -1,10 +1,13 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
+import { useBulsaTheme } from './use-bulsa-theme';
+import { orderWallets } from '../lib/wallet-order';
 import { getLedger } from '../storage/wallets';
 import { deriveBalances } from '../lib/ledger';
 import type { Ledger } from '../types/wallet';
 
 export function useLedger() {
+  const { preferences } = useBulsaTheme();
   const [data, setData] = useState<Ledger | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -21,7 +24,10 @@ export function useLedger() {
     } finally { if (current === request.current) setLoading(false); }
   }, []);
   useFocusEffect(useCallback(() => { void reload(); return () => { request.current++; }; }, [reload]));
-  const balances = useMemo(() => data ? deriveBalances(data) : null, [data]);
+  const ledgerBalances = useMemo(() => data ? deriveBalances(data) : null, [data]);
+  const balances = useMemo(() => ledgerBalances && ({
+    ...ledgerBalances, wallets: orderWallets(ledgerBalances.wallets, preferences.walletOrder),
+  }), [ledgerBalances, preferences.walletOrder]);
   return { data, balances, error, loading, reload };
 }
 
@@ -46,5 +52,5 @@ export function useSaveAction() {
     catch (cause) { if (focused.current && version === focusVersion.current) setError(cause instanceof Error ? cause.message : 'Could not save. Your fields are still here.'); return false; }
     finally { pending.current = false; if (focused.current) setBusy(false); }
   }
-  return { busy, error, run };
+  return { busy, error, run, clearError: () => setError('') };
 }

@@ -6,7 +6,6 @@ import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { BulsaScreen } from '../components/bulsa-screen';
 import { BulsaButton } from '../components/bulsa-button';
 import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
-import { MoneyReview } from '../components/money-review';
 import { useLedger, useSaveAction } from '../hooks/use-ledger';
 import { transferPreview } from '../lib/transfers';
 import { newRecordId } from '../lib/form-money';
@@ -31,8 +30,7 @@ export default function TransferScreen() {
   const [validation, setValidation] = useState('');
   const visibleWallets = balances?.wallets.filter(w => !w.hidden) ?? [];
   const requiredAmount = parseAmountToCentavos(amount) ?? 1;
-  const priority = (wallet: (typeof visibleWallets)[number]) => !wallet.configured ? 1 : picker === 'from' && wallet.balanceCentavos < requiredAmount ? 2 : 0;
-  const choices = visibleWallets.filter(w => w.id !== (picker === 'from' ? to : from)).sort((a, b) => priority(a) - priority(b));
+  const choices = visibleWallets.filter(w => w.id !== (picker === 'from' ? to : from));
   const names = new Map(balances?.wallets.map(w => [w.id, w.name]));
   useFocusEffect(useCallback(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -72,18 +70,13 @@ export default function TransferScreen() {
       <Text accessible={false} style={[ui.body, { color: C.accent }]}>›</Text>
     </Pressable>;
   }
-  const configuredChoices = choices.filter(wallet => wallet.configured);
-  const setupChoices = choices.filter(wallet => !wallet.configured);
   if (picker) return <BulsaScreen key={picker} header={<BackButton disabled={busy} onPress={() => setPicker(null)} />}>
     <Text style={ui.title}>{picker === 'from' ? 'Transfer From' : 'Transfer To'}</Text>
     {loading || readError || !data || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
       <Text style={ui.caption}>{picker === 'from' ? 'Choose the wallet the money came from.' : 'Choose the wallet that received the money. Its balance can be ₱0.'}</Text>
       {!choices.length && <Text style={ui.body}>No other visible wallet is available. Add a wallet to record this transfer.</Text>}
-      {!!configuredChoices.length && <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{configuredChoices.map(walletRow)}</View>}
-      {!!setupChoices.length && <>
-        <View style={{ gap: 4 }}><Text style={ui.heading}>Set Up Another Wallet</Text><Text style={ui.caption}>Enter its balance before this transfer, then return to select it. If it was empty, use ₱0.</Text></View>
-        <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{setupChoices.map(walletRow)}</View>
-      </>}
+      {choices.length > 0 && <View style={[ui.card, { padding: 0, gap: 0, overflow: 'hidden' }]}>{choices.map(walletRow)}</View>}
+      {choices.some(w => !w.configured) && <Text style={ui.caption}>To use a new wallet, set its starting balance first. If it was empty, use ₱0.</Text>}
       <BulsaButton secondary title="Add Wallet" disabled={busy} onPress={() => router.push('/wallets/add')} />
     </>}
   </BulsaScreen>;
@@ -91,14 +84,27 @@ export default function TransferScreen() {
     <Text style={ui.title}>{'Transfer Money Between Wallets'}</Text>
     <Text style={ui.caption}>Record money you already moved from one account to another. Bulsa updates your records only.</Text>
     {loading || readError || !data || !balances ? <ReadState loading={loading} error={readError} retry={() => void reload()} /> : <>
-    {review && <CenteredPopup onClose={() => setReview(null)} busy={busy}><Text style={ui.title}>Review Transfer</Text>
-      <Text style={ui.heading}>{names.get(from)} → {names.get(to)}</Text><Text style={ui.body}>{formatCentavos(review.record.amountCentavos)} · {displayDate(review.record.date)}</Text>
-      {!!review.record.note && <Text style={ui.body}>{review.record.note}</Text>}
-      <MoneyReview {...review.effects} walletIds={[from, to]} />
-      <Text style={ui.caption}>This records a transfer, not income or spending. Crossing included/excluded wallets can change Total Budget. Bulsa does not move real money.</Text>
+    {review && <CenteredPopup onClose={() => setReview(null)} busy={busy} footer={<>
       <BulsaButton title={busy ? 'Saving…' : 'Confirm Transfer'} disabled={busy} onPress={() => void save()} />
-      {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       <BulsaButton secondary title="Keep Editing" disabled={busy} onPress={() => setReview(null)} />
+    </>}><Text style={ui.title}>Review Transfer</Text>
+      <Text style={ui.heading}>{formatCentavos(review.record.amountCentavos)} from {names.get(from)} to {names.get(to)}.</Text>
+      {([['From', from], ['To', to]] as const).map(([label, id]) => <View key={id} style={ui.card}>
+        <Text style={ui.caption}>{label}</Text><Text style={ui.heading}>{names.get(id)}</Text>
+        <Text style={ui.body}>{formatCentavos(review.effects.before.wallets.find(w => w.id === id)!.balanceCentavos)} → {formatCentavos(review.effects.after.wallets.find(w => w.id === id)!.balanceCentavos)}</Text>
+      </View>)}
+      <Text style={ui.heading}>Total Budget</Text>
+      <Text style={ui.body}>{review.effects.before.totalCentavos === review.effects.after.totalCentavos
+        ? `Total Budget stays at ${formatCentavos(review.effects.after.totalCentavos)}.`
+        : `${formatCentavos(review.effects.before.totalCentavos)} → ${formatCentavos(review.effects.after.totalCentavos)}`}</Text>
+      {review.effects.before.totalCentavos !== review.effects.after.totalCentavos && <Text style={ui.caption}>
+        {review.effects.after.totalCentavos > review.effects.before.totalCentavos
+          ? 'Total Budget increases because money moves from an excluded wallet into an included wallet.'
+          : 'Total Budget decreases because money moves from an included wallet into an excluded wallet.'}
+      </Text>}
+      <Text style={ui.caption}>{displayDate(review.record.date)}</Text>
+      {!!review.record.note && <Text style={ui.body}>{review.record.note}</Text>}
+      {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
     </CenteredPopup>}
       <BulsaButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('from')} />
       <BulsaButton secondary title={`To: ${names.get(to) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('to')} />
