@@ -7,7 +7,7 @@ const Tabs=Object.assign(()=>{}, {Screen:'Tab'}),Stack=Object.assign(()=>{}, {Sc
 const mocks={
  'react/jsx-runtime':jsx,react:{useCallback:fn=>fn,useRef(value){const i=cursor++;return slots[i]??={current:value};},useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return [slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v;}];}},
  'expo-router':{Tabs,Stack,router:{push(){throw Error('The imperative router is unavailable before the first render has finished.');}},useRouter:()=>scopedRouter,useFocusEffect(fn){onFocus=fn;},useLocalSearchParams:()=>({})},
- 'react-native':{Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',StyleSheet:{create:x=>x}},
+ 'react-native':{Platform:{OS:'android'},Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',StyleSheet:{create:x=>x}},
  'expo-image':{Image:'Image'},'react-native-safe-area-context':{useSafeAreaInsets:()=>({bottom:0})},
  'hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{},dark:false}),useBulsaStyles:()=>({})},
  'components/bulsa-form':{BackButton:'Back',ReadState:'Read',useUI:()=>({})},'components/bulsa-button':{BulsaButton:'Button'},'components/bulsa-screen':{BulsaScreen:'Screen'},
@@ -18,6 +18,27 @@ function load(p){let m={exports:{}};let c=ts.transpileModule(fs.readFileSync(p,'
 const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children)]:[];
 const tabs=load('src/components/bulsa-tabs.tsx').default();
 assert.deepEqual(nodes(tabs).filter(n=>n.type==='Tab').map(n=>n.props.options.title),['Overview','Wallets','Budgets','Activity']);
+const routes = nodes(tabs).filter(n => n.type === 'Tab').map(n => ({key:n.props.name, name:n.props.name, options:n.props.options}));
+const adaptiveBar = tabs.props.tabBar({
+  state:{routes,index:1}, descriptors:Object.fromEntries(routes.map(route => [route.key, route])),
+  emitter:{emit:()=>({defaultPrevented:false})}, navigateToTab:key=>nav.push(key), insets:{left:0,right:0,bottom:24},
+});
+mocks.react.useEffect = () => {};
+mocks['react-native'].Keyboard = {isVisible:()=>false};
+for (const [width,fontScale,expectedWidth] of [[320,1,'25%'],[320,2,'50%'],[411,1,'25%']]) {
+  mocks['react-native'].useWindowDimensions = () => ({width,fontScale});
+  cursor=0; slots=[];
+  const bar = nodes(adaptiveBar.type(adaptiveBar.props));
+  assert.equal(bar.filter(n => n.props.style?.width === expectedWidth).length, 4);
+  const buttons = bar.filter(n => n.props.accessibilityRole === 'tab');
+  assert.deepEqual(buttons.map(n => n.props.accessibilityLabel), ['Overview','Wallets','Budgets','Activity']);
+  assert.deepEqual(buttons.map(n => n.props.accessibilityState.selected), [false,true,false,false]);
+  buttons[1].props.onPress();
+  buttons[3].props.onPress();
+  assert.deepEqual(nav, ['activity']);
+  nav=[];
+}
+cursor=0; slots=[];
 const file='src/app/(tabs)/wallets.tsx';
 const Wallets=load(file).default;let tree=Wallets();assert.equal(tree.props.header,undefined,'Wallets tab root has no misleading Back button');
 const list=nodes(tree);const transfer=list.find(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Transfer Money Between Wallets');assert(transfer);const total=list.find(n=>n.type==='Text'&&n.props.children==='Total Budget');assert(list.indexOf(transfer)<list.indexOf(total),'Transfer is reachable before wallet cards');
