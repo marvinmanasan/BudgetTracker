@@ -3,7 +3,7 @@ const load=require('./load-typescript.cjs').createLoader();const {deriveBalances
 let slots=[],cursor=0,routes=[],written=[],loading=false,readError='';
 let ledger={wallets:[{id:'mari',name:'MariBank',included:true,hidden:false},{id:'go',name:'GoTyme',included:true,hidden:false}],transactions:[],transfers:[],changes:[{id:'open-mari',walletId:'mari',kind:'opening',deltaCentavos:100000,date:'2026-11-13',reason:'Starting balance',targetCentavos:null}]};
 const jsx={jsx:(type,props,key)=>({type,props,key}),jsxs:(type,props,key)=>({type,props,key})};
-const mocks={react:{useRef:value=>({current:value}),useCallback:f=>f,useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',Pressable:'WalletRow',BackHandler:{addEventListener:()=>({remove(){}})}},'expo-router':{useRouter:()=>({push:r=>routes.push(r),replace:r=>routes.push(r)}),useFocusEffect(){}},'../components/centered-popup':{CenteredPopup:'Popup'},'../components/bulsa-screen':{BulsaScreen:'Screen'},'../components/bulsa-button':{BulsaButton:'Button'},'../components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'Read',useUI:()=>({})},'../components/money-review':{MoneyReview:'Money'},'../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{track:'#777',accent:'#aaa'}})},'../hooks/use-ledger':{useLedger:()=>({data:ledger,balances:deriveBalances(ledger),loading,error:readError,reload:async()=>{}}),useSaveAction:()=>({busy:false,error:'',run:async f=>{await f();return true;}})},'../storage/wallets':{recordTransfer:async r=>written.push(r)}};
+const mocks={react:{useMemo(fn,deps){const i=cursor++,previous=slots[i];if(previous&&deps.every((v,j)=>Object.is(v,previous.deps[j])))return previous.value;const value=fn();slots[i]={deps,value};return value;},useRef:value=>({current:value}),useCallback:f=>f,useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',Pressable:'WalletRow',BackHandler:{addEventListener:()=>({remove(){}})}},'expo-router':{useRouter:()=>({push:r=>routes.push(r),replace:r=>routes.push(r)}),useFocusEffect(){}},'../components/centered-popup':{CenteredPopup:'Popup'},'../components/bulsa-screen':{BulsaScreen:'Screen'},'../components/bulsa-button':{BulsaButton:'Button'},'../components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'Read',useUI:()=>({})},'../components/money-review':{MoneyReview:'Money'},'../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{track:'#777',accent:'#aaa'}})},'../hooks/use-ledger':{useLedger:()=>({data:ledger,balances:deriveBalances(ledger),loading,error:readError,reload:async()=>{}}),useSaveAction:()=>({busy:false,error:'',run:async f=>{await f();return true;}})},'../storage/wallets':{recordTransfer:async r=>written.push(r)}};
 for(const n of ['transfers','form-money','money','display-date','validation'])mocks['../lib/'+n]=load('src/lib/'+n+'.ts');
 const m={exports:{}};const c=ts.transpileModule(fs.readFileSync('src/app/transfer.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+c+'})')(n=>{assert(n in mocks,n);return mocks[n]},m,m.exports);
 const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children),...nodes(t.props?.footer)]:[];const render=()=>{cursor=0;return m.exports.default();};const button=(t,title)=>nodes(t).find(n=>(n.type==='Button'&&n.props.title===title)||(n.type==='WalletRow'&&n.props.accessibilityLabel===title));const field=(t,label)=>nodes(t).find(n=>n.type==='Field'&&n.props.label===label);
@@ -20,6 +20,9 @@ const entryMocks = {
   '../storage/transactions': { saveTransaction: async row => written.push(row) },
 };
 for (const name of ['expense-wallets', 'editing', 'ledger']) entryMocks['../lib/'+name] = load('src/lib/'+name+'.ts');
+let monthlyScans=0;
+const realMonthlyTotals=entryMocks['../lib/ledger'].monthlyTotals;
+entryMocks['../lib/ledger']={...entryMocks['../lib/ledger'],monthlyTotals(...args){monthlyScans++;return realMonthlyTotals(...args);}};
 const entryModule = { exports: {} };
 const compiled = ts.transpileModule(entrySource, { compilerOptions: {
   module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX,
@@ -32,12 +35,19 @@ async function checkIncomeSetup() {
     cursor = 0;
     return entryModule.exports.EntryFields({initialType:'income',ledger:entryMocks['../hooks/use-ledger'].useLedger()});
   }
+  monthlyScans=0;
   let tree = form();
   field(tree,'Amount (PHP)').props.onChangeText('200.50');
   field(tree,'Date (MM-DD-YYYY)').props.onChangeText('11-13-2026');
   nodes(tree).find(n => n.type === 'Category').props.onChange('Bonus');
   button(tree,'More Details · Optional').props.onPress();
   field(form(),'Note · Optional').props.onChangeText('My Note');
+  assert.equal(monthlyScans,1,'Amount, note and same-month date edits reuse the calculated monthly spending');
+  field(form(),'Date (MM-DD-YYYY)').props.onChangeText('12-01-2026');form();
+  assert.equal(monthlyScans,2,'Changing the transaction month recalculates spending');
+  field(form(),'Date (MM-DD-YYYY)').props.onChangeText('11-13-2026');form();
+  assert.equal(monthlyScans,3,'Returning to the original month recalculates the correct total');
+
   button(form(),'Wallet: General  ›').props.onPress();
   const setup = () => nodes(form()).find(n => n.props.accessibilityRole === 'radio' && nodes(n).some(t => t.props.children?.[0] === 'Set Up Cash'));
   setup().props.onPress();

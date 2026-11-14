@@ -11,7 +11,7 @@ import { BulsaButton } from '@/components/bulsa-button';
 import { Field, ReadState, useUI } from '@/components/bulsa-form';
 import { ActivityAmount } from '@/components/activity-amount';
 import { useLedger, useSaveAction } from '@/hooks/use-ledger';
-import { filterActivitySections, type ActivityFilters, type ActivityRow } from '@/lib/activity';
+import { activitySections, filterActivityList, type ActivityFilters, type ActivityRow } from '@/lib/activity';
 import { ActivityFilterPanel } from '@/components/activity-filters';
 import { useTransactionUndo } from '@/hooks/use-transaction-undo';
 import { UndoNotice } from '@/components/undo-notice';
@@ -31,7 +31,6 @@ export default function Activity() {
   const [month, setMonth] = useState('');
   const [expanded, setExpanded] = useState(false);
   const monthKey = month || undefined;
-  const monthError = '';
   const undo = useTransactionUndo();
   const list = useRef<SectionList<ActivityRow>>(null);
   const [notice, setNotice] = useState('');
@@ -63,7 +62,8 @@ export default function Activity() {
   const [draftMonth, setDraftMonth] = useState('');
   const [clearWallet, setClearWallet] = useState(false);
   function openFilters() { setNotice(''); setDraftFilters({ ...filters }); setDraftMonth(month); setClearWallet(false); setExpanded(true); }
-  const sections = useMemo(() => data && !monthError ? filterActivitySections(data, { ...filters, query, wallet, month: monthKey }) : [], [data, filters, query, wallet, monthKey, monthError]);
+  const records = useMemo(() => data ? activitySections(data, wallet) : [], [data, wallet]);
+  const sections = useMemo(() => filterActivityList(records, { ...filters, query, month: monthKey }), [records, filters, query, monthKey]);
 
   const matchingIds = useMemo(() => sections.flatMap(section => section.data.filter(item => item.type === 'expense' || item.type === 'income').map(item => item.key.slice('transaction-'.length))), [sections]);
   const matchingSet = useMemo(() => new Set(matchingIds), [matchingIds]);

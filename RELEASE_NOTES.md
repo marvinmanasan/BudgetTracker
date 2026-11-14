@@ -72,6 +72,15 @@ Updated November 15, 2026. These notes cover the source changes since v1.0.0. Ve
 - Upgrade checks cover existing records, wallet identifiers, custom choices, settings and derived balances.
 - Stored integer-centavo calculations and wallet inclusion rules are preserved.
 
+## Performance
+
+- Activity reuses its sorted record list while search text and other filters change.
+- Opening a single record skips building global ordering metadata.
+- Transaction drafts reuse monthly spending totals until the month or ledger changes.
+- Result-equivalence checks preserved wallet scope, filters, record ordering and unchanged source data.
+- A paired Windows Node benchmark with 20,000 records measured seven search updates at a median 441.79 ms before and 65.01 ms after. Single-record detail logic measured 5.81 ms before and 0.39 ms after.
+- The comparable production JavaScript export grew by 366 bytes, from 2,854,710 to 2,855,076 bytes. Phone frame rate, memory and APK-size measurements remain for native acceptance.
+
 ## Verification Recorded
 
 - All 43 automated check scripts, Expo lint, TypeScript and Android JavaScript export passed.
@@ -81,6 +90,7 @@ Updated November 15, 2026. These notes cover the source changes since v1.0.0. Ve
 - Android 16 Expo Go checks confirmed transfer/inclusion effects, the final ₱375.75 total and ₱50.25 Over Limit. Temporary test records were removed by restoring the saved original ledger.
 - Six tab-layout captures at 320/411 layout units and 100%/150%/200% text showed readable labels and minimum touch targets.
 - Icons were checked in Light, Dark and System with both system appearances.
+- The optimized Activity search and Clear Filters passed an Expo Go smoke test without writing financial records.
 - The navigation crash was reproduced on the original signed 1.1.0 build 3. A locally signed QA APK passed repeated 100%–200% changes, rapid presses, Back and cold-launch checks with all 58 fictional fixture rows preserved.
 
 ## Remaining Android Release Checks
@@ -89,7 +99,8 @@ Updated November 15, 2026. These notes cover the source changes since v1.0.0. Ve
 - Verify in-place upgrade, offline force-stop/relaunch and Android reboot on that APK.
 - Restore a populated saved file into a clean Android installation and compare all financial tables and balances.
 - Complete large-text transfer-review checks and the final native category-error check. Earlier automation was interrupted or could not establish the result.
-- Listen to TalkBack errors, labels and selected-state announcements.
+- Listen to TalkBack errors, labels and selected-state announcements; finish large-text field focus and last-row scroll reachability.
+- Complete the native Cash setup/double-save/duplicate-name trials and the Activity transfer → adjustment → delete → tab change → Undo journey.
 - Finish physical-phone animation/touch checks, reduced-motion acceptance and a first-time usability test.
 
 These checks remain open until their actual outcomes are recorded. Local plans, QA screenshots, financial fixtures and signing material are kept outside the public repository.

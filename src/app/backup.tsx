@@ -5,6 +5,7 @@ import { BackButton, Field, useUI } from '../components/bulsa-form';
 import { BulsaButton } from '../components/bulsa-button';
 import { BulsaScreen } from '../components/bulsa-screen';
 import { useTransactionUndo } from '../hooks/use-transaction-undo';
+import { displayDate } from '../lib/display-date';
 import { backupCounts, type FinancialBackup } from '../lib/backup';
 import { pickFinancialBackup, saveFinancialBackup, savesToFolder, shareFinancialBackup } from '../services/backup-files';
 import { latestRestoreSafetyCopy, readRestoreSafetyCopy, saveRestoreSafetyCopy } from '../services/restore-safety';
@@ -71,7 +72,7 @@ export default function BackupScreen() {
     {preview && <View style={ui.card}>
       <Text style={ui.heading}>Review Replacement</Text>
       <Text style={ui.body}>This replaces all current financial records. It does not merge them. A safety copy of your current records will be saved on this device before replacement. If that fails, nothing will be replaced. Export a separate copy before uninstalling Bulsa.</Text>
-      <Text style={ui.caption}>Backup created: {preview.incoming.createdAt}</Text>
+      <Text style={ui.caption}>Backup Created · {displayDate(preview.incoming.createdAt.slice(0, 10))} · {preview.incoming.createdAt.slice(11, 19)} UTC</Text>
       {backupCounts(preview.incoming).map(({ table, count }) => <Text key={table} style={ui.body}>{labels[table]}: {preview.current.tables[table].length} current → {count} from backup</Text>)}
       <Field label="Type RESTORE to Confirm" value={confirmation} onChangeText={setConfirmation} editable={!busy} autoCapitalize="characters" autoCorrect={false} />
       <BulsaButton title="Replace Financial Records" disabled={busy || pendingUndo || confirmation !== 'RESTORE'} onPress={() => void run(async () => {

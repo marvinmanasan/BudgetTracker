@@ -1,6 +1,6 @@
 import { CenteredPopup } from './centered-popup';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { type ComponentRef, useCallback, useRef, useState } from 'react';
+import { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Alert, BackHandler, Keyboard, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { BackButton, Field, ReadState, useUI } from './bulsa-form';
 import { CategoryPicker } from './category-picker';
@@ -114,7 +114,7 @@ export function EntryFields({ original: incoming, ledger, initialType = 'expense
 
   let entryMonth: string | undefined;
   try { entryMonth = parseDisplayDate(date).slice(0, 7); } catch { /* Validation is shown when saving. */ }
-  const monthSpent = data && entryMonth ? monthlyTotals(data, entryMonth).expenseCentavos : 0;
+  const monthSpent = useMemo(() => data && entryMonth ? monthlyTotals(data, entryMonth).expenseCentavos : 0, [data, entryMonth]);
   const draftAmount = parseAmountToCentavos(amount);
   const previousEffect = original?.type === 'expense' && entryMonth && original.date.startsWith(entryMonth + '-') ? original.amountCentavos : 0;
   const projectedAmount = draftAmount === null ? undefined : Number(BigInt(monthSpent) - BigInt(previousEffect) + BigInt(draftAmount));

@@ -104,7 +104,7 @@ export default function ArrangeWallets() {
           <Text style={styles.position}>{index + 1}</Text>
           <View style={styles.name}>
             <Text style={styles.walletName}>{wallet.name}</Text>
-            {wallet.id === cashWalletId && <Text style={ui.caption}>Always first</Text>}
+            {wallet.id === cashWalletId && <Text style={ui.caption}>Always First</Text>}
           </View>
         </View>
         {wallet.id !== cashWalletId && <View accessible accessibilityRole="adjustable"
