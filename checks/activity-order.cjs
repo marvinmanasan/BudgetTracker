@@ -128,7 +128,7 @@ async function main() {
     assert.equal((await keys())[0], 'transaction-after-highwater-repair', 'A healthy restore repairs an oversized old counter without changing money rules');
     let db = await load('src/storage/database.ts').openDatabase(name);
     const moneyBefore = await wallets.getLedger(name); delete moneyBefore.activityOrder;
-    await db.execAsync('DROP TRIGGER activity_transactions_added; DROP TRIGGER activity_transfers_added; DROP TRIGGER activity_changes_added; DROP TRIGGER activity_transfers_removed; DROP TRIGGER activity_changes_removed; DROP TABLE activity_order; PRAGMA user_version=5');
+    await db.execAsync('DROP TABLE budget_periods; ALTER TABLE savings_goals DROP COLUMN deadline; DROP TRIGGER activity_transactions_added; DROP TRIGGER activity_transfers_added; DROP TRIGGER activity_changes_added; DROP TRIGGER activity_transfers_removed; DROP TRIGGER activity_changes_removed; DROP TABLE activity_order; PRAGMA user_version=5');
     await db.closeAsync();
     load = fresh(); failMigration = true;
     await assert.rejects(load('src/storage/database.ts').openDatabase(name), /order migration interrupted/);
@@ -137,10 +137,10 @@ async function main() {
     assert.equal(inspect.prepare("SELECT name FROM sqlite_master WHERE name='activity_order'").get(), undefined, 'Failed migration rolls table, triggers and metadata back');
     inspect.close(); failMigration = false;
     db = await load('src/storage/database.ts').openDatabase(name);
-    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 6);
+    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 7);
     const migrated = await load('src/storage/wallets.ts').getLedger(name); delete migrated.activityOrder;
     assert.deepEqual(migrated, moneyBefore, 'Metadata migration never changes financial rows');
-    await db.execAsync('DROP TRIGGER activity_changes_removed; DROP TRIGGER activity_transfers_removed');
+    await db.execAsync('DROP TABLE budget_periods; ALTER TABLE savings_goals DROP COLUMN deadline; DROP TRIGGER activity_changes_removed; DROP TRIGGER activity_transfers_removed; PRAGMA user_version=6');
     await db.closeAsync();
     load = fresh();
     const reopened = await load('src/storage/wallets.ts').getLedger(name);

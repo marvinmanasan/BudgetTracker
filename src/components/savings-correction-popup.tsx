@@ -1,3 +1,4 @@
+import { BudgetCalendar } from './budget-calendar';
 import { useState } from 'react';
 import { Text } from 'react-native';
 import { CenteredPopup } from './centered-popup';
@@ -47,7 +48,7 @@ export function SavingsCorrectionPopup({ record, mode, onClose, onSaved }: { rec
       <Text style={ui.caption}>After</Text>{details(review)}
     </> : <>
       <Field label="Amount Saved (PHP)" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" editable={!busy} />
-      <Field label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} editable={!busy} />
+      <Field action={<BudgetCalendar label="Choose Date" value={date} disabled={busy} onChange={setDate} />} label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} editable={!busy} />
       <Field label="Note (Optional)" value={note} onChangeText={setNote} multiline editable={!busy} />
     </>}
     <Text style={ui.caption}>This does not move wallet money or change income, spending, or Total Budget.</Text>

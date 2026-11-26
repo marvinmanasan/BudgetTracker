@@ -10,7 +10,7 @@ const mocks = {
   'react-native': { Text:'Text', BackHandler: {addEventListener: () => ({remove(){}})} },
   'expo-router': {useRouter:()=>({back(){backs++;}}), useFocusEffect(){}},
   './bulsa-screen': {BulsaScreen:'Screen'}, './bulsa-button':{BulsaButton:'Button'},
-  './bulsa-form': {BackButton:'Back', Field:'Field', ReadState:'ReadState', useUI:()=>({})},
+  './budget-calendar':{BudgetCalendar:'Calendar'},'./bulsa-form': {BackButton:'Back', Field:'Field', ReadState:'ReadState', useUI:()=>({})},
   '../hooks/use-ledger': {useSaveAction: () => ({busy, error:'', run: async work => { try { await work(); return true; } catch { return false; } }})},
   '../storage/savings': {saveSavingsGoal: async record => {if(fail) throw Error('write failed'); writes.push(record);}, recordSavingsContribution: async record => {if(fail) throw Error('write failed'); writes.push(record);}},
 };

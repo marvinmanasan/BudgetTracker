@@ -1,3 +1,4 @@
+import { PeriodSummary } from '@/components/period-summary';
 import type { BulsaColors } from '@/constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '@/hooks/use-bulsa-theme';
 import { FirstUse } from '@/components/first-use';
@@ -6,26 +7,25 @@ import { useRouter } from 'expo-router';
 import { Pressable, Text, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { BulsaScreen } from '@/components/bulsa-screen';
 import { BulsaButton } from '@/components/bulsa-button';
-import { SummaryCard } from '@/components/summary-card';
-import { MonthlyLimitNotice } from '@/components/monthly-limit-notice';
+import { SpendingPlanPreview } from '@/components/spending-plan-preview';
 import { SavingsPreview } from '@/components/savings-preview';
 import { ReadState, useUI } from '@/components/bulsa-form';
 
 import { useLedger } from '@/hooks/use-ledger';
 import { monthlyTotals } from '@/lib/ledger';
 import { formatCentavos } from '@/lib/money';
-import { localDate } from '@/lib/validation';
-import { monthName } from '@/lib/display-date';
+import { useCurrentDate } from '@/hooks/use-current-date';
 
 export default function Index() {
   const router = useRouter();
+  const today = useCurrentDate();
   const { width, fontScale } = useWindowDimensions();
   const stackActions = Math.min(width, 600) - 48 < 8 + 2 * (20 + 100 * fontScale);
   const ui = useUI();
   const styles = useBulsaStyles(createStyles);
   const { preferences } = useBulsaTheme();
   const { data, balances, loading, error, reload } = useLedger();
-  const totals = data ? monthlyTotals(data, localDate().slice(0, 7)) : null;
+  const totals = data ? monthlyTotals(data, today.slice(0, 7)) : null;
   if (data && balances && !loading && !error && needsIntroduction(preferences.onboardingComplete, data)) return <FirstUse wallets={balances.wallets} />;
   return <BulsaScreen>
     <View style={styles.topBar}>
@@ -57,9 +57,8 @@ export default function Index() {
         <Text style={ui.body}>Add the money you have before recording transactions. Entries without a wallet go to General.</Text>
         <BulsaButton title="Set Up Wallets" onPress={() => router.push('/wallets')} />
       </View>}
-      <MonthlyLimitNotice compact month={localDate().slice(0, 7)} spent={totals.expenseCentavos} />
-      <Text style={ui.heading}>This Month · {monthName(localDate().slice(0, 7))}</Text>
-      <View style={styles.summary}><SummaryCard label="Income" tone="income" amountCentavos={totals.incomeCentavos} /><SummaryCard label="Expenses" tone="expense" amountCentavos={totals.expenseCentavos} /></View>
+      <SpendingPlanPreview data={data!} month={today.slice(0, 7)} spent={totals.expenseCentavos} />
+      <PeriodSummary data={data!} />
       <Pressable style={styles.settings} accessibilityRole="button" onPress={() => router.push('/wallets')}><Text style={styles.settingsText}>View Wallets ›</Text></Pressable>
       <SavingsPreview />
     </>}
@@ -74,12 +73,11 @@ const createStyles = (C: BulsaColors) => StyleSheet.create({
   stacked: { flexDirection: 'column' },
   action: { flexGrow: 1, flexBasis: 0, minHeight: 48, paddingHorizontal: 8, paddingVertical: 10, justifyContent: 'center', alignItems: 'center', borderColor: C.accent, borderWidth: 1, borderRadius: 16, backgroundColor: C.accent },
   stackedAction: { flexBasis: 'auto' },
-  outline: { backgroundColor: C.surface },
+  outline: { backgroundColor: C.soft },
   actionText: { fontSize: 16, fontWeight: '600', color: C.onAccent, textAlign: 'center' },
   outlineText: { color: C.accent },
   pressed: { opacity: 0.75 },
   hero: { backgroundColor: C.summary, borderRadius: 20, padding: 20, gap: 8 },
   label: { color: C.summaryMuted, fontSize: 14, lineHeight: 21 },
   total: { color: C.onSummary, fontSize: 36, fontWeight: '700' },
-  summary: { flexDirection: 'row', gap: 12 },
 });

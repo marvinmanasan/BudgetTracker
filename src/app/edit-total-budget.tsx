@@ -7,7 +7,7 @@ import { BulsaScreen } from '../components/bulsa-screen';
 import { BulsaButton } from '../components/bulsa-button';
 import { BackButton, Field, ReadState, useUI } from '../components/bulsa-form';
 import { MoneyReview } from '../components/money-review';
-import { totalBudgetPreview } from '../lib/total-budget';
+import { totalBudgetPreview, adjustmentTarget, type AdjustmentMode } from '../lib/total-budget';
 import { newRecordId, parseBalance } from '../lib/form-money';
 import { formatCentavos } from '../lib/money';
 import { localDate } from '../lib/validation';
@@ -19,6 +19,7 @@ export default function EditTotalBudget() {
   const { data, balances, loading, error: readError, reload } = useLedger();
   const { busy, error, run } = useSaveAction();
   const [target, setTarget] = useState('');
+  const [mode, setMode] = useState<AdjustmentMode>('add');
   const [walletId, setWalletId] = useState('');
   const [reason, setReason] = useState('');
   const [validation, setValidation] = useState('');
@@ -34,9 +35,10 @@ export default function EditTotalBudget() {
   function prepare() {
     try {
       const amount = parseBalance(target);
-      if (!data || amount === null) throw new Error('Enter a Total Budget with up to two decimal places. Zero and negative values are allowed.');
+      if (!data || amount === null) throw new Error(mode === 'exact' ? 'Enter a balance with up to two decimal places. Zero and negative values are allowed.' : 'Enter an amount above zero with up to two decimal places.');
       if (!reason.trim()) throw new Error('Enter a reason for this correction.');
-      setReview(totalBudgetPreview(data, walletId, amount)); setValidation('');
+      if (!balances) throw new Error('Wait for your balances to load.');
+      setReview(totalBudgetPreview(data, walletId, adjustmentTarget(balances.totalCentavos, amount, mode))); setValidation('');
     } catch (cause) { setValidation(cause instanceof Error ? cause.message : 'Check your fields.'); }
   }
   async function save() {
@@ -58,8 +60,10 @@ export default function EditTotalBudget() {
     <>
       <Text style={ui.body}>Current Total Budget: {formatCentavos(balances.totalCentavos)}</Text>
       {!eligible.length ? <><Text style={ui.body}>Set a starting balance and include a wallet before correcting Total Budget.</Text><BulsaButton title="Manage Wallets" onPress={() => router.push('/wallets')} /></> : <>
-        <Field label="New Total Budget (PHP)" value={target} onChangeText={setTarget} placeholder="0.00" keyboardType="numbers-and-punctuation" editable={!busy} />
-        <Text style={ui.heading}>Wallet Receiving the Difference</Text>
+        <View style={ui.row}>{(['add', 'subtract', 'exact'] as const).map(option => <BulsaButton key={option} secondary selected={mode === option} title={option === 'add' ? 'Add Amount' : option === 'subtract' ? 'Subtract Amount' : 'Set Exact Balance'} disabled={busy} onPress={() => { setMode(option); setValidation(''); }} />)}</View>
+        <Field label={mode === 'exact' ? 'New Total Budget (PHP)' : mode === 'add' ? 'Amount to Add (PHP)' : 'Amount to Subtract (PHP)'} value={target} onChangeText={setTarget} placeholder="0.00" keyboardType="numbers-and-punctuation" editable={!busy} />
+        <Text style={ui.caption}>Correct your recorded balance here. To record money received or spent, use Add Income or Add Expense.</Text>
+        <Text style={ui.heading}>Wallet to Adjust</Text>
         {eligible.map(w => <View key={w.id} style={walletId === w.id ? ui.soft : ui.card}><BulsaButton secondary={walletId !== w.id} title={w.name + (w.hidden ? ' · Hidden' : '') + (walletId === w.id ? ' · Selected' : '')} disabled={busy} onPress={() => setWalletId(w.id)} /><Text style={ui.caption}>{formatCentavos(w.balanceCentavos)} · Included in Total Budget</Text></View>)}
         <Field label="Reason" value={reason} onChangeText={setReason} editable={!busy} multiline />
         <Text style={ui.caption}>General, other wallets and your monthly spending limit stay unchanged.</Text>

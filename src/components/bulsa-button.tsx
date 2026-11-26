@@ -8,6 +8,7 @@ type BulsaButtonProps = {
   secondary?: boolean;
   disabled?: boolean;
   selected?: boolean;
+  destructive?: boolean;
 };
 
 export function BulsaButton({
@@ -16,6 +17,7 @@ export function BulsaButton({
   secondary = false,
   disabled = false,
   selected,
+  destructive = false,
 }: BulsaButtonProps) {
   const styles = useBulsaStyles(createStyles);
   return (
@@ -27,11 +29,13 @@ export function BulsaButton({
       style={({ pressed }) => [
         styles.button,
         secondary && styles.secondary,
+        selected && styles.selected,
+        destructive && styles.destructive,
         pressed && styles.pressed,
         disabled && styles.pressed,
       ]}
     >
-      <Text style={[styles.label, secondary && styles.secondaryLabel]}>
+      <Text style={[styles.label, secondary && styles.secondaryLabel, selected && styles.selectedLabel, destructive && styles.destructiveLabel]}>
         {title}
       </Text>
     </Pressable>
@@ -47,8 +51,12 @@ const createStyles = (LightColors: BulsaColors) => StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  secondary: { backgroundColor: LightColors.surface },
+  secondary: { backgroundColor: LightColors.soft, borderWidth: 1, borderColor: LightColors.accent },
+  selected: { borderWidth: 2, borderColor: LightColors.accent, backgroundColor: LightColors.selected },
+  destructive: { backgroundColor: LightColors.soft, borderWidth: 1, borderColor: LightColors.warning },
+  selectedLabel: { color: LightColors.text },
+  destructiveLabel: { color: LightColors.warning },
   pressed: { opacity: 0.75 },
-  label: { fontSize: 16, fontWeight: "600", color: LightColors.onAccent },
-  secondaryLabel: { color: LightColors.text },
+  label: { fontSize: 16, fontWeight: "600", textAlign: "center", color: LightColors.onAccent },
+  secondaryLabel: { color: LightColors.accent },
 });

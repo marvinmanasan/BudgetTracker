@@ -17,6 +17,7 @@ export default function Wallets() {
   const { colors: C } = useBulsaTheme();
   const styles = useBulsaStyles(createStyles);
   const { view } = useLocalSearchParams<{ view?: string }>();
+  const [about, setAbout] = useState(false);
   const [showHidden, setShowHidden] = useState(view === 'hidden');
   const [pendingFlags, setPendingFlags] = useState<Record<string, boolean>>({});
   const { balances, error, loading, reload } = useLedger();
@@ -53,18 +54,20 @@ export default function Wallets() {
       <Text style={ui.title}>{showHidden ? 'Hidden Wallets' : 'Wallets'}</Text>
       {!showHidden && <Pressable accessibilityRole="button" accessibilityLabel="Add Wallet" accessibilityState={{ disabled: busy }} disabled={busy} onPress={() => router.push('/wallets/add')} style={({ pressed }) => [styles.addWallet, (pressed || busy) && { opacity: 0.65 }]}><Text style={styles.addWalletLabel}>+ Add Wallet</Text></Pressable>}
     </View>
-    <Text style={ui.caption}>Recorded money, in one place. No bank connection.</Text>
     {!showHidden && <>
       <Pressable accessibilityRole="button" accessibilityLabel="Transfer Money Between Wallets" accessibilityHint="Choose where the money comes from and where it goes, then review the transfer." accessibilityState={{ disabled: transferDisabled }} disabled={transferDisabled} onPress={openTransfer} style={({ pressed }) => [styles.transferAction, (pressed || transferDisabled) && { opacity: 0.7 }]}>
         <View style={styles.transferIcon}><Text accessible={false} style={styles.transferSymbol}>⇄</Text></View>
         <View style={styles.transferText}><Text style={styles.transferTitle}>Transfer Money</Text><Text style={ui.caption}>From one wallet to another</Text></View>
         <Text accessible={false} style={styles.chevron}>›</Text>
       </Pressable>
-      <Text style={ui.caption}>Record a wallet transfer here. It does not count as income or spending.</Text>
     </>}
     {loading || error || !balances ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : <>
-      <View style={ui.soft}><Text style={ui.body}>Total Budget</Text><Text style={ui.money}>{formatCentavos(balances.totalCentavos)}</Text><Text style={ui.caption}>Included wallets + General. Separate from your monthly spending limit.</Text></View>
-      {!showHidden && <View style={ui.card}><Text style={ui.heading}>General · Always Included</Text><Text style={ui.money}>{formatCentavos(balances.generalCentavos)}</Text><Text style={ui.caption}>Transactions without a wallet. General can be negative and always counts in Total Budget.</Text></View>}
+      <View style={ui.soft}><Text style={ui.body}>Total Budget</Text><Text style={ui.money}>{formatCentavos(balances.totalCentavos)}</Text></View>
+      {!showHidden && balances.generalCentavos !== 0 && <View style={ui.row}><Text style={ui.body}>Unassigned Money</Text><Text style={ui.heading}>{formatCentavos(balances.generalCentavos)}</Text></View>}
+      {!showHidden && <>
+        <Pressable accessibilityRole="button" accessibilityState={{ expanded: about }} onPress={() => setAbout(value => !value)} style={ui.back}><Text style={ui.backLabel}>{about ? 'Hide Balance Details' : 'About Your Balances'}</Text></Pressable>
+        {about && <View style={ui.soft}><Text style={ui.body}>Total Budget includes your included wallets and entries saved without a wallet (General). Unassigned money can be negative. Spending limits are separate.</Text><Text style={ui.caption}>Bulsa records your money without a bank connection. Transfers move recorded money between wallets; they are not income or spending.</Text></View>}
+      </>}
       {!showHidden && <View style={styles.titleRow}>
         <Text accessibilityRole="header" style={ui.heading}>Your Wallets</Text>
         {balances.wallets.filter(w => !w.hidden && w.id !== 'wallet-cash').length > 1 &&

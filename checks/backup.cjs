@@ -9,7 +9,7 @@ const load = createLoader();
 const { validateBackup, parseBackup, serializeBackup, backupColumns, BACKUP_MAX_BYTES } = load('src/lib/backup.ts');
 const stamp = '2026-11-13 12:00:00';
 const fixture = {
-  format: 'bulsa-financial-backup', version: 1, createdAt: '2026-11-13T04:00:00.000Z',
+  format: 'bulsa-financial-backup', version: 2, createdAt: '2026-11-13T04:00:00.000Z',
   tables: {
     custom_choices: [{ id: 'custom-expense', kind: 'expense', name: 'Everything Else', nameKey: 'everything else' }, { id: 'custom-income', kind: 'income', name: '  Weekend Pay  ', nameKey: 'weekend pay' }],
     wallets: [{ id: 'cash', name: 'Cash', nameKey: 'cash', included: 1, hidden: 0, createdAt: stamp, updatedAt: stamp }, { id: 'bank', name: 'Bank', nameKey: 'bank', included: 0, hidden: 1, createdAt: stamp, updatedAt: stamp }],
@@ -18,7 +18,8 @@ const fixture = {
     transfers: [{ id: 'transfer', fromWalletId: 'cash', toWalletId: 'bank', amountCentavos: 30, date: '2026-11-12', note: '', createdAt: stamp }],
     monthly_limits: [{ month: '2026-11', limitCentavos: 5000 }],
     category_allocations: [{ month: '2026-11', category: 'Food', limitCentavos: 2000 }],
-    savings_goals: [{ id: 'goal', title: 'Emergency', targetCentavos: 10000 }],
+    budget_periods: [],
+    savings_goals: [{ id: 'goal', title: 'Emergency', targetCentavos: 10000, deadline: null }],
     savings_contributions: [{ id: 'saving', goalId: 'goal', amountCentavos: 300, date: '2026-11-12', note: '' }],
   },
 };
@@ -58,7 +59,7 @@ const copied = validateBackup(fixture);
 copied.tables.wallets[0].name = 'Changed';
 assert.equal(fixture.tables.wallets[0].name, 'Cash');
 const badCases = [
-  b => b.version = 2,
+  b => b.version = 3,
   b => b.tables.activity_order.pop(),
   b => b.tables.activity_order[0].sequence = 0,
   b => b.tables.activity_order[0].sequence = Number.MAX_SAFE_INTEGER + 1,
