@@ -197,18 +197,18 @@ The limit is a spending plan. It does not add money. Zero is allowed.
 ## Set category limits
 
 1. In **Budgets**, choose a month with a saved monthly limit.
-2. Tap **Edit Category Limits**.
+2. Tap **Set Category Limits** or **Edit Category Limits**.
 3. Under **Choose Category**, select a category and enter **Category Limit (PHP)**.
-4. Tap **Add or Update Allocation**. Repeat for other categories.
-5. Tap **Save Category Limits**.
+4. Tap **Save Category Limit** to save this category and return to Budgets.
+5. Reopen category limits to add or edit another category.
 
-Everything Else receives the unallocated allowance. Use Edit Allocation or Remove Allocation to change rows. Add or clear current input before saving. Named allocations cannot exceed the monthly limit.
+Everything Else receives the unallocated allowance. Use Edit Allocation to load a saved category, then Save Category Limit to save it. Remove Allocation removes its limit. Named allocations cannot exceed the monthly limit.
 
 ## View monthly-limit history
 
 1. In **Budgets**, tap **Monthly Limit History**.
 2. Read the saved months and limits.
-3. Tap a month's **Edit** button to change it, or **Refresh History** to reload.
+3. Tap **Edit** beside a saved month to change its limit. An unsuccessful read offers **Try Again**.
 
 When the current month has no limit, Bulsa can copy the immediately previous month's limit. Existing values, including zero, remain. Category allocations and unused allowance are not copied.
 
@@ -242,7 +242,7 @@ Progress updates from the corrected history. The savings goal, other contributio
 ## Backup and Restore
 
 1. Open **Settings**, then **Backup and Restore**.
-2. Tap **Export Financial Backup** and choose where to save or share the JSON file. Check that the destination saved it. Keep a copy outside the app.
+2. Tap **Save Backup to Device** and choose a destination, or use **Share Backup** to share the JSON file. Check that the destination saved it. Keep a copy outside the app.
 3. To restore, tap **Choose Backup to Restore** and select a supported Bulsa backup file.
 4. Read **Review Replacement** and compare the current and incoming record counts. Restore replaces records rather than merging them.
 5. Keep a separate external backup of your current records. Bulsa also saves a local safety copy before replacement.
@@ -261,7 +261,7 @@ Your saved name appears in the greeting. System follows the phone's appearance. 
 
 ## Reset selected records
 
-1. In **Activity**, tap **Reset Selected Data**.
+1. Open **Settings → Your Records → Reset Selected Data**.
 2. Choose **One Wallet**, **General** or **All Wallets**, and select the wallet if required.
 3. Choose the record kinds to remove.
 4. Tap **Preview Selection** and check the counts and balance effects.
