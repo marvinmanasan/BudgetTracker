@@ -2,7 +2,15 @@
 
 ## 1.2.0 — In Preparation (Android Build 5)
 
-Prepared November 27, 2026. This update brings the local Budgets and mobile-clarity work together. The published download remains 1.1.0/build 4 until a newly built APK is verified and uploaded. No 1.2.0 APK is claimed here yet.
+Prepared November 27, 2026. This update brings the local Budgets and mobile-clarity work together. The signed 1.2.0/build 5 APK has been built and attached to a draft GitHub release. The latest published release remains 1.1.0/build 4 until 1.2.0 is published.
+
+### Prepared Android APK
+
+- EAS build: [5b523a17-1b3d-4d08-8364-b3a3b962546c](https://expo.dev/accounts/marvinmanasan/projects/BudgetTracker/builds/5b523a17-1b3d-4d08-8364-b3a3b962546c).
+- Built app source: `166e78ef1cecc1d49a5bb7a98d0537436d753948`. Subsequent preparation changes affect documentation/ignore rules only.
+- APK: `Bulsa-1.2.0.apk`, 107,575,835 bytes. ZIP integrity passed.
+- SHA-256: `3481392ddc1c595a3f3f2afd1134aec09bb347a218d8f227f6a2e106c2c80059`. Draft GitHub upload digest matches this file; a matching checksum file is attached.
+- Bounded native observation: Dark Overview with the written-date segmented summary and retained total. Full accessibility/physical-device acceptance remains open below.
 
 ### Budgets and Savings
 
@@ -35,7 +43,9 @@ Prepared November 27, 2026. This update brings the local Budgets and mobile-clar
 
 - All 48 automated scripts, Expo lint, TypeScript and whitespace checks passed during preparation on November 27. A separate source review found no blocking defect. These results do not establish the pending APK/device checks.
 - Earlier local automated checks covered actual SQLite upgrades, rollback/retry, inclusive dates, overlap conflicts, backups, safe money and reviewed UI flows. Earlier emulator observations covered bounded plan flows and Light Overview/Wallets, not complete release acceptance.
-- Pending: new signed APK/build identity, signature continuity, in-place build-4 upgrade, backup-v2 picker restore and offline restart/reboot on that APK.
+- Signed APK package/version verified as com.marvinmanasan.bulsa, 1.2.0/build 5. Its signature verifies and release certificate matches build 4.
+- In-place build-4 upgrade preserved every one of 19 fictional financial rows plus saved preferences; schema 6 migrated to 7. Airplane-mode cold launch and Android reboot retained the expected ₱3,050.25 total and exact rows. The original emulator data/preferences were restored and compared afterward.
+- Still pending: native backup-v2 picker restore and complete changed-form/calendar journeys on this APK.
 - Also open: complete changed-form Light/Dark and large-text checks, spoken TalkBack, rapid native saves, physical-phone and first-time-user testing, and direct reproduction/recheck of the supplied month-flashing video.
 
 ## 1.1.0 — Published Android Build 4
