@@ -234,14 +234,18 @@ async function main() {
       console.log(`Kept original schema4 fixture in ${destination}`);
     }
     let db = await load('src/storage/database.ts').openDatabase(mainName, legacyName);
-    const raw = () => Object.fromEntries(financialTables.map(table => [table, jsonRows(dbForInspect().prepare(`SELECT rowid AS originalRowid,* FROM ${table} ORDER BY rowid`).all())]));
+    const raw = () => Object.fromEntries(financialTables.map(table => [table, jsonRows(dbForInspect().prepare(`SELECT rowid AS originalRowid,* FROM ${table} ORDER BY rowid`).all()).map(row => { if (table === 'savings_goals') { assert.equal(row.deadline, null); const {deadline, ...legacy} = row; return legacy; } return row; })]));
     // Inspection uses a separate read connection, never the user's app database.
     let inspect;
     function dbForInspect() { if (!inspect) { inspect = new DatabaseSync(path.join(folder, mainName)); connections.add(inspect); } return inspect; }
-    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 6);
+    assert.equal((await db.getFirstAsync('PRAGMA user_version')).user_version, 7);
     const originalSchemaStillPresent = () => {
       const current = new Map(jsonRows(dbForInspect().prepare("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'").all()).map(row => [row.name, row]));
-      for (const original of fixture.beforeSchema) assert.deepEqual(current.get(original.name), original, `Original table/index must remain unchanged: ${original.name}`);
+      for (const original of fixture.beforeSchema) {
+        const entry = current.get(original.name);
+        if (original.name === 'savings_goals') entry.sql = entry.sql.replace(', deadline TEXT)', ')');
+        assert.deepEqual(entry, original, `Original table/index must remain unchanged except added savings deadline: ${original.name}`);
+      }
     };
     originalSchemaStillPresent();
     assert.deepEqual(raw(), fixture.before, 'Every pre-existing row, ID, date, label, amount, note, flag, timestamp and rowid must remain exact');
@@ -279,7 +283,7 @@ async function main() {
     assert.deepEqual(fs.readFileSync(path.join(folder, legacyName)), legacyBytes);
     inspect.close(); connections.delete(inspect); inspect = undefined;
     const count = Object.values(fixture.before).reduce((sum, rows) => sum + rows.length, 0);
-    console.log(`V1 upgrade preservation passed: schema4→6, ${count} exact financial rows across8 tables,4 exact legacy choices, unchanged settings, all balances/months/savings and idempotent reopen. SQLite verification only, not APK upgrade acceptance.`);
+    console.log(`V1 upgrade preservation passed: schema4→7, ${count} exact financial rows across8 tables,4 exact legacy choices, unchanged settings, all balances/months/savings and idempotent reopen. SQLite verification only, not APK upgrade acceptance.`);
   } finally {
     for (const db of connections) db.close();
     fs.rmSync(folder, { recursive: true, force: true });

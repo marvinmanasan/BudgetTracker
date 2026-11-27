@@ -54,7 +54,7 @@ async function initializeDatabase(name: string, legacyChoicesName?: string) {
       "PRAGMA user_version",
     );
     const version = versionRow?.user_version ?? 0;
-    if (version > 6) {
+    if (version > 7) {
       throw new Error(
         "This database uses a newer version. Update Bulsa before opening it.",
       );
@@ -181,6 +181,19 @@ async function initializeDatabase(name: string, legacyChoicesName?: string) {
     // Some local unreleased schema6 builds predate the non-Undo delete triggers.
     // Idempotent trigger installation repairs that draft without rewriting rows.
     if (version === 6) await db.withTransactionAsync(() => db.execAsync(activityOrderTriggers));
+    if (version < 7) await db.withTransactionAsync(async () => {
+      await db.execAsync(`
+        CREATE TABLE budget_periods (
+          id TEXT PRIMARY KEY NOT NULL,
+          title TEXT NOT NULL CHECK(length(trim(title)) > 0),
+          startDate TEXT NOT NULL,
+          endDate TEXT NOT NULL CHECK(endDate >= startDate),
+          limitCentavos INTEGER NOT NULL CHECK(typeof(limitCentavos)='integer' AND limitCentavos >= 0 AND limitCentavos <= 9007199254740991)
+        );
+        ALTER TABLE savings_goals ADD COLUMN deadline TEXT;
+        PRAGMA user_version = 7;
+      `);
+    });
     return db;
   } catch (error) {
     await db.closeAsync().catch(() => {});

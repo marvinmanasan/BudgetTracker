@@ -4,10 +4,19 @@ import type { BulsaColors } from '../constants/bulsa';
 import { useBulsaStyles, useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { BulsaButton } from './bulsa-button';
 
-export function Field({ label, inputRef, issue, ...props }: TextInputProps & { label: string; inputRef?: React.Ref<React.ComponentRef<typeof TextInput>>; issue?: string }) {
+export function Field({ label, inputRef, issue, grouped, action, ...props }: TextInputProps & {
+  label: string; inputRef?: React.Ref<React.ComponentRef<typeof TextInput>>; issue?: string;
+  grouped?: boolean; action?: React.ReactNode;
+}) {
   const ui = useUI();
   const { colors: C } = useBulsaTheme();
-  return <View style={ui.card}><Text style={ui.caption}>{label}</Text><TextInput ref={inputRef} accessibilityLabel={label} placeholderTextColor={C.muted} {...props} style={[ui.input, props.style]} />{!!issue && <Text style={ui.error}>{issue}</Text>}</View>;
+  const input = <TextInput ref={inputRef} accessibilityLabel={label} placeholderTextColor={C.muted} {...props}
+    style={[ui.input, grouped && ui.groupedInput, props.style]} />;
+  return <View style={grouped ? { gap: 4 } : ui.card}>
+    <Text style={ui.caption}>{label}</Text>
+    {action ? <View style={ui.fieldRow}>{input}{action}</View> : input}
+    {!!issue && <Text accessibilityLiveRegion="polite" style={ui.error}>{issue}</Text>}
+  </View>;
 }
 export function BackButton({ disabled = false, onPress, title = '‹ Back' }: { disabled?: boolean; onPress?: () => void; title?: string }) {
   const router = useRouter();
@@ -30,9 +39,11 @@ const createStyles = (C: BulsaColors) => StyleSheet.create({
   error: { color: C.warning, fontSize: 16, lineHeight: 24 },
   card: { backgroundColor: C.surface, borderRadius: 20, padding: 18, gap: 8 },
   soft: { backgroundColor: C.soft, borderRadius: 20, padding: 18, gap: 8 },
-  input: { color: C.text, fontSize: 18, minHeight: 48, paddingVertical: 8, paddingHorizontal: 0 },
+  input: { borderBottomWidth: 1, borderBottomColor: C.track, color: C.text, fontSize: 18, minHeight: 48, paddingVertical: 8, paddingHorizontal: 0 },
+  groupedInput: { borderWidth: 1, borderColor: C.track, borderRadius: 10, paddingHorizontal: 12, flexGrow: 1, minWidth: 130 },
+  fieldRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center' },
   money: { color: C.text, fontSize: 30, fontWeight: '700' },
-  choice: { minHeight: 48, padding: 14, borderRadius: 14, backgroundColor: C.surface, justifyContent: 'center' },
+  choice: { minHeight: 48, padding: 14, borderRadius: 14, backgroundColor: C.soft, borderWidth: 1, borderColor: C.track, justifyContent: 'center' },
   selected: { backgroundColor: C.selected },
 });

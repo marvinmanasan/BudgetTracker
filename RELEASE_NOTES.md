@@ -1,8 +1,58 @@
-# Bulsa 1.1.0 Update Notes
+# Bulsa Release Notes
+
+## 1.2.0 — Android Build 5
+
+Release date: November 27, 2026. This update brings the Budgets and mobile-clarity improvements together with the signed Android APK and matching SHA-256 file.
+
+### Android Release
+
+- EAS build: [5b523a17-1b3d-4d08-8364-b3a3b962546c](https://expo.dev/accounts/marvinmanasan/projects/BudgetTracker/builds/5b523a17-1b3d-4d08-8364-b3a3b962546c).
+- Built app source: `166e78ef1cecc1d49a5bb7a98d0537436d753948`. Subsequent preparation changes affect documentation/ignore rules only.
+- APK: `Bulsa-1.2.0.apk`, 107,575,835 bytes. ZIP integrity passed.
+- SHA-256: `3481392ddc1c595a3f3f2afd1134aec09bb347a218d8f227f6a2e106c2c80059`. GitHub upload digest matches this file; a matching checksum file is attached.
+- Bounded native observation: Dark Overview with the written-date segmented summary and retained total. Full accessibility/physical-device acceptance remains open below.
+
+### Budgets and Savings
+
+- Create a named spending plan with an inclusive start/end date and a limit, including zero. All recorded expenses in those dates count, across wallets and General.
+- Review the dates, limit and existing spending before Save; edit saved plans and delete a custom plan after confirmation. Deleting a plan preserves expenses and wallet balances.
+- Overlapping custom plans are rejected. Overview shows the active plan and returns to the monthly plan after it ends; saved upcoming/ended plans remain reachable through Switch Plan.
+- Monthly setup, category actions, history and Savings links have simpler placement. Existing monthly limits/category allocations remain intact.
+- Active, upcoming, ended, exact-limit and overspent plans explain their amounts in context. Correcting dates, cancelling calendars and returning from review retain drafts.
+- Add an optional savings target date, with reached/today/passed status. Savings stays separate from wallet money.
+
+### Everyday Use
+
+- The existing Overview Income/Expenses pair now switches between Day, Week, Month and Year, starting with Today. Previous/next arrows navigate the dates; category details expand inline. Weeks run Monday–Sunday.
+- The summary uses full written dates, such as November 1–30, 2026, with larger text. Typed dates remain MM-DD-YYYY.
+- New expenses show a review popup with amount, wallet, category, date, payment method and note. Confirm Expense saves; Keep Editing retains the draft.
+- Edit Total Budget supports Add Amount, Subtract Amount and Set Exact Balance. Corrections affect one selected included wallet and do not create income or spending.
+- Transfer entry shows the selected wallets' balances alongside its existing before/after review.
+- Android calendar actions accompany transaction, transfer, custom-plan and savings dates; manual entry remains available. Other platforms retain typed entry.
+- Wallets removes repeated explanatory paragraphs. About Your Balances contains the explanation; a nonzero General balance appears as Unassigned Money. General remains included in accounting.
+- Secondary buttons have warm fills and visible borders in Light/Dark. Selected and destructive styles retain readable text. Date navigation preserves measured loading height; full device confirmation of the reported flashing remains open.
+
+### Data Protection and Performance
+
+- Financial schema 7 adds custom plans and savings deadlines through preserving migrations.
+- Financial backup v2 includes those additions and accepts legacy v1 imports. Importing an older file replaces financial data and removes custom plans/deadlines absent from that file; the restore preview explains this.
+- Existing atomic writes, stale-preview checks, stable IDs and duplicate-save locks remain in place.
+- Period totals aggregate income and expenses in one memoized pass. Hidden category results are not recalculated during loading. No dependencies were added; no phone-speed or APK-size improvement is claimed.
+
+### Verification and Remaining Acceptance
+
+- All 48 automated scripts, Expo lint, TypeScript and whitespace checks passed during preparation on November 27. A separate source review found no blocking defect. These results do not establish the pending APK/device checks.
+- Earlier local automated checks covered actual SQLite upgrades, rollback/retry, inclusive dates, overlap conflicts, backups, safe money and reviewed UI flows. Earlier emulator observations covered bounded plan flows and Light Overview/Wallets, not complete release acceptance.
+- Signed APK package/version verified as com.marvinmanasan.bulsa, 1.2.0/build 5. Its signature verifies and release certificate matches build 4.
+- In-place build-4 upgrade preserved every one of 19 fictional financial rows plus saved preferences; schema 6 migrated to 7. Airplane-mode cold launch and Android reboot retained the expected ₱3,050.25 total and exact rows. The original emulator data/preferences were restored and compared afterward.
+- Still pending: native backup-v2 picker restore and complete changed-form/calendar journeys on this APK.
+- Also open: complete changed-form Light/Dark and large-text checks, spoken TalkBack, rapid native saves, physical-phone and first-time-user testing, and direct reproduction/recheck of the supplied month-flashing video.
+
+## 1.1.0 — Published Android Build 4
 
 Updated November 15, 2026. These notes cover all implemented changes since v1.0.0 across Batches 1–8 and the verification work in Batch 9. The Android download is version 1.1.0, build 4. Unfinished acceptance checks are listed explicitly below.
 
-## Android Release
+### Android Release
 
 - APK: `Bulsa-1.1.0.apk`, package `com.marvinmanasan.bulsa`, version 1.1.0, version code 4.
 - Built by EAS from source commit `3e52a2f0b4777b96b4010c52edbafff783fb7e2b`; subsequent release documentation does not change app code.
@@ -11,7 +61,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - APK signature verifies and matches the published v1.0.0 release key. ZIP integrity passed.
 - Testing uses the Bulsa Android 16 emulator. Physical-device and spoken accessibility acceptance remain separate checks.
 
-## Overview and First Use
+### Overview and First Use
 
 - Add Expense and Add Income open their matching forms directly beneath Total Budget.
 - Daily actions have equal touch targets and stack when space is limited.
@@ -20,7 +70,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - First use begins with choosing where money is kept. Starting-balance examples appear beside the amount field.
 - General uses the same name throughout the app, counts in Total Budget and supports negative balances.
 
-## Wallets and Transfers
+### Wallets and Transfers
 
 - Wallets has its own bottom tab, with Add Wallet and Transfer Money near the top.
 - Cash stays first. Arrange Wallets supports dragging a handle to reorder the other visible wallets, with automatic saving and screen-reader move actions.
@@ -34,7 +84,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - Confirm Transfer and Keep Editing remain outside the scrolling review details.
 - Wallet balance corrections and hidden-wallet management remain available from Wallets.
 
-## Activity
+### Activity
 
 - Search, Filters and Select lead into the dated record list.
 - Saved order is preserved across record types, rapid saves and changes to the device clock.
@@ -47,7 +97,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - Multiple-record deletion retains its balance review and separate confirmation.
 - Filters support staged Apply/Clear actions, useful historical payment choices, month navigation and outside-tap dismissal.
 
-## Forms, Navigation and Appearance
+### Forms, Navigation and Appearance
 
 - Navigation uses the mounted screen's router after Android font-size changes. Transfer waits for readiness and blocks duplicate navigation from rapid presses.
 - Tab labels wrap and switch to two rows when needed. Controls retain selected states, spoken names and minimum touch targets.
@@ -57,7 +107,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - Unavailable expense wallets retain their disabled accessibility state, readable balances and reasons, and omit the chevron.
 - Shared centered review popups retain the previous screen as context.
 
-## Budgets and Savings
+### Budgets and Savings
 
 - Budget status uses Left to Spend, Over Limit and At Your Limit.
 - A missing monthly limit presents one setup action. Category limits become available after a monthly limit exists, including a zero limit.
@@ -67,7 +117,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - Savings contributions can be edited or deleted individually with review and stale-data checks.
 - Savings records track savings independently of wallet balances and Total Budget.
 
-## Backup, Restore and Data Protection
+### Backup, Restore and Data Protection
 
 - Save Backup to Device is the primary export action. Share Backup is secondary.
 - Backup names use Bulsa-Backup-MM-DD-YYYY.json.
@@ -81,7 +131,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - Upgrade checks cover existing records, wallet identifiers, custom choices, settings and derived balances.
 - Stored integer-centavo calculations and wallet inclusion rules are preserved.
 
-## Performance
+### Performance
 
 - Activity reuses its sorted record list while search text and other filters change.
 - Opening a single record skips building global ordering metadata.
@@ -90,7 +140,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - A paired Windows Node benchmark with 20,000 records measured seven search updates at a median 441.79 ms before and 65.01 ms after. Single-record detail logic measured 5.81 ms before and 0.39 ms after.
 - The comparable production JavaScript export grew by 366 bytes, from 2,854,710 to 2,855,076 bytes. Phone frame rate, memory and APK-size measurements remain for native acceptance.
 
-## Verification Recorded
+### Verification Recorded
 
 - All 43 automated check scripts, Expo lint, TypeScript and Android JavaScript export passed.
 - The complete fake-money sequence matched its expected results in disposable SQLite storage, including the unchanged ₱1,050.25 included-wallet transfer total, excluded-wallet adjustments and the final ₱375.75 Total Budget.
@@ -102,7 +152,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - The optimized Activity search and Clear Filters passed an Expo Go smoke test without writing financial records.
 - The navigation crash was reproduced on the original signed 1.1.0 build 3. A locally signed QA APK passed repeated 100%–200% changes, rapid presses, Back and cold-launch checks with all 58 fictional fixture rows preserved.
 
-## Release APK Verification
+### Release APK Verification
 
 - Release build 4 compiled successfully, including the standalone backup adapter. The published v1.0.0 APK upgraded in place without clearing data; every legacy financial row, wallet identifier, custom choice and preference matched, with the expected ₱941.67 Total Budget.
 - In airplane mode, the signed APK saved a populated backup to Downloads through the one-step file picker, showed success after writing, and cancelled a second export without success feedback. The saved JSON matched every financial table, custom choice and activity position.
@@ -111,7 +161,7 @@ Updated November 15, 2026. These notes cover all implemented changes since v1.0.
 - The saved Downloads file restored through the picker and typed confirmation into a clean test app. All financial tables, custom choices and activity positions matched the file exactly.
 - The emulator's original records, wallet identifiers and preferences were restored and compared after QA. The latest release APK remains installed on Bulsa Android 16.
 
-## Remaining Android Release Checks
+### Remaining Android Release Checks
 
 - Complete large-text transfer-review checks and the final native category-error check. Earlier automation was interrupted or could not establish the result.
 - Listen to TalkBack errors, labels and selected-state announcements; finish large-text field focus and last-row scroll reachability.

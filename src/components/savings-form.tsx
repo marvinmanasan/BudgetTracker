@@ -1,3 +1,4 @@
+import { BudgetCalendar } from './budget-calendar';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { BackHandler, Text } from 'react-native';
@@ -21,6 +22,7 @@ export function SavingsForm({ initial, contribution = false, loading, readError,
   const [date, setDate] = useState(() => displayDate(localDate()));
   const [note, setNote] = useState(''), [validation, setValidation] = useState('');
   const [id] = useState(() => newRecordId('savings'));
+  const [deadline, setDeadline] = useState(original?.deadline ? displayDate(original.deadline) : '');
   const { busy, error, run } = useSaveAction();
   const blocked = busy || loading || !!readError;
   useFocusEffect(useCallback(() => { const sub = BackHandler.addEventListener('hardwareBackPress', () => busy); return () => sub.remove(); }, [busy]));
@@ -31,10 +33,13 @@ export function SavingsForm({ initial, contribution = false, loading, readError,
     let iso = '';
     try { if (contribution) iso = parseDisplayDate(date); }
     catch (cause) { setValidation((cause as Error).message); return; }
+    let deadlineDate: string | null = null;
+    try { if (!contribution && deadline.trim()) deadlineDate = parseDisplayDate(deadline); }
+    catch (cause) { setValidation((cause as Error).message); return; }
     setValidation('');
     const saved = await run(() => contribution
       ? recordSavingsContribution({ id, goalId: original!.id, amountCentavos: cents, date: iso, note })
-      : saveSavingsGoal({ id: original?.id ?? 'main', title: title.trim(), targetCentavos: cents }));
+      : saveSavingsGoal({ id: original?.id ?? 'main', title: title.trim(), targetCentavos: cents, ...((deadlineDate !== null || original?.deadline) ? { deadline: deadlineDate } : {}) }));
     if (saved) router.back();
   }
   return <BulsaScreen header={<BackButton disabled={busy} />}>
@@ -43,7 +48,8 @@ export function SavingsForm({ initial, contribution = false, loading, readError,
     {contribution && !original ? <Text style={ui.body}>Set a savings goal first.</Text> : <>
       {contribution ? <Text style={ui.heading}>{original!.title}</Text> : <Field label="Goal Name" value={title} onChangeText={setTitle} editable={!blocked} />}
       <Field label={contribution ? 'Amount Saved (PHP)' : 'Savings Target (PHP)'} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" editable={!blocked} />
-      {contribution && <><Field label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} placeholder="MM-DD-YYYY" maxLength={10} editable={!blocked} /><Field label="Note (Optional)" value={note} onChangeText={setNote} multiline editable={!blocked} /></>}
+      {!contribution && <Field action={<BudgetCalendar label="Choose Date" value={deadline} disabled={blocked} onChange={setDeadline} />} label="Target Date (Optional, MM-DD-YYYY)" value={deadline} onChangeText={setDeadline} placeholder="Leave blank for no deadline" maxLength={10} editable={!blocked} />}
+      {contribution && <><Field action={<BudgetCalendar label="Choose Date" value={date} disabled={blocked} onChange={setDate} />} label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} placeholder="MM-DD-YYYY" maxLength={10} editable={!blocked} /><Field label="Note (Optional)" value={note} onChangeText={setNote} multiline editable={!blocked} /></>}
       <Text style={ui.caption}>{contribution ? 'This records money already saved. It does not deduct money from a wallet or Total Budget. Recording more than your target is allowed.' : 'Changing your goal keeps all previous savings records. This target is separate from wallet money and monthly spending limits.'}</Text>
       {!!validation && <Text style={ui.error}>{validation}</Text>}{!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       <BulsaButton title={busy ? 'Saving…' : contribution ? 'Save Savings Record' : 'Save Savings Goal'} disabled={blocked} onPress={() => void save()} />

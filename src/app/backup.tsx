@@ -11,7 +11,7 @@ import { pickFinancialBackup, saveFinancialBackup, savesToFolder, shareFinancial
 import { latestRestoreSafetyCopy, readRestoreSafetyCopy, saveRestoreSafetyCopy } from '../services/restore-safety';
 import { createFinancialBackup, financialSignature, restoreFinancialBackup } from '../storage/backup';
 
-const labels = { wallets: 'Wallets', transactions: 'Income and Expenses', balance_changes: 'Starting Balances and Adjustments', transfers: 'Transfers', monthly_limits: 'Monthly Limits', category_allocations: 'Category Allocations', savings_goals: 'Savings Goals', savings_contributions: 'Savings Records', custom_choices: 'Custom Categories and Income Sources' };
+const labels = { budget_periods: 'Custom Spending Plans', wallets: 'Wallets', transactions: 'Income and Expenses', balance_changes: 'Starting Balances and Adjustments', transfers: 'Transfers', monthly_limits: 'Monthly Limits', category_allocations: 'Category Allocations', savings_goals: 'Savings Goals', savings_contributions: 'Savings Records', custom_choices: 'Custom Categories and Income Sources' };
 type Preview = { incoming: FinancialBackup; current: FinancialBackup; signature: string };
 
 export default function BackupScreen() {
@@ -46,7 +46,7 @@ export default function BackupScreen() {
     <Text style={ui.body}>Save a financial backup before changing phones or clearing app data.</Text>
     <View style={ui.card}>
       <Text style={ui.heading}>Financial Records Only</Text>
-      <Text style={ui.body}>Includes all wallets, income, expenses, starting balances, adjustments, transfers, monthly limits, category allocations, savings goals, savings records, custom expense categories and income source lists.</Text>
+      <Text style={ui.body}>Includes all wallets, income, expenses, starting balances, adjustments, transfers, monthly limits, custom spending plans, category allocations, savings goals and deadlines, savings records, custom expense categories and income source lists.</Text>
       <Text style={ui.caption}>Display name, appearance and introduction status are not included. Your display settings stay as they are.</Text>
       <Text style={ui.caption}>The JSON file is readable and unencrypted. Save it somewhere private. Bulsa does not upload it; the destination you choose may use cloud storage. Keep a copy outside Bulsa.</Text>
       <Text style={ui.caption}>Sharing uses a temporary copy. Backups support up to 10 MB and 50,000 financial rows.</Text>
@@ -72,6 +72,7 @@ export default function BackupScreen() {
     {preview && <View style={ui.card}>
       <Text style={ui.heading}>Review Replacement</Text>
       <Text style={ui.body}>This replaces all current financial records. It does not merge them. A safety copy of your current records will be saved on this device before replacement. If that fails, nothing will be replaced. Export a separate copy before uninstalling Bulsa.</Text>
+      <Text style={ui.caption}>Older backups contain no custom spending plans or savings deadlines. The counts below show the replacement.</Text>
       <Text style={ui.caption}>Backup Created · {displayDate(preview.incoming.createdAt.slice(0, 10))} · {preview.incoming.createdAt.slice(11, 19)} UTC</Text>
       {backupCounts(preview.incoming).map(({ table, count }) => <Text key={table} style={ui.body}>{labels[table]}: {preview.current.tables[table].length} current → {count} from backup</Text>)}
       <Field label="Type RESTORE to Confirm" value={confirmation} onChangeText={setConfirmation} editable={!busy} autoCapitalize="characters" autoCorrect={false} />

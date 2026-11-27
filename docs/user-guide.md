@@ -1,15 +1,15 @@
 # Using Bulsa
 
-Bulsa helps you record money manually, manage wallets and plan spending. Dates use MM-DD-YYYY. Months use full names, such as November 2026.
+Bulsa helps you record money manually, manage wallets and plan spending. Manual dates use MM-DD-YYYY. Overview summaries use written month names, such as November 1–30, 2026.
 
 ## Quick start
 
 1. On Welcome to Bulsa, tap **Set Up Wallets**.
 2. Open a wallet such as Cash. Enter **Starting Balance (PHP)** and tap **Save Starting Balance**.
 3. For your own wallet, open **Wallets**, tap **Add Wallet**, enter its name and starting balance, then tap **Add Wallet**.
-4. Return to **Overview** and tap **+ Add Expense**.
+4. Return to **Overview** and tap **Add Expense**.
 5. Enter **Amount (PHP)**, choose a **Category**, select a wallet using the **Wallet:** button, and check **Date (MM-DD-YYYY)**.
-6. Tap **Save Expense**. The record appears in **Activity**.
+6. Tap **Review Expense**, check the details, then **Confirm Expense**. The record appears in **Activity**.
 
 ## Add a wallet
 
@@ -37,18 +37,18 @@ Only whether its balance counts in Total Budget changes. Its records remain save
 
 ## Add an expense
 
-1. On **Overview**, tap **+ Add Expense**.
+1. On **Overview**, tap **Add Expense**.
 2. Enter **Amount (PHP)** and choose a **Category**.
 3. Tap the **Wallet:** button and choose the wallet used.
 4. Check **Date (MM-DD-YYYY)**.
 5. To add a note, tap **More Details · Optional**.
-6. Tap **Save Expense**.
+6. Tap **Review Expense**, check the amount, wallet, category, date and optional details, then tap **Confirm Expense**. **Keep Editing** returns to the draft.
 
 Activity shows the expense. The wallet balance falls. Total Budget falls if that wallet is included.
 
 ## Add income
 
-1. Tap **+ Add Expense**, then choose **Income**.
+1. On **Overview**, tap **Add Income**.
 2. Enter **Amount (PHP)** and choose an **Income Source**.
 3. Choose the receiving wallet and check the date.
 4. Tap **Save Income**.
@@ -78,7 +78,7 @@ Old transactions keep their original names. Preset choices are retained.
 1. In a transaction form, tap the **Wallet:** button.
 2. On **Choose Wallet**, tap **General**. The form then shows **Wallet: General**.
 3. Save the transaction.
-4. Open **Wallets** to see **General · Always Included**.
+4. In **Wallets**, a nonzero balance appears as **Unassigned Money**. **About Your Balances** explains it.
 
 Income adds to General and expenses subtract from it. General always counts in Total Budget and can be negative. Add Expense and Add Income both explain this beside **Wallet: General**.
 
@@ -104,8 +104,8 @@ The balance is corrected. Activity shows Balance Adjustment. An unchanged balanc
 ## Correct Total Budget
 
 1. Open **Wallets**, then tap **Edit Total Budget**. Balance correction controls live under Wallets.
-2. Enter **New Total Budget (PHP)**.
-3. Under **Wallet Receiving the Difference**, choose an included wallet with a starting balance.
+2. Choose **Add Amount**, **Subtract Amount** or **Set Exact Balance**, then enter the amount. Add/Subtract require a positive amount; an exact balance may be zero or negative.
+3. Under **Wallet to Adjust**, choose an included wallet with a starting balance.
 4. Enter a **Reason** and tap **Review Change**.
 5. Check the result and tap **Confirm Adjustment**.
 
@@ -175,7 +175,7 @@ Only wallets with no financial history can be deleted. A zero starting balance s
 4. Tap a result for its details.
 5. Open **Filters** and tap **Clear All Filters**, then **Apply Filters**, to clear the filter choices. Clear the search field separately.
 
-Records are grouped by date, newest dates first. The **All Wallets This Month** spending card shows all expenses for its month, before the other Activity filters.
+Records are grouped by date, newest dates first. Search and filters lead into the dated list. View income and spending totals in Overview.
 
 ## View one wallet's Activity
 
@@ -187,7 +187,7 @@ The wallet view includes its transactions, transfers and balance changes.
 
 ## Set a monthly spending limit
 
-1. In **Budgets**, choose a month. Tap the month name to open the month grid, or use **This Month**.
+1. In **Budgets**, choose a month. Tap the month name to open the month grid, or use **Back to This Month** when browsing another month.
 2. Tap **Set Monthly Limit** or **Edit Monthly Limit**.
 3. Enter **Spending Limit (PHP)**.
 4. Check **Remaining With This Limit** and tap **Save Monthly Limit**.
@@ -197,18 +197,18 @@ The limit is a spending plan. It does not add money. Zero is allowed.
 ## Set category limits
 
 1. In **Budgets**, choose a month with a saved monthly limit.
-2. Tap **Edit Category Limits**.
+2. Tap **Set Category Limits** or **Edit Category Limits**.
 3. Under **Choose Category**, select a category and enter **Category Limit (PHP)**.
-4. Tap **Add or Update Allocation**. Repeat for other categories.
-5. Tap **Save Category Limits**.
+4. Tap **Save Category Limit** to save this category and return to Budgets.
+5. Reopen category limits to add or edit another category.
 
-Everything Else receives the unallocated allowance. Use Edit Allocation or Remove Allocation to change rows. Add or clear current input before saving. Named allocations cannot exceed the monthly limit.
+Everything Else receives the unallocated allowance. Use Edit Allocation to load a saved category, then Save Category Limit to save it. Remove Allocation removes its limit. Named allocations cannot exceed the monthly limit.
 
 ## View monthly-limit history
 
 1. In **Budgets**, tap **Monthly Limit History**.
 2. Read the saved months and limits.
-3. Tap a month's **Edit** button to change it, or **Refresh History** to reload.
+3. Tap **Edit** beside a saved month to change its limit. An unsuccessful read offers **Try Again**.
 
 When the current month has no limit, Bulsa can copy the immediately previous month's limit. Existing values, including zero, remain. Category allocations and unused allowance are not copied.
 
@@ -242,7 +242,7 @@ Progress updates from the corrected history. The savings goal, other contributio
 ## Backup and Restore
 
 1. Open **Settings**, then **Backup and Restore**.
-2. Tap **Export Financial Backup** and choose where to save or share the JSON file. Check that the destination saved it. Keep a copy outside the app.
+2. Tap **Save Backup to Device** and choose a destination, or use **Share Backup** to share the JSON file. Check that the destination saved it. Keep a copy outside the app.
 3. To restore, tap **Choose Backup to Restore** and select a supported Bulsa backup file.
 4. Read **Review Replacement** and compare the current and incoming record counts. Restore replaces records rather than merging them.
 5. Keep a separate external backup of your current records. Bulsa also saves a local safety copy before replacement.
@@ -261,7 +261,7 @@ Your saved name appears in the greeting. System follows the phone's appearance. 
 
 ## Reset selected records
 
-1. In **Activity**, tap **Reset Selected Data**.
+1. Open **Settings → Your Records → Reset Selected Data**.
 2. Choose **One Wallet**, **General** or **All Wallets**, and select the wallet if required.
 3. Choose the record kinds to remove.
 4. Tap **Preview Selection** and check the counts and balance effects.
@@ -331,3 +331,28 @@ You do not need two funded wallets. Open **Wallets → Transfer Money**, choose 
 ## Updating Bulsa
 
 Install a compatible new APK over the existing app and choose **Update**. Keep the existing app installed and keep its data. Export a private backup first if your installed version supports it. If Android reports an incompatible update, stop and check the APK; do not uninstall the existing app to force installation.
+
+## View income and expenses by date
+
+Overview starts with **Today**. Use the shared **Day / Week / Month / Year** selector above the Income and Expenses cards. The arrows change the date range; **Back to Today** returns from historical periods. Weeks run Monday–Sunday. Totals include every recorded transaction in the displayed inclusive dates, including excluded wallets and General. Transfers, balance corrections and savings are not income or expenses.
+
+Tap **Spending by Category** to expand the expense breakdown within the same summary. A period with no entries shows zero totals. The date range uses full month names; manual entry elsewhere keeps MM-DD-YYYY.
+
+## Create a spending plan for other dates
+
+1. Open **Budgets**, then **Start a Plan for Other Dates** (or **New Plan** when viewing a saved custom plan).
+2. Enter the plan name, spending limit, Start Date and End Date. On Android, **Calendar** selects a date; typing remains available.
+3. Review the dates, existing expenses and proposed limit, then Save.
+4. Use **Switch Plan** to move between Monthly Plan and saved plans. **Manage Plan** opens the saved custom-plan editor.
+
+Both dates count. One-day and cross-month plans are supported; custom plans cannot overlap. Category limits remain monthly. A plan does not move money or create income. The active plan appears on Overview; after it ends, the monthly plan returns and the ended plan stays saved.
+
+To remove a custom plan, open **Manage Plan**, choose **Delete Plan**, read the confirmation and confirm. **Keep Plan** cancels. Only that plan is removed; expenses and wallet balances stay unchanged.
+
+## Set a savings deadline
+
+When setting or editing your savings goal, enter an optional Target Date or use Calendar on Android. Clear the field for no deadline. Changing it preserves contributions. Reached/today/passed wording describes progress without moving wallet money.
+
+## Financial backup compatibility
+
+The new financial backup format is version 2 and includes custom spending plans and savings deadlines. Version 1 files remain importable. Restore replaces financial records: an older file does not contain custom plans or deadlines, so restoring it removes those absent values after the replacement preview and confirmation. Display preferences remain separate. Keep exported files private.

@@ -33,3 +33,14 @@ export function spendingLimitStatus(remaining: number): string {
     ? `${formatCentavos(-remaining)} Over Limit`
     : `${formatCentavos(remaining)} Left to Spend`;
 }
+
+export function spendingPlanResult(remaining: number, ended: boolean): string {
+  if (ended) {
+    if (remaining > 0) return `You spent ${formatCentavos(remaining)} less than planned`;
+    if (remaining < 0) return `You spent ${formatCentavos(-remaining)} over your limit`;
+    return 'You spent exactly your limit';
+  }
+  if (remaining > 0) return `${formatCentavos(remaining)} left in this spending plan`;
+  if (remaining < 0) return `${formatCentavos(-remaining)} over your limit`;
+  return 'You have reached your spending limit';
+}

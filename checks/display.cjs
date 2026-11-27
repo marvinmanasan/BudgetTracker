@@ -19,3 +19,15 @@ const { monthlyTotals } = load('src/lib/ledger.ts');
 const data = { wallets: [], changes: [], transfers: [], transactions: stored.map((date,i) => ({id:String(i),type:'expense',amountCentavos:100,category:'Food',date:parseDisplayDate(displayDate(date)),paymentMethod:'Cash'})) };
 assert.equal(monthlyTotals(data,'2026-11').expenseCentavos,100);
 console.log('Date display, validation, ISO sorting and monthly totals passed.');
+
+const { readableDateRange } = load('src/lib/display-date.ts');
+for(const [start,end,expected] of [
+ ['2026-11-27','2026-11-27','November 27, 2026'],
+ ['2026-11-01','2026-11-30','November 1–30, 2026'],
+ ['2026-11-27','2026-12-01','November 27 – December 1, 2026'],
+ ['2026-12-28','2027-01-03','December 28, 2026 – January 3, 2027'],
+ ['2024-02-29','2024-03-01','February 29 – March 1, 2024'],
+ ['0001-01-01','0001-01-01','January 1, 0001'],
+]) assert.equal(readableDateRange(start,end),expected);
+assert.throws(()=>readableDateRange('2026-02-30','2026-03-01'));
+assert.throws(()=>readableDateRange('2026-12-01','2026-11-01'));

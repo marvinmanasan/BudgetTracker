@@ -5,6 +5,22 @@ export function displayDate(iso: string): string {
   return `${iso.slice(5, 7)}-${iso.slice(8, 10)}-${iso.slice(0, 4)}`;
 }
 
+// Written dates for summaries only; manual inputs keep MM-DD-YYYY.
+export function readableDateRange(start: string, end: string): string {
+  validateDate(start);
+  validateDate(end);
+  if (end < start) throw new Error('Choose an end date on or after the start date.');
+  const parts = (date: string) => ({
+    month: monthName(date.slice(0, 7)).split(' ')[0],
+    day: Number(date.slice(8, 10)), year: date.slice(0, 4),
+  });
+  const from = parts(start), to = parts(end);
+  if (start === end) return `${from.month} ${from.day}, ${from.year}`;
+  if (start.slice(0, 7) === end.slice(0, 7)) return `${from.month} ${from.day}–${to.day}, ${from.year}`;
+  if (from.year === to.year) return `${from.month} ${from.day} – ${to.month} ${to.day}, ${from.year}`;
+  return `${from.month} ${from.day}, ${from.year} – ${to.month} ${to.day}, ${to.year}`;
+}
+
 export function parseDisplayDate(input: string): string {
   if (!/^\d{2}-\d{2}-\d{4}$/.test(input)) throw new Error('Enter a valid date in MM-DD-YYYY format.');
   const iso = `${input.slice(6, 10)}-${input.slice(0, 2)}-${input.slice(3, 5)}`;

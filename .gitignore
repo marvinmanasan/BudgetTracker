@@ -74,3 +74,8 @@ Bulsa-Before-Restore-*.json
 Bulsa-Safety-*.json
 /qa/
 /qa-screenshots/
+
+# Private AI project handoff
+/handoff.md
+
+/Bulsa-*.apk.sha256

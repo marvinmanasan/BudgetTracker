@@ -1,4 +1,6 @@
 import { deriveBalances, monthlyTotalsByMonth } from './ledger';
+import { validateBudgetPeriod, periodSpending } from './budget-periods';
+import type { BudgetPeriod } from '../storage/budget-periods';
 import { validateDate } from './validation';
 import { legacyActivityOrder } from './activity';
 import type { Ledger } from '../types/wallet';
@@ -13,13 +15,14 @@ export const backupColumns = {
   transfers: ['id', 'fromWalletId', 'toWalletId', 'amountCentavos', 'date', 'note', 'createdAt'],
   monthly_limits: ['month', 'limitCentavos'],
   category_allocations: ['month', 'category', 'limitCentavos'],
-  savings_goals: ['id', 'title', 'targetCentavos'],
+  budget_periods: ['id', 'title', 'startDate', 'endDate', 'limitCentavos'],
+  savings_goals: ['id', 'title', 'targetCentavos', 'deadline'],
   savings_contributions: ['id', 'goalId', 'amountCentavos', 'date', 'note'],
 } as const;
 export type BackupTable = keyof typeof backupColumns;
 export type BackupRow = Record<string, string | number | null>;
 export type BackupTables = Record<BackupTable, BackupRow[]>;
-export type FinancialBackup = { format: 'bulsa-financial-backup'; version: 1; createdAt: string; tables: BackupTables };
+export type FinancialBackup = { format: 'bulsa-financial-backup'; version: 2; createdAt: string; tables: BackupTables };
 
 function fail(): never { throw new Error('This file is not a valid supported Bulsa financial backup.'); }
 function object(value: unknown): Record<string, unknown> {
@@ -46,10 +49,21 @@ function total(values: number[]) {
 export function validateBackup(value: unknown): FinancialBackup {
   const root = object(value);
   keys(root, ['format', 'version', 'createdAt', 'tables']);
-  if (root.format !== 'bulsa-financial-backup' || root.version !== 1) fail();
+  if (root.format !== 'bulsa-financial-backup' || (root.version !== 1 && root.version !== 2)) fail();
   text(root.createdAt);
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(root.createdAt) || !Number.isFinite(Date.parse(root.createdAt)) || new Date(root.createdAt).toISOString() !== root.createdAt) fail();
   const source = { ...object(root.tables) };
+  if (root.version === 1) {
+    if (Object.hasOwn(source, 'budget_periods')) fail();
+    source.budget_periods = [];
+    if (!Array.isArray(source.savings_goals)) fail();
+    source.savings_goals = source.savings_goals.map(value => {
+      const goal = object(value);
+      keys(goal, ['id', 'title', 'targetCentavos']);
+      return { ...goal, deadline: null };
+    });
+  }
+
   if (!Object.hasOwn(source, 'activity_order')) {
     // Unreleased earlier snapshots lacked saved-order metadata. Their exact
     // insertion chronology cannot be restored; recover the same stable fallback.
@@ -69,7 +83,8 @@ export function validateBackup(value: unknown): FinancialBackup {
       const row: BackupRow = {};
       for (const column of backupColumns[table]) {
         const value = raw[column];
-        if (table === 'activity_order' && column === 'sequence') money(value, 1);
+        if (column === 'deadline' && value === null) { /* no deadline */ }
+        else if (table === 'activity_order' && column === 'sequence') money(value, 1);
         else if (column === 'included' || column === 'hidden') {
           if (value !== 0 && value !== 1) fail();
         } else if (column.endsWith('Centavos')) {
@@ -80,6 +95,7 @@ export function validateBackup(value: unknown): FinancialBackup {
         row[column] = value as string | number | null;
       }
       if ('date' in row) validateDate(row.date as string);
+      if (row.deadline != null) validateDate(row.deadline as string);
       if ('month' in row && (typeof row.month !== 'string' || !/^(?!0000)\d{4}-(0[1-9]|1[0-2])$/.test(row.month))) fail();
       for (const column of ['createdAt', 'updatedAt']) {
         if (column in row) {
@@ -150,6 +166,12 @@ export function validateBackup(value: unknown): FinancialBackup {
     if (allocated > BigInt(Number.MAX_SAFE_INTEGER) || allocated > BigInt(months.get(month)!)) fail();
     allocatedByMonth.set(month, allocated);
   }
+  const periods = tables.budget_periods as BudgetPeriod[];
+  const sortedPeriods = [...periods].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  for (let index = 0; index < sortedPeriods.length; index++) {
+    validateBudgetPeriod(sortedPeriods[index]);
+    if (index && sortedPeriods[index].startDate <= sortedPeriods[index - 1].endDate) fail();
+  }
   const goals = new Set(tables.savings_goals.map(row => row.id));
   for (const row of tables.savings_contributions) if (!goals.has(row.goalId)) fail();
   total(tables.savings_contributions.map(row => row.amountCentavos as number));
@@ -161,7 +183,8 @@ export function validateBackup(value: unknown): FinancialBackup {
   };
   deriveBalances(ledger);
   monthlyTotalsByMonth(ledger);
-  return { format: 'bulsa-financial-backup', version: 1, createdAt: root.createdAt, tables };
+  for (const period of periods) periodSpending(ledger, period);
+  return { format: 'bulsa-financial-backup', version: 2, createdAt: root.createdAt, tables };
 }
 
 // Count the bytes written as UTF-8, including surrogate pairs/replacement

@@ -2,9 +2,10 @@
 
 ## Overview
 
-- Total Budget, Spent This Month, Income and Expenses.
+- Total Budget and one shared Income/Expenses summary for Day, Week, Month and Year, starting with Today.
+- Date arrows, written date ranges and an inline spending-category breakdown.
 - Wallet management links. Balance corrections are grouped under Wallets.
-- Add Expense, monthly-limit access and savings preview.
+- Direct Add Expense/Add Income, active spending-plan access and savings preview.
 - Profile control opening Settings.
 
 ## Wallets
@@ -15,11 +16,13 @@
 - Rename, hide and restore wallets.
 - Wallet-specific Activity.
 - Delete an unused wallet with no financial history.
-- General for transactions saved without a specific wallet.
+- Optional General assignment; nonzero unassigned balance shown compactly, with About Your Balances explanation.
 
 ## Expenses and income
 
 - Amount, category or income source, wallet and date.
+- New-expense review and Confirm Expense/Keep Editing before saving.
+- Android calendar entry alongside typed dates.
 - Wallet: General wording explains entries without a specific wallet.
 - Optional note. Historical payment-method values remain saved.
 - Preset choices and custom choices with add, rename and remove controls.
@@ -31,7 +34,7 @@
 - Record transfers between two visible wallets with starting balances.
 - Review source, destination and Total Budget effects before confirming.
 - Adjust a wallet's recorded balance with a reason.
-- Correct Total Budget by applying the difference to an included wallet.
+- Add Amount, Subtract Amount or Set Exact Balance when correcting Total Budget, with reviewed effects on one included wallet.
 
 ## Activity
 
@@ -39,7 +42,7 @@
 - Expense, income, transfer, starting-balance and adjustment details.
 - Search saved record details.
 - Month, record-type, category/source and payment-method filters.
-- Wallet-specific views and an All Wallets This Month spending summary.
+- Wallet-specific views; income/expense summaries are on Overview.
 - Touch-and-hold selection and selecting several income or expense records.
 - Selected filter states for accessibility and 48-unit month-arrow targets.
 - Payment filters appear only when useful historical values exist.
@@ -53,10 +56,12 @@
 - Monthly Limit History with editing links.
 - Category allocations and automatic Everything Else.
 - Spending progress, Near Limit and Over Limit states.
+- Named custom spending plans with inclusive dates, overlap protection, review, editing, switching and confirmed deletion.
+- Active-plan Overview link, saved upcoming/ended plans and monthly fallback after expiry.
 
 ## Savings
 
-- One main savings goal with name and target editing.
+- One main savings goal with name, target and optional deadline editing.
 - Record Savings with amount, date and optional note.
 - Savings History, progress and above-target amounts.
 - Edit or delete individual contributions with a review before confirming.
@@ -73,7 +78,7 @@
 ## Backup and Restore
 
 - Settings link for exporting and choosing a local JSON financial backup.
-- Financial records, wallets, plans, savings, custom expense categories and custom income sources in one backup.
+- Version 2 financial backup includes wallets, monthly/custom plans, savings/deadlines and custom choices; legacy version 1 import remains supported.
 - File validation, replacement preview, a local safety copy and typed RESTORE confirmation.
 - Current-record and pending-Undo checks before replacement.
 - All-or-nothing financial replacement.
@@ -82,7 +87,8 @@
 ## Display
 
 - Peso amounts with two decimal places.
-- Dates displayed as MM-DD-YYYY and months with full names, such as November 2026.
+- Typed dates use MM-DD-YYYY; Overview summary ranges use written month names.
+- Warm shared button states in Light/Dark, including selected and destructive controls.
 
 ## Wallet Navigation
 

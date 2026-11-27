@@ -1,3 +1,4 @@
+import { SavingsDeadline } from '../components/savings-deadline';
 import { useBulsaTheme } from '../hooks/use-bulsa-theme';
 import { useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
@@ -30,6 +31,7 @@ export default function SavingsScreen() {
       <Text style={ui.body}>No savings goal yet.</Text><BulsaButton title="Set Savings Goal" onPress={() => router.push('/savings-goal')} />
     </> : summary ? <>
       <View style={ui.card}><Text style={ui.heading}>{goal.title}</Text><Text style={ui.money}>{formatCentavos(summary.savedCentavos)}</Text><Text style={ui.body}>Target: {formatCentavos(goal.targetCentavos)}</Text>
+        <SavingsDeadline deadline={goal.deadline} remaining={summary.remainingCentavos} />
         <View accessible={false} style={{ height: 8, backgroundColor: C.track, borderRadius: 4, overflow: 'hidden' }}><View style={{ height: 8, backgroundColor: C.accent, width: `${summary.progress * 100}%` }} /></View>
         <Text style={ui.body}>{summary.remainingCentavos > 0 ? `${formatCentavos(summary.remainingCentavos)} to go` : summary.remainingCentavos === 0 ? 'Goal reached.' : `Goal reached. ${formatCentavos(-summary.remainingCentavos)} above target.`}</Text>
       </View>

@@ -1,0 +1,12 @@
+const assert = require('node:assert/strict');
+const { adjustmentTarget } = require('./load-typescript.cjs').createLoader()('src/lib/total-budget.ts');
+assert.equal(adjustmentTarget(50000,20000,'add'),70000);
+assert.equal(adjustmentTarget(50000,20000,'subtract'),30000);
+assert.equal(adjustmentTarget(50000,70000,'subtract'),-20000);
+assert.equal(adjustmentTarget(50000,-100,'exact'),-100);
+assert.equal(adjustmentTarget(50000,0,'exact'),0);
+for (const mode of ['add','subtract']) for (const value of [0,-1,1.1,Number.MAX_SAFE_INTEGER+1]) assert.throws(()=>adjustmentTarget(50000,value,mode));
+assert.throws(()=>adjustmentTarget(Number.MAX_SAFE_INTEGER,1,'add'),/range/);
+assert.throws(()=>adjustmentTarget(-Number.MAX_SAFE_INTEGER,1,'subtract'),/range/);
+assert.throws(()=>adjustmentTarget(100,10,'unknown'));
+console.log('Adjustment modes passed: add/subtract/exact, signed result, positive inputs, safe boundaries.');

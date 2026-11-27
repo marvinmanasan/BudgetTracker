@@ -2,12 +2,13 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { validateCentavos, validateDate } from '../lib/validation';
 import { withDatabase } from './database';
 
-export type SavingsGoal = { id: string; title: string; targetCentavos: number };
+export type SavingsGoal = { id: string; title: string; targetCentavos: number; deadline?: string | null };
 export type SavingsContribution = { id: string; goalId: string; amountCentavos: number; date: string; note: string };
 export type Savings = { goals: SavingsGoal[]; contributions: SavingsContribution[] };
 
 async function readSavings(db: SQLiteDatabase): Promise<Savings> {
-  const goals = await db.getAllAsync<SavingsGoal>('SELECT id,title,targetCentavos FROM savings_goals ORDER BY id');
+  const rows = await db.getAllAsync<SavingsGoal>('SELECT id,title,targetCentavos,deadline FROM savings_goals ORDER BY id');
+  const goals = rows.map(({ deadline, ...goal }) => deadline === null ? goal : { ...goal, deadline });
   const contributions = await db.getAllAsync<SavingsContribution>('SELECT id,goalId,amountCentavos,date,note FROM savings_contributions ORDER BY date DESC,id DESC');
   // Read integers individually; SQL SUM can overflow before JavaScript validates it.
   let total = 0;
@@ -27,8 +28,11 @@ export async function saveSavingsGoal(goal: SavingsGoal, name = 'bulsa.db'): Pro
   goal = { ...goal };
   if (![goal.id, goal.title].every(value => typeof value === 'string' && value.trim())) throw new Error('A goal ID and title are required.');
   validateCentavos(goal.targetCentavos, true);
+  if (goal.deadline != null) validateDate(goal.deadline);
   await withDatabase(name, async db => {
-    await db.runAsync('INSERT INTO savings_goals(id,title,targetCentavos) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET title=excluded.title,targetCentavos=excluded.targetCentavos', goal.id, goal.title, goal.targetCentavos);
+    const current = await db.getFirstAsync<{ deadline: string | null }>('SELECT deadline FROM savings_goals WHERE id=?', goal.id);
+    const deadline = goal.deadline === undefined ? current?.deadline ?? null : goal.deadline;
+    await db.runAsync('INSERT INTO savings_goals(id,title,targetCentavos,deadline) VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET title=excluded.title,targetCentavos=excluded.targetCentavos,deadline=excluded.deadline', goal.id, goal.title, goal.targetCentavos, deadline);
     await readSavings(db);
   }, true);
 }

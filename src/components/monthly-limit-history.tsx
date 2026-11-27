@@ -10,6 +10,7 @@ import { ReadState, useUI } from './bulsa-form';
 export function MonthlyLimitHistory() {
   const router = useRouter();
   const ui = useUI();
+  const [expanded, setExpanded] = useState(false);
   const [rows, setRows] = useState<MonthlyLimit[]>([]);
   const [loading, setLoading] = useState(true), [error, setError] = useState('');
   const request = useRef(0);
@@ -20,10 +21,16 @@ export function MonthlyLimitHistory() {
     finally { if (version === request.current) setLoading(false); }
   }, []);
   useFocusEffect(useCallback(() => { void reload(); return () => { request.current++; }; }, [reload]));
+  if (loading || error) return <ReadState loading={loading} error={error} retry={() => void reload()} />;
+  if (!rows.length) return null;
   return <View style={{ gap: 12 }}>
-    <Text style={ui.heading}>Monthly Limit History</Text>
-    <BulsaButton secondary title="Refresh History" onPress={() => void reload()} />
-    <Text style={ui.caption}>Saved spending plans. These amounts are not wallet balances.</Text>
-    {loading || error ? <ReadState loading={loading} error={error} retry={() => void reload()} /> : !rows.length ? <Text style={ui.body}>No saved monthly limits yet.</Text> : rows.map(row => <View key={row.month} style={ui.card}><Text style={ui.body}>{monthName(row.month)} · {formatCentavos(row.limitCentavos)}</Text><BulsaButton secondary title={`Edit ${monthName(row.month)}`} onPress={() => router.push({ pathname: '/monthly-limit', params: { month: row.month } })} /></View>)}
+    <BulsaButton secondary title={expanded ? 'Hide Monthly History' : 'Monthly Limit History'} onPress={() => setExpanded(value => !value)} />
+    {expanded && <>
+      <Text style={ui.caption}>Saved monthly spending plans</Text>
+      {rows.map(row => <View key={row.month} style={ui.card}>
+        <Text style={ui.body}>{monthName(row.month)} · {formatCentavos(row.limitCentavos)}</Text>
+        <BulsaButton secondary title={`Edit ${monthName(row.month)}`} onPress={() => router.push({ pathname: '/monthly-limit', params: { month: row.month } })} />
+      </View>)}
+    </>}
   </View>;
 }

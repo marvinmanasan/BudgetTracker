@@ -1,3 +1,4 @@
+import { BudgetCalendar } from './budget-calendar';
 import { CenteredPopup } from './centered-popup';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { type ComponentRef, useCallback, useMemo, useRef, useState } from 'react';
@@ -170,16 +171,30 @@ export function EntryFields({ original: incoming, ledger, initialType = 'expense
       {original && <Text style={ui.caption}>Current {type === 'income' ? 'source' : 'category'}: {category}. Older labels stay available on this record.</Text>}
       <CategoryPicker retainedValue={original?.category} key={type} kind={type} value={category} onChange={setCategory} disabled={busy} onBusyChange={setChoicesBusy} />
       <View onLayout={e => { positions.current.date = e.nativeEvent.layout.y; }}>
-        <Field inputRef={dateRef} issue={issue?.field === 'date' ? issue.message : undefined} label="Date (MM-DD-YYYY)" placeholder="MM-DD-YYYY" value={date} onChangeText={value => { setDate(value); if (issue?.field === 'date') setIssue(null); }} editable={!blocked} autoCapitalize="none" autoCorrect={false} maxLength={10} />
+        <Field action={<BudgetCalendar label="Choose Date" value={date} disabled={blocked} onChange={value => { setDate(value); if (issue?.field === 'date') setIssue(null); }} />} inputRef={dateRef} issue={issue?.field === 'date' ? issue.message : undefined} label="Date (MM-DD-YYYY)" placeholder="MM-DD-YYYY" value={date} onChangeText={value => { setDate(value); if (issue?.field === 'date') setIssue(null); }} editable={!blocked} autoCapitalize="none" autoCorrect={false} maxLength={10} />
       </View>
       <BulsaButton secondary disabled={blocked} title={details ? 'Fewer Details' : 'More Details · Optional'} onPress={() => setDetails(value => !value)} />
       {details && <><Field label="Note · Optional" value={note} onChangeText={setNote} editable={!blocked} multiline /></>}
       {type === 'expense' && entryMonth && <MonthlyLimitNotice disabled={blocked} month={entryMonth} spent={monthSpent} projected={projected} />}
       {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
       {!!previewError && <Text style={ui.error}>{previewError}</Text>}
-      <BulsaButton title={busy ? 'Saving…' : original ? 'Review Changes' : type === 'expense' ? 'Save Expense' : 'Save Income'} disabled={blocked} onPress={() => { if (!validateFields()) return; if (original && data) { try { editPreview(data, editedTransaction(original, draft)); setPreviewError(''); setReviewing(true); } catch (cause) { setPreviewError(cause instanceof Error ? cause.message : 'Check your fields.'); } } else void save(); }} />
+      <BulsaButton title={busy ? 'Saving…' : original ? 'Review Changes' : type === 'expense' ? 'Review Expense' : 'Save Income'} disabled={blocked} onPress={() => { if (!validateFields()) return; if (original && data) { try { editPreview(data, editedTransaction(original, draft)); setPreviewError(''); setReviewing(true); } catch (cause) { setPreviewError(cause instanceof Error ? cause.message : 'Check your fields.'); } } else if (type === 'expense') { Keyboard.dismiss(); setReviewing(true); } else void save(); }} />
       {original && <BulsaButton secondary title="Cancel" disabled={blocked} onPress={leave} />}
     </>}
+    {reviewing && !original && type === 'expense' && <CenteredPopup onClose={() => setReviewing(false)} busy={blocked} footer={<>
+      <BulsaButton title={busy ? 'Saving…' : 'Confirm Expense'} disabled={blocked || loading || !!readError || !data} onPress={() => void save()} />
+      <BulsaButton secondary title="Keep Editing" disabled={blocked} onPress={() => setReviewing(false)} />
+    </>}>
+      <Text style={ui.title}>Review Expense</Text>
+      <Text style={ui.money}>{formatCentavos(draftAmount ?? 0)}</Text>
+      <Text style={ui.body}>Wallet: {selected?.name ?? 'General (No Wallet)'}</Text>
+      <Text style={ui.body}>Category: {category}</Text>
+      <Text style={ui.body}>Date: {date}</Text>
+      <Text style={ui.body}>Payment Method: {payment.trim() || 'Not specified'}</Text>
+      <Text style={ui.body}>Note: {note.trim() || 'None'}</Text>
+      {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
+      {!!readError && <Text style={ui.error}>{readError}</Text>}
+    </CenteredPopup>}
     {reviewing && original && <CenteredPopup onClose={() => setReviewing(false)} busy={blocked}><Text style={ui.title}>Review Changes</Text>{!preview ? <Text style={ui.error}>{validation || 'Could not preview changes.'}</Text> : <><MoneyReview before={preview.before} after={preview.after} walletIds={[original.walletId, walletId]} /><Text style={ui.caption}>This updates the original record once. Income and spending totals follow the corrected amount and date. Transfers and adjustments stay unchanged.</Text><BulsaButton title={busy ? 'Saving…' : 'Save Changes'} disabled={blocked} onPress={() => void save()} /></>}{!!error && <><Text style={ui.error}>{error}</Text><BulsaButton secondary title="Refresh Balances" disabled={blocked} onPress={() => { setReviewing(false); void reload(); }} /></>}<BulsaButton secondary title="Keep Editing" disabled={blocked} onPress={() => setReviewing(false)} /></CenteredPopup>}
   </BulsaScreen>;
 }

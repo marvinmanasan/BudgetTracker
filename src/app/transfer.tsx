@@ -1,3 +1,4 @@
+import { BudgetCalendar } from '../components/budget-calendar';
 import { CenteredPopup } from '../components/centered-popup';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -107,9 +108,11 @@ export default function TransferScreen() {
       {!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
     </CenteredPopup>}
       <BulsaButton secondary title={`From: ${names.get(from) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('from')} />
+      {from && <Text style={ui.caption}>Available: {formatCentavos(balances.wallets.find(wallet => wallet.id === from)?.balanceCentavos ?? 0)}</Text>}
       <BulsaButton secondary title={`To: ${names.get(to) ?? 'Choose Wallet'}`} disabled={busy} onPress={() => setPicker('to')} />
+      {to && <Text style={ui.caption}>Current Balance: {formatCentavos(balances.wallets.find(wallet => wallet.id === to)?.balanceCentavos ?? 0)}</Text>}
       <Field editable={!busy} label="Amount (PHP)" value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="decimal-pad" />
-      <Field editable={!busy} label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} />
+      <Field action={<BudgetCalendar label="Choose Date" value={date} disabled={busy} onChange={setDate} />} editable={!busy} label="Date (MM-DD-YYYY)" value={date} onChangeText={setDate} maxLength={10} />
       <Field editable={!busy} label="Note · Optional" value={note} onChangeText={setNote} multiline />
       <BulsaButton title="Review Transfer" disabled={busy} onPress={prepare} />
     </>}

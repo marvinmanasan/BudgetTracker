@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict');
+const {spendingRange,shiftSpendingDate,spendingStatistics}=require('./load-typescript.cjs').createLoader()('src/lib/spending-statistics.ts');
+assert.deepEqual({...spendingRange('2028-02-29','day')},{start:'2028-02-29',end:'2028-02-29'});
+assert.deepEqual({...spendingRange('2028-02-29','month')},{start:'2028-02-01',end:'2028-02-29'});
+assert.deepEqual({...spendingRange('2026-01-01','week')},{start:'2025-12-29',end:'2026-01-04'});
+assert.deepEqual({...spendingRange('2026-12-31','year')},{start:'2026-01-01',end:'2026-12-31'});
+assert.equal(shiftSpendingDate('2028-02-29','year',1),'2029-02-28');
+assert.equal(shiftSpendingDate('2026-01-31','month',1),'2026-02-28');
+assert.equal(shiftSpendingDate('0001-01-01','day',-1),null);
+assert.equal(shiftSpendingDate('9999-12-31','day',1),null);
+assert.throws(()=>spendingRange('2026-02-30','day'));
+const tx=(id,type,amount,date,category,walletId)=>({id,type,amountCentavos:amount,date,category,walletId,paymentMethod:'Cash'});
+const data={wallets:[],changes:[],transfers:[{amountCentavos:99999,date:'2026-01-01'}],transactions:[tx('a','expense',125,'2025-12-29','Food',null),tx('b','expense',275,'2026-01-04','Food','excluded'),tx('c','expense',600,'2026-01-01','Travel','hidden'),tx('d','income',50000,'2026-01-01','Salary',null),tx('e','expense',999,'2026-01-05','Food',null)]};
+const result=spendingStatistics(data,'2026-01-01','week');
+assert.equal(result.incomeCentavos,50000);assert.equal(result.totalCentavos,1000);assert.equal(result.count,3);assert.equal(result.categories[0].category,'Travel');assert.equal(result.categories[1].amountCentavos,400);
+const copy=JSON.stringify(data);spendingStatistics(data,'2026-01-01','day');assert.equal(JSON.stringify(data),copy);
+assert.equal(spendingStatistics({...data,transactions:[]},'2026-01-01','day').totalCentavos,0);
+assert.throws(()=>spendingStatistics({...data,transactions:[tx('x','expense',Number.MAX_SAFE_INTEGER,'2026-01-01','Food'),tx('y','expense',1,'2026-01-01','Food')]},'2026-01-01','day'),/range/);
+console.log('Statistics passed: daily/weekly/monthly/yearly boundaries, leap days, exact categories, all-wallet expense-only totals, empty and overflow.');
+
+assert.throws(()=>spendingStatistics({...data,transactions:[tx('i1','income',Number.MAX_SAFE_INTEGER,'2026-01-01','Salary'),tx('i2','income',1,'2026-01-01','Salary')]},'2026-01-01','day'),/range/);
+assert.equal(spendingStatistics(data,'2026-01-01','day').incomeCentavos,50000);

@@ -3,14 +3,14 @@ const load=require('./load-typescript.cjs').createLoader();const {deriveBalances
 let slots=[],cursor=0,routes=[],written=[],loading=false,readError='';
 let ledger={wallets:[{id:'mari',name:'MariBank',included:true,hidden:false},{id:'go',name:'GoTyme',included:true,hidden:false}],transactions:[],transfers:[],changes:[{id:'open-mari',walletId:'mari',kind:'opening',deltaCentavos:100000,date:'2026-11-13',reason:'Starting balance',targetCentavos:null}]};
 const jsx={jsx:(type,props,key)=>({type,props,key}),jsxs:(type,props,key)=>({type,props,key})};
-const mocks={react:{useMemo(fn,deps){const i=cursor++,previous=slots[i];if(previous&&deps.every((v,j)=>Object.is(v,previous.deps[j])))return previous.value;const value=fn();slots[i]={deps,value};return value;},useRef:value=>({current:value}),useCallback:f=>f,useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',Pressable:'WalletRow',BackHandler:{addEventListener:()=>({remove(){}})}},'expo-router':{useRouter:()=>({push:r=>routes.push(r),replace:r=>routes.push(r)}),useFocusEffect(){}},'../components/centered-popup':{CenteredPopup:'Popup'},'../components/bulsa-screen':{BulsaScreen:'Screen'},'../components/bulsa-button':{BulsaButton:'Button'},'../components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'Read',useUI:()=>({})},'../components/money-review':{MoneyReview:'Money'},'../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{track:'#777',accent:'#aaa'}})},'../hooks/use-ledger':{useLedger:()=>({data:ledger,balances:deriveBalances(ledger),loading,error:readError,reload:async()=>{}}),useSaveAction:()=>({busy:false,error:'',run:async f=>{await f();return true;}})},'../storage/wallets':{recordTransfer:async r=>written.push(r)}};
+const mocks={react:{useMemo(fn,deps){const i=cursor++,previous=slots[i];if(previous&&deps.every((v,j)=>Object.is(v,previous.deps[j])))return previous.value;const value=fn();slots[i]={deps,value};return value;},useRef:value=>({current:value}),useCallback:f=>f,useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];}},'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',Pressable:'WalletRow',Keyboard:{dismiss(){}},BackHandler:{addEventListener:()=>({remove(){}})}},'expo-router':{useRouter:()=>({push:r=>routes.push(r),replace:r=>routes.push(r)}),useFocusEffect(){}},'../components/centered-popup':{CenteredPopup:'Popup'},'../components/bulsa-screen':{BulsaScreen:'Screen'},'../components/bulsa-button':{BulsaButton:'Button'},'../components/budget-calendar':{BudgetCalendar:'Calendar'},'../components/bulsa-form':{BackButton:'Back',Field:'Field',ReadState:'Read',useUI:()=>({})},'../components/money-review':{MoneyReview:'Money'},'../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{track:'#777',accent:'#aaa'}})},'../hooks/use-ledger':{useLedger:()=>({data:ledger,balances:deriveBalances(ledger),loading,error:readError,reload:async()=>{}}),useSaveAction:()=>({busy:false,error:'',run:async f=>{await f();return true;}})},'../storage/wallets':{recordTransfer:async r=>written.push(r)}};
 for(const n of ['transfers','form-money','money','display-date','validation'])mocks['../lib/'+n]=load('src/lib/'+n+'.ts');
 const m={exports:{}};const c=ts.transpileModule(fs.readFileSync('src/app/transfer.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+c+'})')(n=>{assert(n in mocks,n);return mocks[n]},m,m.exports);
 const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children),...nodes(t.props?.footer)]:[];const render=()=>{cursor=0;return m.exports.default();};const button=(t,title)=>nodes(t).find(n=>(n.type==='Button'&&n.props.title===title)||(n.type==='WalletRow'&&n.props.accessibilityLabel===title));const field=(t,label)=>nodes(t).find(n=>n.type==='Field'&&n.props.label===label);
 const entrySource = fs.readFileSync('src/components/entry-form.tsx', 'utf8');
 const entryMocks = {
   ...mocks,
-  './bulsa-form': mocks['../components/bulsa-form'],
+  './budget-calendar':{BudgetCalendar:'Calendar'},'./bulsa-form': mocks['../components/bulsa-form'],
   './bulsa-screen': mocks['../components/bulsa-screen'],
   './bulsa-button': mocks['../components/bulsa-button'],
   './category-picker': { CategoryPicker: 'Category' },
@@ -66,6 +66,20 @@ async function checkIncomeSetup() {
   assert.equal(written.length,1);
   assert.deepEqual([written[0].walletId,written[0].amountCentavos,written[0].date,written[0].category,written[0].note],
     ['cash',20050,'2026-11-13','Bonus','My Note']);
+  slots = []; written = [];
+  const expense = () => { cursor=0; return entryModule.exports.EntryFields({ledger:entryMocks['../hooks/use-ledger'].useLedger(),initialType:'expense'}); };
+  field(expense(),'Amount (PHP)').props.onChangeText('10.25');
+  button(expense(),'Review Expense').props.onPress();
+  let reviewed = expense();
+  assert.equal(written.length,0,'Review never writes an expense');
+  assert(button(reviewed,'Confirm Expense'));
+  button(reviewed,'Keep Editing').props.onPress();
+  assert.equal(field(expense(),'Amount (PHP)').props.value,'10.25');
+  button(expense(),'Review Expense').props.onPress();
+  button(expense(),'Confirm Expense').props.onPress();
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(written.length,1,'Confirm writes exactly one expense');
+  assert.equal(written[0].amountCentavos,1025);
   console.log('Income setup return passed with cancellation, zero opening, draft retention and one save.');
 }
 (async()=>{

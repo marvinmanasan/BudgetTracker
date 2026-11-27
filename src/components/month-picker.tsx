@@ -5,15 +5,15 @@ import { localDate } from '../lib/validation';
 import { BulsaButton } from './bulsa-button';
 import { useUI } from './bulsa-form';
 
-export function MonthPicker({ value, onChange, allowAll = false }: {value:string; onChange:(month:string)=>void; allowAll?:boolean}) {
+export function MonthPicker({ value, onChange, allowAll = false, compact = false }: {value:string; onChange:(month:string)=>void; allowAll?:boolean; compact?:boolean}) {
   const ui = useUI(), current = localDate().slice(0,7), selected = value || current;
   const [choosing, setChoosing] = useState(false);
   const [year, setYear] = useState(Number(selected.slice(0,4)));
   return <View style={ui.card}>
-    <Text style={ui.caption}>Month</Text>
+    {!compact && <Text style={ui.caption}>Month</Text>}
     <View style={ui.row}>
       <Pressable accessibilityRole="button" accessibilityLabel="Previous Month" disabled={selected==='0001-01'} onPress={()=>onChange(shiftMonth(selected,-1))} style={[ui.choice, { minWidth: 48, alignItems: 'center' }]}><Text style={ui.heading}>‹</Text></Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel="Choose Month" accessibilityState={{ expanded: choosing }} onPress={()=>{ setYear(Number(selected.slice(0,4))); setChoosing(v=>!v); }} style={{ flex: 1, minWidth: 120, minHeight: 48, justifyContent: 'center' }}><Text accessibilityLiveRegion="polite" style={[ui.heading,{textAlign:'center'}]}>{value ? monthName(value) : 'All Months'}</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityLabel={`Choose Month, ${value ? monthName(value) : 'All Months'}`} accessibilityState={{ expanded: choosing }} onPress={()=>{ setYear(Number(selected.slice(0,4))); setChoosing(v=>!v); }} style={{ flex: 1, minWidth: 120, minHeight: 48, justifyContent: 'center' }}><Text accessibilityLiveRegion="polite" style={[ui.heading,{textAlign:'center'}]}>{value ? monthName(value) : 'All Months'} ▾</Text></Pressable>
       <Pressable accessibilityRole="button" accessibilityLabel="Next Month" disabled={selected==='9999-12'} onPress={()=>onChange(shiftMonth(selected,1))} style={[ui.choice, { minWidth: 48, alignItems: 'center' }]}><Text style={ui.heading}>›</Text></Pressable>
     </View>
     {choosing && <View style={{gap:12}}>
@@ -21,7 +21,7 @@ export function MonthPicker({ value, onChange, allowAll = false }: {value:string
       <View style={ui.row}>{Array.from({length:12},(_,i)=>{const month=`${String(year).padStart(4,'0')}-${String(i+1).padStart(2,'0')}`; return <BulsaButton key={month} secondary={month!==value} title={monthName(month).split(' ')[0]} onPress={()=>{onChange(month);setChoosing(false);}} />;})}</View>
     </View>}
     <View style={ui.row}>
-      <BulsaButton secondary title="This Month" onPress={()=>onChange(current)} />
+      {(!compact || value !== current) && <BulsaButton secondary title={compact ? "Back to This Month" : "This Month"} onPress={()=>{onChange(current);setChoosing(false);}} />}
       {allowAll && <BulsaButton secondary title="All Months" onPress={()=>onChange('')} />}
     </View>
   </View>;
