@@ -20,9 +20,9 @@ Bulsa is a mobile budget tracker for recording money, managing wallets and plann
 
 ## Download
 
-Source version **1.2.0, Android build 5** and its signed APK are prepared in a draft update. The latest published APK is still **1.1.0, build 4**. Read the [update notes, verification and remaining device checks](RELEASE_NOTES.md).
+Version **1.2.0, Android build 5** includes custom spending dates, clearer money flows and the combined period summary. Read the [update notes, verification and remaining device checks](RELEASE_NOTES.md).
 
-[Download Bulsa 1.1.0 for Android](https://github.com/marvinmanasan/BudgetTracker/releases/download/v1.1.0/Bulsa-1.1.0.apk).
+[Download Bulsa 1.2.0 for Android](https://github.com/marvinmanasan/BudgetTracker/releases/download/v1.2.0/Bulsa-1.2.0.apk).
 
 Open the APK on your Android phone and follow the installation prompts. If Bulsa is already installed, install it as an update to keep your saved entries.
 
@@ -78,6 +78,6 @@ For your own cloud build, use your own Expo account and link your own Expo proje
 
 ## Version
 
-Source version **1.2.0** (Android build 5, in preparation). See the [release notes](RELEASE_NOTES.md) for the feature summary.
+Version **1.2.0** (Android build 5). See the [release notes](RELEASE_NOTES.md) for the feature summary.
 
 Bulsa is a beginner portfolio project developed through manual coding and AI-assisted development.

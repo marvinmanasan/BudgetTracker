@@ -1,15 +1,15 @@
 # Bulsa Release Notes
 
-## 1.2.0 — In Preparation (Android Build 5)
+## 1.2.0 — Android Build 5
 
-Prepared November 27, 2026. This update brings the local Budgets and mobile-clarity work together. The signed 1.2.0/build 5 APK has been built and attached to a draft GitHub release. The latest published release remains 1.1.0/build 4 until 1.2.0 is published.
+Release date: November 27, 2026. This update brings the Budgets and mobile-clarity improvements together with the signed Android APK and matching SHA-256 file.
 
-### Prepared Android APK
+### Android Release
 
 - EAS build: [5b523a17-1b3d-4d08-8364-b3a3b962546c](https://expo.dev/accounts/marvinmanasan/projects/BudgetTracker/builds/5b523a17-1b3d-4d08-8364-b3a3b962546c).
 - Built app source: `166e78ef1cecc1d49a5bb7a98d0537436d753948`. Subsequent preparation changes affect documentation/ignore rules only.
 - APK: `Bulsa-1.2.0.apk`, 107,575,835 bytes. ZIP integrity passed.
-- SHA-256: `3481392ddc1c595a3f3f2afd1134aec09bb347a218d8f227f6a2e106c2c80059`. Draft GitHub upload digest matches this file; a matching checksum file is attached.
+- SHA-256: `3481392ddc1c595a3f3f2afd1134aec09bb347a218d8f227f6a2e106c2c80059`. GitHub upload digest matches this file; a matching checksum file is attached.
 - Bounded native observation: Dark Overview with the written-date segmented summary and retained total. Full accessibility/physical-device acceptance remains open below.
 
 ### Budgets and Savings
@@ -39,7 +39,7 @@ Prepared November 27, 2026. This update brings the local Budgets and mobile-clar
 - Existing atomic writes, stale-preview checks, stable IDs and duplicate-save locks remain in place.
 - Period totals aggregate income and expenses in one memoized pass. Hidden category results are not recalculated during loading. No dependencies were added; no phone-speed or APK-size improvement is claimed.
 
-### Verification and Remaining Release Gates
+### Verification and Remaining Acceptance
 
 - All 48 automated scripts, Expo lint, TypeScript and whitespace checks passed during preparation on November 27. A separate source review found no blocking defect. These results do not establish the pending APK/device checks.
 - Earlier local automated checks covered actual SQLite upgrades, rollback/retry, inclusive dates, overlap conflicts, backups, safe money and reviewed UI flows. Earlier emulator observations covered bounded plan flows and Light Overview/Wallets, not complete release acceptance.
