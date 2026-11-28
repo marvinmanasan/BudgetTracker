@@ -4,6 +4,12 @@
 
 Patch release prepared November 28, 2026, including the latest QA fixes and a separately versioned Android APK. The older 1.2.0 release remains available for reference.
 
+- APK: `Bulsa-1.2.1.apk`, 107,581,727 bytes.
+- SHA-256: `ade61b69aa439166f4f9785e1cd80c9cfe73aad84073a3faede6321d90f6c051`.
+- Built source: `cd94c7fba5d7772a9b37d630ffbe1d80c369b0fc`; later release-documentation changes do not change app code.
+- EAS build: [3933e61d-3749-4990-ab0a-3a98af9e837e](https://expo.dev/accounts/marvinmanasan/projects/BudgetTracker/builds/3933e61d-3749-4990-ab0a-3a98af9e837e).
+- ZIP and Android signature verification passed. Signing certificate matches 1.2.0; in-place installation retained saved files. Build 6 native cold-entry balance correction saved once and returned to Wallets with the exact expected total.
+
 - Recovery copies are verified before becoming available. Incomplete newer files no longer hide readable older copies; older/newest copies can be selected with their timestamps.
 - Back from spending-plan review retains entered details. Leaving an edited plan asks before discarding changes, and saves/deletes guard against immediate repeated actions.
 - New or renamed spending plans accept up to 80 characters. Existing longer names remain readable and can be shortened without silently truncating saved records.
@@ -11,7 +17,7 @@ Patch release prepared November 28, 2026, including the latest QA fixes and a se
 - Successful total-balance corrections close their review and return to Wallets when there is no previous screen. Failed saves retain the review for retry.
 - Financial calculations, database schema and dependencies remain unchanged.
 
-Validation: 50 automated scripts, lint, TypeScript and Android bundling passed during preparation. An internal QA APK covered wallet transfers, income correction/Undo, savings, spending plans, monthly/category limits, backup/restore and recovery fallback. The final no-history navigation fix has automated coverage and still needs a native retest in a newly built APK. Spoken TalkBack, physical-phone/participant acceptance and the exhaustive device/failure matrix remain open.
+Validation: 50 automated scripts, lint, TypeScript and Android bundling passed during preparation. The preceding internal QA APK covered wallet transfers, income correction/Undo, savings, spending plans, monthly/category limits, backup/restore and recovery fallback; build 6 additionally passed the final no-history navigation retest. Spoken TalkBack, physical-phone/participant acceptance and the exhaustive device/failure matrix remain open.
 
 ## 1.2.0 — Android Build 5
 
