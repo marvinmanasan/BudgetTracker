@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bulsa",
     "slug": "BudgetTracker",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "orientation": "portrait",
     "icon": "./assets/images/bulsa-icon.png",
     "scheme": "budgettracker",
@@ -16,7 +16,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.marvinmanasan.bulsa",
-      "versionCode": 6
+      "versionCode": 7
     },
     "web": {
       "output": "server",

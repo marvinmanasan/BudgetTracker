@@ -8,7 +8,7 @@ const mocks={
  'react/jsx-runtime':jsx,react:{useCallback:fn=>fn,useRef(value){const i=cursor++;return slots[i]??={current:value};},useState(x){let i=cursor++;if(!(i in slots))slots[i]=typeof x==='function'?x():x;return [slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v;}];}},
  'expo-router':{Tabs,Stack,router:{push(){throw Error('The imperative router is unavailable before the first render has finished.');}},useRouter:()=>scopedRouter,useFocusEffect(fn){onFocus=fn;},useLocalSearchParams:()=>({})},
  'react-native':{Platform:{OS:'android'},Image:'Image',Text:'Text',View:'View',Pressable:'Pressable',Switch:'Switch',StyleSheet:{create:x=>x}},
- 'expo-image':{Image:'Image'},'react-native-safe-area-context':{useSafeAreaInsets:()=>({bottom:0})},
+ 'expo-symbols':{SymbolView:'Icon'},'expo-image':{Image:'Image'},'react-native-safe-area-context':{useSafeAreaInsets:()=>({bottom:0})},
  'hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{},dark:false}),useBulsaStyles:()=>({})},
  'components/bulsa-form':{BackButton:'Back',ReadState:'Read',useUI:()=>({})},'components/bulsa-button':{BulsaButton:'Button'},'components/bulsa-screen':{BulsaScreen:'Screen'},
  'hooks/use-ledger':{useLedger:()=>({balances:{wallets:[],totalCentavos:0,generalCentavos:0},loading:false,reload:async()=>{}}),useSaveAction:()=>({busy:false,run:fn=>fn()})},
@@ -41,7 +41,7 @@ for (const [width,fontScale,expectedWidth] of [[320,1,'25%'],[320,2,'50%'],[411,
 cursor=0; slots=[];
 const file='src/app/(tabs)/wallets.tsx';
 const Wallets=load(file).default;let tree=Wallets();assert.equal(tree.props.header,undefined,'Wallets tab root has no misleading Back button');
-const list=nodes(tree);const transfer=list.find(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Transfer Money Between Wallets');assert(transfer);const total=list.find(n=>n.type==='Text'&&n.props.children==='Total Budget');assert(list.indexOf(transfer)<list.indexOf(total),'Transfer is reachable before wallet cards');
+const list=nodes(tree);const transfer=list.find(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Transfer Money Between Wallets');assert(transfer);const total=list.find(n=>n.type==='Text'&&n.props.children==='Total Budget');assert(list.indexOf(total)<list.indexOf(transfer),'Balance summary precedes Transfer');assert(list.indexOf(transfer)<list.findIndex(n=>n.type==='Text'&&n.props.children==='Your Wallets'),'Transfer remains reachable before wallet cards');
 assert.equal(transfer.props.disabled, true, 'A Transfer press must wait until the Wallets navigator has focus');
 assert.equal(transfer.props.accessibilityState.disabled, true);
 transfer.props.onPress();
@@ -61,7 +61,7 @@ onFocus();
 transfer.props.onPress();
 assert.deepEqual(nav, ['/transfer', '/transfer'], 'Returning to Wallets enables the next visit');
 assert.equal(list.filter(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Transfer Money Between Wallets').length,1);
-const add=list.find(n=>n.type==='Pressable'&&n.props.accessibilityLabel==='Add Wallet');assert(add,'Compact Add Wallet action stays named and accessible');add.props.onPress();assert.equal(nav.at(-1),'/wallets/add');assert(!list.some(n=>n.type==='Button'&&['Add Wallet','Transfer Money Between Wallets'].includes(n.props.title)),'No competing filled action buttons');
+const add=list.find(n=>n.type==='Button'&&n.props.title==='Add Wallet');assert(add,'Compact Add Wallet action stays named and accessible');add.props.onPress();assert.equal(nav.at(-1),'/wallets/add');assert.equal(list.filter(n=>n.type==='Button'&&n.props.title==='Add Wallet').length,1,'One shared primary Add action');assert(!list.some(n=>n.type==='Button'&&n.props.title==='Transfer Money Between Wallets'),'Transfer remains a single labeled card');
 assert(list.some(n=>n.type==='Text'&&n.props.children==='From one wallet to another'));
 list.find(n=>n.type==='Button'&&n.props.title==='Manage Hidden Wallets').props.onPress();cursor=0;tree=Wallets();assert.equal(tree.props.header.type,'Back');tree.props.header.props.onPress();cursor=0;assert.equal(Wallets().props.header,undefined);
 assert(fs.existsSync('src/app/wallets/[id].tsx')&&fs.existsSync('src/app/wallets/add.tsx'),'Wallet editors stay in the root stack so entry drafts retain their return path');
