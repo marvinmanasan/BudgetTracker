@@ -1,8 +1,14 @@
 # Bulsa Release Notes
 
-## 1.2.2 — Wallets and Savings Source Update
+## 1.2.2 — Android Build 7
 
-Prepared November 28, 2026. Source version **1.2.2**, Android version code **7**. A new APK has not been built or published for this update; the latest downloadable APK remains **1.2.1 / build 6** below.
+Published November 28, 2026. Version **1.2.2**, Android build **7**.
+
+- [Download Bulsa-1.2.2.apk](https://github.com/marvinmanasan/BudgetTracker/releases/download/v1.2.2/Bulsa-1.2.2.apk), 107,593,723 bytes; matching SHA-256 file is attached to the release.
+- SHA-256: `220ded6ce274abbf6b30bae1b5cdd5c7f8415bcb71733e8c654032f84c005273`.
+- Built source: `f3649b83e888afc1b5f01f04e3803786e9651d5d`. Subsequent release-documentation edits do not change app code.
+- [Expo build 8b4de0af-8d40-481b-9edd-d35be6c95ce1](https://expo.dev/accounts/marvinmanasan/projects/BudgetTracker/builds/8b4de0af-8d40-481b-9edd-d35be6c95ce1). Supplied APK matches the finished Expo artifact byte for byte.
+- ZIP integrity and Android signature verification passed. Signing certificate matches earlier Bulsa releases; install-as-update succeeded. Native smoke checks observed the polished Wallets screen and a standalone cold launch in airplane mode with Wi-Fi disabled. Network settings were restored, and financial/preference rows stayed unchanged during the read-only smoke test.
 
 ### Wallets
 
@@ -23,7 +29,7 @@ Prepared November 28, 2026. Source version **1.2.2**, Android version code **7**
 - 54 automated scripts, Expo lint, TypeScript and Android production JavaScript bundling passed before publication. Independent source review found no remaining blocker.
 - Expo Go walkthroughs covered goal creation/contribution/correction/deletion, management-sheet transitions, wallet setup/management paths, Light/Dark wallet layouts and 150% text. Fictional populated data covered long names, negative/excluded/hidden wallets and unassigned money; original databases/settings were restored and hash-verified.
 - Removed the Wallets list's unused write handler/save hook and repeated switch/status rows. Goal deletion calculates the frozen confirmation total once per opening. No new dependency, database schema or backup-format change; no runtime-speed or APK-size improvement is claimed.
-- This is source/Expo Go verification, not certification of a new standalone APK. Spoken TalkBack, physical-device/first-time-user acceptance, tablet layout and new APK install/offline/restart testing remain open.
+- This combines source/Expo Go verification with a bounded build-7 native smoke test. Full standalone regression, spoken TalkBack, physical-device/first-time-user acceptance and tablet layout remain open. A fresh pre-install data comparison was unavailable because the initial ADB backup was denied; no financial records were edited during the release smoke test.
 - Existing Savings limitations remain: one active goal, future-dated contributions count immediately, and Back can discard an unsaved goal/contribution draft. Those follow-ups are not addressed by this patch.
 
 ## 1.2.1 — Android Build 6
