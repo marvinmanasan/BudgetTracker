@@ -1,8 +1,8 @@
 # Bulsa Release Notes
 
-## Unreleased — QA Fixes
+## 1.2.1 — Android Build 6
 
-Source patch prepared November 28, 2026. The existing 1.2.0 Android download remains unchanged; these notes describe the updated source, not a new APK release.
+Patch release prepared November 28, 2026, including the latest QA fixes and a separately versioned Android APK. The older 1.2.0 release remains available for reference.
 
 - Recovery copies are verified before becoming available. Incomplete newer files no longer hide readable older copies; older/newest copies can be selected with their timestamps.
 - Back from spending-plan review retains entered details. Leaving an edited plan asks before discarding changes, and saves/deletes guard against immediate repeated actions.
