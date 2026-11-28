@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text } from "react-native";
 
 type BulsaButtonProps = {
   title: string;
+  accessibilityLabel?: string;
   onPress: () => void;
   secondary?: boolean;
   disabled?: boolean;
@@ -13,6 +14,7 @@ type BulsaButtonProps = {
 
 export function BulsaButton({
   title,
+  accessibilityLabel,
   onPress,
   secondary = false,
   disabled = false,
@@ -23,6 +25,7 @@ export function BulsaButton({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled, selected }}
       disabled={disabled}
       onPress={onPress}

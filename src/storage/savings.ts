@@ -85,3 +85,24 @@ export async function deleteSavingsContribution(expected: SavingsContribution, n
     await readSavings(db);
   }, true);
 }
+
+export async function deleteSavingsGoal(expected: SavingsGoal, contributions: SavingsContribution[], name = 'bulsa.db'): Promise<void> {
+  expected = { ...expected };
+  contributions = contributions.map(record => ({ ...record }));
+  if (typeof expected.id !== 'string' || !expected.id.trim()) throw new Error('A savings goal is required.');
+  await withDatabase(name, async db => {
+    const current = await db.getFirstAsync<SavingsGoal>('SELECT id,title,targetCentavos,deadline FROM savings_goals WHERE id=?', expected.id);
+    const changed = () => new Error('This savings goal or its records changed or were deleted. Close this confirmation and reload Savings before trying again.');
+    if (!current || current.title !== expected.title || current.targetCentavos !== expected.targetCentavos || (current.deadline ?? null) !== (expected.deadline ?? null)) throw changed();
+    const records = await db.getAllAsync<SavingsContribution>('SELECT id,goalId,amountCentavos,date,note FROM savings_contributions WHERE goalId=?', expected.id);
+    const approved = new Map(contributions.map(record => [record.id, record]));
+    if (records.length !== contributions.length || approved.size !== contributions.length || records.some(record => {
+      const original = approved.get(record.id);
+      return !original || original.goalId !== record.goalId || original.amountCentavos !== record.amountCentavos || original.date !== record.date || original.note !== record.note;
+    })) throw changed();
+    // Children must be removed first; both deletions share the same transaction.
+    await db.runAsync('DELETE FROM savings_contributions WHERE goalId=?', expected.id);
+    await db.runAsync('DELETE FROM savings_goals WHERE id=?', expected.id);
+    await readSavings(db);
+  }, true);
+}

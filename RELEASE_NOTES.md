@@ -1,5 +1,31 @@
 # Bulsa Release Notes
 
+## 1.2.2 — Wallets and Savings Source Update
+
+Prepared November 28, 2026. Source version **1.2.2**, Android version code **7**. A new APK has not been built or published for this update; the latest downloadable APK remains **1.2.1 / build 6** below.
+
+### Wallets
+
+- Total Budget appears first, with a nearby Adjust action and on-demand balance explanation. Included hidden wallets and nonzero unassigned money remain visible in context.
+- Add Wallet and Adjust reuse the same primary/secondary button styles as other tabs. Transfer has a coordinated warm surface; compact wallet cards use cash/wallet icons, readable balances and Included/Excluded badges.
+- Inclusion switches live in wallet details, reducing accidental changes from the list. Tapping a wallet still opens its full management screen; an unset wallet also offers a separate Set Balance shortcut.
+- Wallet accessibility labels include the balance/setup state, inclusion and hidden status. Long names and larger text can wrap.
+
+### Savings
+
+- Manage Goal, opposite Back, opens a compact action sheet with labeled Edit/Delete icon rows, a close control and outside-tap/Android Back dismissal.
+- Delete Goal opens a separate confirmation naming the goal, saved amount, target and number of associated records. Cancel changes nothing. Empty goals use a clear goal-only confirmation.
+- Confirmed deletion removes only that goal and its savings records. Wallet balances, income, spending, other goals and budgets stay unchanged. Changed or deleted records reject an outdated confirmation; failed writes roll back the entire deletion.
+- Successful deletion returns to the empty Savings state so a fresh goal starts without old progress.
+
+### Verification and Limits
+
+- 54 automated scripts, Expo lint, TypeScript and Android production JavaScript bundling passed before publication. Independent source review found no remaining blocker.
+- Expo Go walkthroughs covered goal creation/contribution/correction/deletion, management-sheet transitions, wallet setup/management paths, Light/Dark wallet layouts and 150% text. Fictional populated data covered long names, negative/excluded/hidden wallets and unassigned money; original databases/settings were restored and hash-verified.
+- Removed the Wallets list's unused write handler/save hook and repeated switch/status rows. Goal deletion calculates the frozen confirmation total once per opening. No new dependency, database schema or backup-format change; no runtime-speed or APK-size improvement is claimed.
+- This is source/Expo Go verification, not certification of a new standalone APK. Spoken TalkBack, physical-device/first-time-user acceptance, tablet layout and new APK install/offline/restart testing remain open.
+- Existing Savings limitations remain: one active goal, future-dated contributions count immediately, and Back can discard an unsaved goal/contribution draft. Those follow-ups are not addressed by this patch.
+
 ## 1.2.1 — Android Build 6
 
 Patch release prepared November 28, 2026, including the latest QA fixes and a separately versioned Android APK. The older 1.2.0 release remains available for reference.

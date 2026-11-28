@@ -16,6 +16,7 @@ const mocks={
 };
 function component(file){const result={exports:{}};const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;vm.runInThisContext('(function(require,module,exports){'+code+'})')(name=>mocks[name]??require(name),result,result.exports);return result.exports;}
 const button=component('src/components/bulsa-button.tsx').BulsaButton;
+assert.equal(button({title:'Adjust',accessibilityLabel:'Adjust Total Budget',onPress(){}}).props.accessibilityLabel,'Adjust Total Budget','Shared buttons retain a descriptive accessible label when visible text is short');
 const summary=component('src/components/summary-card.tsx').SummaryCard;
 const preview=component('src/components/savings-preview.tsx').SavingsPreview;
 for(const palette of [palettes.LightColors,palettes.DarkColors]){
