@@ -44,7 +44,11 @@ export default function EditTotalBudget() {
   async function save() {
     if (!review) return;
     const saved = await run(() => setTotalBudget({ id, walletId, targetCentavos: review.after.totalCentavos, reason, date: localDate() }, review.signature));
-    if (saved) router.back();
+    if (saved) {
+      setReview(null);
+      if (router.canGoBack()) router.back();
+      else router.replace('/wallets');
+    }
   }
   return <BulsaScreen header={<BackButton disabled={busy} />}>
     <Text style={ui.title}>{'Edit Total Budget'}</Text>

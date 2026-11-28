@@ -45,5 +45,5 @@ const createStyles = (C: BulsaColors) => StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center' },
   money: { color: C.text, fontSize: 30, fontWeight: '700' },
   choice: { minHeight: 48, padding: 14, borderRadius: 14, backgroundColor: C.soft, borderWidth: 1, borderColor: C.track, justifyContent: 'center' },
-  selected: { backgroundColor: C.selected },
+  selected: { backgroundColor: C.selected, borderColor: C.accent },
 });

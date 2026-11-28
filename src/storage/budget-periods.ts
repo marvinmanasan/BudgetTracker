@@ -1,5 +1,5 @@
 import { withDatabase } from './database';
-import { validateBudgetPeriod } from '../lib/budget-periods';
+import { validateBudgetPeriod, validatePlanName } from '../lib/budget-periods';
 
 export type BudgetPeriod = { id: string; title: string; startDate: string; endDate: string; limitCentavos: number };
 
@@ -22,6 +22,7 @@ export async function saveBudgetPeriod(period: BudgetPeriod, expected?: BudgetPe
   period = { ...period };
   expected = expected ? { ...expected } : undefined;
   validateBudgetPeriod(period);
+  validatePlanName(period.title, expected?.title);
   if (expected && expected.id !== period.id) throw new Error('Keep the same plan when editing.');
   await withDatabase(name, async db => {
     const current = await db.getFirstAsync<BudgetPeriod>('SELECT id,title,startDate,endDate,limitCentavos FROM budget_periods WHERE id=?', period.id);

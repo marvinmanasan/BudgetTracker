@@ -1,5 +1,18 @@
 # Bulsa Release Notes
 
+## Unreleased — QA Fixes
+
+Source patch prepared November 28, 2026. The existing 1.2.0 Android download remains unchanged; these notes describe the updated source, not a new APK release.
+
+- Recovery copies are verified before becoming available. Incomplete newer files no longer hide readable older copies; older/newest copies can be selected with their timestamps.
+- Back from spending-plan review retains entered details. Leaving an edited plan asks before discarding changes, and saves/deletes guard against immediate repeated actions.
+- New or renamed spending plans accept up to 80 characters. Existing longer names remain readable and can be shortened without silently truncating saved records.
+- Expense/Income selection has a persistent check and border in both themes. Month, category and reset choices expose their selected state to accessibility services.
+- Successful total-balance corrections close their review and return to Wallets when there is no previous screen. Failed saves retain the review for retry.
+- Financial calculations, database schema and dependencies remain unchanged.
+
+Validation: 50 automated scripts, lint, TypeScript and Android bundling passed during preparation. An internal QA APK covered wallet transfers, income correction/Undo, savings, spending plans, monthly/category limits, backup/restore and recovery fallback. The final no-history navigation fix has automated coverage and still needs a native retest in a newly built APK. Spoken TalkBack, physical-phone/participant acceptance and the exhaustive device/failure matrix remain open.
+
 ## 1.2.0 — Android Build 5
 
 Release date: November 27, 2026. This update brings the Budgets and mobile-clarity improvements together with the signed Android APK and matching SHA-256 file.

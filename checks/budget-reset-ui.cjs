@@ -37,6 +37,8 @@ const render=()=>{cursor=0;return screen();};
 const button=(tree,title)=>nodes(tree).find(n=>n.type==='Button'&&n.props.title===title);
 tree=render();assert(!button(tree,'Delete Selected Records'));
 button(tree,'General').props.onPress();tree=render();
+assert.equal(button(tree,'General').props.selected,true,'Selected reset scope must be announced');
+assert.equal(button(tree,'All Wallets').props.selected,false);
 button(tree,'General').props.onPress();tree=render();
 assert.equal(nodes(tree).filter(n=>n.type==='Switch').length,0,'Tapping selected scope clears it');
 button(tree,'General').props.onPress();tree=render();

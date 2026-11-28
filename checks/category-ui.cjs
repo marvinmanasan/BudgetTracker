@@ -41,7 +41,10 @@ async function categorySaveChecks(){
  const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...nodes(t.props?.children)]:[];
  const button=(t,title)=>nodes(t).find(n=>n.type==='Button'&&n.props.title===title);
  function render(allocations=[]){cursor=0;return m.exports.CategoryLimitForm({month:'2026-11',initial:{limitCentavos:10000,allocations,signature:'original'},sourceError:'',sourceLoading:false,retry(){}});}
- let t=render();button(t,'Food').props.onPress();t=render();nodes(t).find(n=>n.type==='Field').props.onChangeText('60');button(render(),'Save Category Limit').props.onPress();
+ let t=render();button(t,'Food').props.onPress();t=render();
+ assert.equal(button(t,'Food').props.selected,true,'Selected category exposes its state');
+ assert.equal(button(t,'Transport').props.selected,false);
+ nodes(t).find(n=>n.type==='Field').props.onChangeText('60');button(render(),'Save Category Limit').props.onPress();
  await new Promise(r=>setImmediate(r));
  assert.deepEqual(writes[0],['2026-11',[{category:'Food',limitCentavos:6000}],'bulsa.db','original']);
  assert.equal(back,1,'One save persists and exits');

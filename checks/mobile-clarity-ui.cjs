@@ -14,15 +14,38 @@ const nodes=t=>Array.isArray(t)?t.flatMap(nodes):t&&typeof t==='object'?[t,...no
 const button=(t,title)=>nodes(t).find(n=>(n.type==='Button'&&n.props.title===title)||n.props.accessibilityLabel===title);
 const field=(t,label)=>nodes(t).find(n=>n.type==='Field'&&n.props.label===label);
 const edit=component('src/app/edit-total-budget.tsx','default');
+let history=true,replacements=[],saveSucceeds=true;
+const originalRouter=mocks['expo-router'].useRouter;
+mocks['expo-router'].useRouter=()=>({...originalRouter(),canGoBack:()=>history,replace:path=>replacements.push(path)});
+mocks['../hooks/use-ledger'].useSaveAction=()=>({busy:false,error:'',run:async work=>{if(!saveSucceeds)return false;await work();return true;}});
 (async()=>{
  for(const [mode,label,input,expected] of [['Add Amount','Amount to Add (PHP)','200',70000],['Subtract Amount','Amount to Subtract (PHP)','200',30000],['Set Exact Balance','New Total Budget (PHP)','0',0]]){
   slots=[];button(edit(),mode).props.onPress();field(edit(),label).props.onChangeText(input);field(edit(),'Reason').props.onChangeText('Correction');button(edit(),'Cash').props.onPress();button(edit(),'Review Change').props.onPress();let t=edit();const money=nodes(t).find(n=>n.type==='Money');assert.equal(money.props.after.totalCentavos,expected);const before=writes.length;button(t,'Keep Editing').props.onPress();assert.equal(writes.length,before);assert.equal(field(edit(),label).props.value,input);button(edit(),'Review Change').props.onPress();await button(edit(),'Confirm Adjustment').props.onPress();assert.equal(writes.at(-1)[0].targetCentavos,expected);assert.equal(writes.at(-1)[1],JSON.stringify(data));
  }
+ await new Promise(resolve=>setImmediate(resolve));
+ for(const hasHistory of [false,true]){
+  slots=[];history=hasHistory;replacements=[];
+  field(edit(),'Amount to Add (PHP)').props.onChangeText('50');field(edit(),'Reason').props.onChangeText('QA');button(edit(),'Cash').props.onPress();button(edit(),'Review Change').props.onPress();
+  const priorBack=back;await button(edit(),'Confirm Adjustment').props.onPress();await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(back,priorBack+(hasHistory?1:0));assert.deepEqual(replacements,hasHistory?[]:['/wallets'],'A cold-entry save must have a usable destination');
+  assert(!button(edit(),'Confirm Adjustment'),'Successful review cannot be confirmed again');
+ }
+ slots=[];saveSucceeds=false;replacements=[];
+ field(edit(),'Amount to Add (PHP)').props.onChangeText('50');field(edit(),'Reason').props.onChangeText('Retry');button(edit(),'Cash').props.onPress();button(edit(),'Review Change').props.onPress();
+ const beforeFailed=writes.length,backBeforeFailure=back;await button(edit(),'Confirm Adjustment').props.onPress();await new Promise(resolve=>setImmediate(resolve));
+ assert(button(edit(),'Confirm Adjustment'),'Failed save keeps its review');assert.equal(writes.length,beforeFailed);assert.equal(back,backBeforeFailure);assert.deepEqual(replacements,[]);
+ saveSucceeds=true;
  slots=[];
  mocks['./summary-card']={SummaryCard:'Summary'};mocks['../hooks/use-bulsa-theme']={useBulsaTheme:()=>({colors:{accent:'#8A533A',onAccent:'#fff',soft:'#F2E4D4',text:'#382D29'}})};
  const stats=component('src/components/period-summary.tsx','PeriodSummary');
  const render=()=>stats({data});
  const text=t=>nodes(t).filter(n=>n.type==='Text').map(n=>JSON.stringify(n.props.children)).join(' ');
  assert(text(render()).includes('Today'));assert.equal(nodes(render()).filter(n=>n.type==='Summary').length,2,'One income/expense pair replaces the monthly summary');assert(!button(render(),'View All Statistics'));assert(button(render(),'Day').props.accessibilityState.checked);button(render(),'Week').props.onPress();assert(button(render(),'Week').props.accessibilityState.checked);assert(text(render()).includes('November 23–29, 2026'));button(render(),'Previous Week').props.onPress();assert(text(render()).includes('November 16–22, 2026'));button(render(),'Back to Today').props.onPress();assert(text(render()).includes('November 23–29, 2026'));button(render(),'Year').props.onPress();assert(text(render()).includes('January 1 – December 31, 2026'));
- console.log('Clarity UI passed: reviewed add/subtract/exact payloads, cancel retention, default daily statistics and period navigation.');
+ slots=[];
+ const picker=component('src/components/month-picker.tsx','MonthPicker');
+ const months=()=>picker({value:'2026-11',onChange(){}});
+ nodes(months()).find(n=>n.props?.accessibilityLabel?.startsWith('Choose Month')).props.onPress();
+ assert.equal(button(months(),'November').props.selected,true,'Selected month exposes selection state');
+ assert.equal(button(months(),'December').props.selected,false);
+ console.log('Clarity UI passed: reviewed add/subtract/exact payloads, cancel retention, default daily statistics, period navigation and accessible month selection.');
 })().catch(e=>{console.error(e);process.exitCode=1});

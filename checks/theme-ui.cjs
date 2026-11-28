@@ -20,6 +20,9 @@ const summary=component('src/components/summary-card.tsx').SummaryCard;
 const preview=component('src/components/savings-preview.tsx').SavingsPreview;
 for(const palette of [palettes.LightColors,palettes.DarkColors]){
  colors=palette;
+ const formStyles=component('src/components/bulsa-form.tsx').useUI();
+ assert.equal(formStyles.selected.borderColor,palette.accent);
+ assert.notEqual(formStyles.selected.borderColor,formStyles.choice.borderColor,'Selection remains distinguishable even when dark fills match');
  const primary=button({title:'Save',onPress(){}});
  assert.equal(primary.props.style({pressed:false})[0].backgroundColor,palette.accent);
  assert.equal(primary.props.children.props.style[0].color,palette.onAccent);

@@ -18,7 +18,7 @@ export function MonthPicker({ value, onChange, allowAll = false, compact = false
     </View>
     {choosing && <View style={{gap:12}}>
       <View style={ui.row}><BulsaButton secondary title="Previous Year" disabled={year===1} onPress={()=>setYear(y=>y-1)} /><Text style={ui.heading}>{year}</Text><BulsaButton secondary title="Next Year" disabled={year===9999} onPress={()=>setYear(y=>y+1)} /></View>
-      <View style={ui.row}>{Array.from({length:12},(_,i)=>{const month=`${String(year).padStart(4,'0')}-${String(i+1).padStart(2,'0')}`; return <BulsaButton key={month} secondary={month!==value} title={monthName(month).split(' ')[0]} onPress={()=>{onChange(month);setChoosing(false);}} />;})}</View>
+      <View style={ui.row}>{Array.from({length:12},(_,i)=>{const month=`${String(year).padStart(4,'0')}-${String(i+1).padStart(2,'0')}`; return <BulsaButton key={month} secondary={month!==value} selected={month===value} title={monthName(month).split(' ')[0]} onPress={()=>{onChange(month);setChoosing(false);}} />;})}</View>
     </View>}
     <View style={ui.row}>
       {(!compact || value !== current) && <BulsaButton secondary title={compact ? "Back to This Month" : "This Month"} onPress={()=>{onChange(current);setChoosing(false);}} />}

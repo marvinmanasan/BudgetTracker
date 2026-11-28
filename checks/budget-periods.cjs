@@ -45,6 +45,17 @@ async function main() {
     let storage = load('src/storage/budget-periods.ts');
     const lib = load('src/lib/budget-periods.ts');
     const period = {id:'payday',title:'Payday',startDate:'2026-11-16',endDate:'2026-11-30',limitCentavos:300000};
+    const titleName='test-plan-titles.db';
+    await assert.rejects(storage.saveBudgetPeriod({...period,title:'a'.repeat(81)},undefined,titleName),/80 characters/);
+    await storage.saveBudgetPeriod({...period,title:'a'.repeat(80)},undefined,titleName);
+    const titleDb=await database.openDatabase(titleName);
+    await titleDb.runAsync('UPDATE budget_periods SET title=? WHERE id=?','Legacy '.repeat(15),period.id);
+    const legacyTitle=(await storage.getBudgetPeriods(titleName))[0];
+    assert.equal(legacyTitle.title,'Legacy '.repeat(15),'Reading does not truncate legacy titles');
+    await storage.saveBudgetPeriod({...legacyTitle,limitCentavos:100},legacyTitle,titleName);
+    const refreshedTitle=(await storage.getBudgetPeriods(titleName))[0];
+    await assert.rejects(storage.saveBudgetPeriod({...refreshedTitle,title:'b'.repeat(81)},refreshedTitle,titleName),/80 characters/);
+    await storage.saveBudgetPeriod({...refreshedTitle,title:'旅行 💰'},refreshedTitle,titleName);
     const ledger = {wallets:[],changes:[],transfers:[{amountCentavos:100}],transactions:[
       {type:'expense',date:'2026-11-16',amountCentavos:25000},
       {type:'expense',date:'2026-11-30',amountCentavos:60000},

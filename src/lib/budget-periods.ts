@@ -4,6 +4,14 @@ import { validateDate } from './validation';
 
 export type { BudgetPeriod } from '../storage/budget-periods';
 
+export const PLAN_NAME_MAX_LENGTH = 80;
+
+// Keep legacy records readable and editable; bound only new or changed names.
+export function validatePlanName(title: string, previousTitle?: string): void {
+  if (typeof title !== 'string' || !title.trim()) throw new Error('Enter a plan name.');
+  if (title.length > PLAN_NAME_MAX_LENGTH && title !== previousTitle) throw new Error(`Use ${PLAN_NAME_MAX_LENGTH} characters or fewer for the plan name.`);
+}
+
 export function validateBudgetPeriod(period: BudgetPeriod): void {
   if (!period || typeof period.id !== 'string' || !period.id.trim() || typeof period.title !== 'string' || !period.title.trim()) throw new Error('Enter a plan name.');
   validateDate(period.startDate);

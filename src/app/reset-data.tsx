@@ -94,8 +94,8 @@ export default function ResetSelectedData() {
       <Text style={ui.caption}>For a wrong balance, use Adjust Balance and keep your correct transactions. Choose records below only when you want to remove them.</Text>
       <BulsaButton secondary title="Manage Wallet Balances" disabled={blocked} onPress={() => router.push('/wallets')} />
       <Text style={ui.heading}>Choose Where</Text>
-      {(['wallet', 'general', 'all'] as const).map(value => <BulsaButton key={value} secondary={scope !== value} title={value === 'wallet' ? 'One Wallet' : value === 'general' ? 'General' : 'All Wallets'} disabled={blocked} onPress={() => chooseScope(value)} />)}
-      {scope === 'wallet' && balances?.wallets.map(w => <BulsaButton key={w.id} secondary={walletId !== w.id} title={w.name + (w.hidden ? ' · Hidden' : '') + (!w.included ? ' · Excluded' : '') + (walletId === w.id ? ' · Selected' : '')} disabled={blocked} onPress={() => { setWalletId(previous => previous === w.id ? '' : w.id); setKinds(emptyKinds()); setStarting(false); }} />)}
+      {(['wallet', 'general', 'all'] as const).map(value => <BulsaButton key={value} secondary={scope !== value} selected={scope === value} title={value === 'wallet' ? 'One Wallet' : value === 'general' ? 'General' : 'All Wallets'} disabled={blocked} onPress={() => chooseScope(value)} />)}
+      {scope === 'wallet' && balances?.wallets.map(w => <BulsaButton key={w.id} secondary={walletId !== w.id} selected={walletId === w.id} title={w.name + (w.hidden ? ' · Hidden' : '') + (!w.included ? ' · Excluded' : '') + (walletId === w.id ? ' · Selected' : '')} disabled={blocked} onPress={() => { setWalletId(previous => previous === w.id ? '' : w.id); setKinds(emptyKinds()); setStarting(false); }} />)}
       {scope === 'all' && <Text style={ui.body}>Includes General and every hidden or excluded wallet.</Text>}
       {scope && <>
         <Text style={ui.heading}>Choose What to Remove</Text>

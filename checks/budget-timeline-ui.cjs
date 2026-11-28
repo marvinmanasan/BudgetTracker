@@ -9,6 +9,7 @@ let periodState={loaded:true,periods:[period],loading:false,error:'',reload:asyn
 const mocks={
  '../hooks/use-bulsa-theme':{useBulsaTheme:()=>({colors:{}})},
  '../components/budget-calendar':{BudgetCalendar:'Calendar'},
+ '../components/centered-popup':{CenteredPopup:'Popup'},
  '../hooks/use-current-date':{useCurrentDate:()=>today},
  react:{useState(initial){const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],v=>slots[i]=typeof v==='function'?v(slots[i]):v];},useCallback:f=>f,useRef:v=>({current:v})},
  'react/jsx-runtime':jsx,'react-native':{Text:'Text',View:'View',BackHandler:{addEventListener:()=>({remove(){}})}},

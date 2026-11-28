@@ -37,6 +37,9 @@ async function checkIncomeSetup() {
   }
   monthlyScans=0;
   let tree = form();
+  const radios=nodes(tree).filter(n=>n.props?.accessibilityRole==='radio');
+  assert(nodes(radios.find(n=>n.props.accessibilityState.checked)).some(n=>n.type==='Text'&&JSON.stringify(n.props.children).includes('✓')),'Selected entry type needs a persistent visual check in dark and light mode');
+  assert(!nodes(radios.find(n=>!n.props.accessibilityState.checked)).some(n=>n.type==='Text'&&JSON.stringify(n.props.children).includes('✓')));
   field(tree,'Amount (PHP)').props.onChangeText('200.50');
   field(tree,'Date (MM-DD-YYYY)').props.onChangeText('11-13-2026');
   nodes(tree).find(n => n.type === 'Category').props.onChange('Bonus');

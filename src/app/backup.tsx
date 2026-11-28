@@ -8,7 +8,7 @@ import { useTransactionUndo } from '../hooks/use-transaction-undo';
 import { displayDate } from '../lib/display-date';
 import { backupCounts, type FinancialBackup } from '../lib/backup';
 import { pickFinancialBackup, saveFinancialBackup, savesToFolder, shareFinancialBackup } from '../services/backup-files';
-import { latestRestoreSafetyCopy, readRestoreSafetyCopy, saveRestoreSafetyCopy } from '../services/restore-safety';
+import { findRestoreSafetyCopy, readRestoreSafetyCopy, saveRestoreSafetyCopy } from '../services/restore-safety';
 import { createFinancialBackup, financialSignature, restoreFinancialBackup } from '../storage/backup';
 
 const labels = { budget_periods: 'Custom Spending Plans', wallets: 'Wallets', transactions: 'Income and Expenses', balance_changes: 'Starting Balances and Adjustments', transfers: 'Transfers', monthly_limits: 'Monthly Limits', category_allocations: 'Category Allocations', savings_goals: 'Savings Goals', savings_contributions: 'Savings Records', custom_choices: 'Custom Categories and Income Sources' };
@@ -24,11 +24,11 @@ export default function BackupScreen() {
   const [confirmation, setConfirmation] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [safetyCopy, setSafetyCopy] = useState<string | null>(null);
+  const [safetyCopy, setSafetyCopy] = useState<{ uri: string; createdAt: string } | null>(null);
   useFocusEffect(useCallback(() => {
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => lock.current);
     let active = true;
-    if (Platform.OS !== 'web') void latestRestoreSafetyCopy().then(uri => { if (active) setSafetyCopy(uri); }).catch(() => { if (active) setError('Could not read the previous-records safety copy.'); });
+    if (Platform.OS !== 'web') void findRestoreSafetyCopy().then(copy => { if (active) setSafetyCopy(copy); }).catch(() => { if (active) setError('Could not read the previous-records safety copy.'); });
     return () => { active = false; subscription.remove(); };
   }, []));
 
@@ -68,7 +68,23 @@ export default function BackupScreen() {
     })} />
     {Platform.OS === 'web' && <Text style={ui.caption}>Export and restore are available in the Android app.</Text>}
     {pendingUndo && <View style={ui.card}><Text style={ui.body}>Finish or dismiss the pending Undo before restoring a backup.</Text><BulsaButton secondary title="Dismiss Undo" disabled={busy || undo.busy} onPress={undo.dismiss} /></View>}
-    {safetyCopy && <View style={ui.card}><Text style={ui.heading}>Before Your Last Restore</Text><Text style={ui.body}>A safety copy of the previous records is kept on this device. Export it to keep a separate copy or restore those records.</Text><BulsaButton secondary title="Export Previous Records" disabled={busy} onPress={() => void run(async () => { await shareFinancialBackup(await readRestoreSafetyCopy(safetyCopy)); setMessage('Share sheet closed. Check your chosen destination to confirm the previous records were saved.'); })} /></View>}
+    {safetyCopy && <View style={ui.card}>
+      <Text style={ui.heading}>Recovery Copy</Text>
+      <Text style={ui.caption}>Copy Created · {displayDate(safetyCopy.createdAt.slice(0, 10))} · {safetyCopy.createdAt.slice(11, 19)} UTC</Text>
+      <Text style={ui.body}>Saved before a restore attempt. Export the selected copy to keep it or restore those records.</Text>
+      <BulsaButton secondary title="Export Previous Records" disabled={busy} onPress={() => void run(async () => { await shareFinancialBackup(await readRestoreSafetyCopy(safetyCopy.uri)); setMessage('Share sheet closed. Check your chosen destination to confirm the previous records were saved.'); })} />
+      <BulsaButton secondary title="Older Recovery Copy" disabled={busy} onPress={() => void run(async () => {
+        const older = await findRestoreSafetyCopy(safetyCopy.uri);
+        if (!older) { setMessage('There are no earlier recovery copies.'); return; }
+        setSafetyCopy(older);
+        setMessage('An older recovery copy is selected. Export Previous Records exports this copy.');
+      })} />
+      <BulsaButton secondary title="Newest Recovery Copy" disabled={busy} onPress={() => void run(async () => {
+        const latest = await findRestoreSafetyCopy();
+        setSafetyCopy(latest);
+        setMessage(latest ? 'The newest recovery copy is selected.' : 'There are no recovery copies.');
+      })} />
+    </View>}
     {preview && <View style={ui.card}>
       <Text style={ui.heading}>Review Replacement</Text>
       <Text style={ui.body}>This replaces all current financial records. It does not merge them. A safety copy of your current records will be saved on this device before replacement. If that fails, nothing will be replaced. Export a separate copy before uninstalling Bulsa.</Text>
@@ -79,7 +95,7 @@ export default function BackupScreen() {
       <BulsaButton title="Replace Financial Records" disabled={busy || pendingUndo || confirmation !== 'RESTORE'} onPress={() => void run(async () => {
         if (confirmation !== 'RESTORE') return;
         const savedCopy = await saveRestoreSafetyCopy(preview.current);
-        setSafetyCopy(savedCopy);
+        setSafetyCopy({ uri: savedCopy, createdAt: preview.current.createdAt });
         await restoreFinancialBackup(preview.incoming, preview.signature, () => { const state = undo.snapshot(); return !state.record && !state.busy; });
         setPreview(null); setConfirmation('');
         setMessage('Financial records restored.');

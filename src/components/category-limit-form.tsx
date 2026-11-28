@@ -54,7 +54,7 @@ export function CategoryLimitForm({ month, initial, sourceError, sourceLoading, 
       <Text style={ui.body}>Monthly Limit: {formatCentavos(cap)}</Text>
       {rows.map(row => <View key={row.category} style={ui.card}><Text style={ui.heading}>{row.category}</Text><Text style={ui.body}>{row.amount} PHP</Text><BulsaButton secondary title="Edit Allocation" disabled={blocked} onPress={() => { setCategory(row.category); setAmount(row.amount); }} /><BulsaButton secondary title="Remove Allocation" disabled={blocked} onPress={() => void save(rows.filter(r => r.category !== row.category))} /></View>)}
       <Text style={ui.heading}>Choose Category</Text>
-      <View style={ui.row}>{options.map(name => <BulsaButton key={name} secondary={category !== name} title={name} disabled={blocked} onPress={() => setCategory(name)} />)}</View>
+      <View style={ui.row}>{options.map(name => <BulsaButton key={name} secondary={category !== name} selected={category === name} title={name} disabled={blocked} onPress={() => setCategory(name)} />)}</View>
       {!!choicesError && <><Text style={ui.error}>{choicesError}</Text><BulsaButton secondary title="Reload Choices" disabled={blocked} onPress={() => void readChoices()} /></>}
       <Field label="Category Limit (PHP)" value={amount} onChangeText={setAmount} editable={!blocked} keyboardType="decimal-pad" placeholder="0.00" />
       {!!draftError && <Text accessibilityLiveRegion="polite" style={ui.error}>{draftError}</Text>}{!!error && <Text accessibilityLiveRegion="polite" style={ui.error}>{error}</Text>}
